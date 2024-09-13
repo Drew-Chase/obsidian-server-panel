@@ -5,7 +5,7 @@ import $ from "jquery";
 import {NextUIProvider} from "@nextui-org/react";
 
 import "./assets/scss/index.scss";
-import Home from "./assets/pages/Home.tsx";
+import DashboardOverview from "./assets/pages/DashboardOverview.tsx";
 import Navigation from "./assets/components/Navigation.tsx";
 import {applyTheme} from "./assets/ts/Theme.ts";
 import Login from "./assets/pages/Login.tsx";
@@ -14,6 +14,10 @@ import Login from "./assets/pages/Login.tsx";
 export const debug_mode = true;
 
 export const api_domain = "http://localhost:1420";
+export const setTitle = (title: string) =>
+{
+    document.title = `${title} - Obsidian Minecraft Server Panel`;
+};
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
@@ -35,7 +39,7 @@ export function MainContentRenderer()
                 <Routes>
                     <Route>
                         <Route path="/" element={<Login/>}/>
-                        <Route path="/app" element={<Home/>}/>
+                        <Route path="/app" element={<DashboardOverview/>}/>
                     </Route>
                 </Routes>
             </main>
