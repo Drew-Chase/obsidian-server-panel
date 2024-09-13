@@ -89,6 +89,7 @@ export default function Navigation()
                     </AccordionItem>
                     <AccordionItem key={"files"} startContent={<Folder/>} title={"Files"} indicator={indicator}>
                         <NavbarItem key={"manage-files"} onClick={() => navigate("/app/files/")} isActive={pathname === "/app/files/"}>Manage Files</NavbarItem>
+                        <NavbarItem key={"manage-files"} onClick={() => navigate("/app/files/backups")} isActive={pathname === "/app/files/backups"}>Manage Backups</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"settings"} startContent={<Settings/>} title={"Settings"} indicator={indicator}>
                         <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>General Settings</NavbarItem>
