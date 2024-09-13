@@ -8,6 +8,12 @@ import "./assets/scss/index.scss";
 import Home from "./assets/pages/Home.tsx";
 import Navigation from "./assets/components/Navigation.tsx";
 import {applyTheme} from "./assets/ts/Theme.ts";
+import Login from "./assets/pages/Login.tsx";
+
+
+export const debug_mode = true;
+
+export const api_domain = "http://localhost:1420";
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
@@ -28,7 +34,8 @@ export function MainContentRenderer()
             <main className={"max-h-dvh h-dvh overflow-y-auto w-full p-6 mr-6"}>
                 <Routes>
                     <Route>
-                        <Route path="/" element={<Home/>}/>
+                        <Route path="/" element={<Login/>}/>
+                        <Route path="/app" element={<Home/>}/>
                     </Route>
                 </Routes>
             </main>
