@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "../fonts/style.css";
+body {
+  font-family: 'Mona-Sans Regular', 'sans-serif';
+}
+
+
+:root {
+  --scrollbar-background-color: transparent;
+  --scrollbar-thumb-color: hsl(var(--nextui-primary));
+  --scrollbar-thumb-hover-color: hsl(var(--nextui-primary));
+  overflow: auto;
+  scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-color);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover-color);
+}
+
+::selection {
+  background-color: hsl(var(--nextui-primary));
+  color: hsl(var(--nextui-neutral-800));
+}
