@@ -7,7 +7,11 @@ export default {
         "./src/**/*.{js,ts,jsx,tsx}",
         "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
     ], theme:    {
-        extend: {},
+        extend: {
+            backgroundImage: {
+                'custom-gradient': 'linear-gradient(176deg, #5300C8 0%, #102872 8%, #0D193F 24%, #081028 100%)',
+            }
+        },
     }, darkMode: "class", plugins: [
         nextui({
             themes: {
@@ -27,10 +31,10 @@ export default {
                             "400":     "#182753",
                             "DEFAULT": "#182753",
                         },
-                        content1:        "#0B1739",
-                        content2:        "#111e45",
-                        content3:        "#182753",
-                        content4:        "#182753",
+                        content1:        "#0b2039",
+                        content2:        "#112645",
+                        content3:        "#182b53",
+                        content4:        "#183c53",
                         "primary":       {
                             "DEFAULT":    "#CB3CFF",
                             "dark":       "#8951ff",
