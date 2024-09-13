@@ -4,12 +4,12 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEnvelope, faEye, faEyeSlash, faKey} from "@fortawesome/free-solid-svg-icons";
 import Authentication from "../ts/Authentication.ts";
 import {useNavigate} from "react-router-dom";
-import {debug_mode} from "../../main.tsx";
+import {debug_mode, setTitle} from "../../main.tsx";
 import ExtendedSwitch from "../components/Extends/ExtendedSwitch.tsx";
 
 export default function Login()
 {
-    document.title = "Login - Obsidian Minecraft Server Panel";
+    setTitle("Login");
 
     const [showPassword, setShowPassword] = useState(false);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
