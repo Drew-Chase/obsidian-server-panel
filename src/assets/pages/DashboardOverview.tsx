@@ -1,5 +1,7 @@
 import {setTitle} from "../../main.tsx";
 import CalendarDropdown from "../components/Extends/CalendarDropdown.tsx";
+import StatCard from "../components/Dashboard/StatCard.tsx";
+import {DropdownItem} from "@nextui-org/react";
 
 export default function DashboardOverview()
 {
@@ -12,6 +14,13 @@ export default function DashboardOverview()
                     showDay
                 />
             </div>
+            <StatCard
+                title={"CPU Usage"}
+                value={40}
+                valueContext={"%"}
+            >
+                <DropdownItem key={"hi"}>H</DropdownItem>
+            </StatCard>
         </div>
     );
 }
