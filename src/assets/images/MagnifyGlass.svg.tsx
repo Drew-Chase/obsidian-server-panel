@@ -9,9 +9,9 @@ interface MagnifyGlassIconProperties
 export default function MagnifyGlass(props: MagnifyGlassIconProperties)
 {
     return (
-        <svg width={props.size || props.width || "16"} height={props.size || props.height || "16"} viewBox="0 0 16 16" fill={"none"} xmlns="http://www.w3.org/2000/svg">
-            <path d="M7.25929 12.9445C10.5321 12.9445 13.1852 10.2914 13.1852 7.01861C13.1852 3.74581 10.5321 1.09268 7.25929 1.09268C3.98649 1.09268 1.33336 3.74581 1.33336 7.01861C1.33336 10.2914 3.98649 12.9445 7.25929 12.9445Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M14.6666 14.426L11.4444 11.2038" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width={props.size || props.width || "15"} height={props.size || props.height || "15"} viewBox="0 0 15 15" fill={"none"} xmlns="http://www.w3.org/2000/svg">
+            <path d="M7.22917 12.375C10.0711 12.375 12.375 10.0711 12.375 7.22917C12.375 4.3872 10.0711 2.08334 7.22917 2.08334C4.3872 2.08334 2.08333 4.3872 2.08333 7.22917C2.08333 10.0711 4.3872 12.375 7.22917 12.375Z" stroke={props.fill || "currentColor"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12.9167 12.9167L11.8333 11.8333" stroke={props.fill || "currentColor"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
 
     );
