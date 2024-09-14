@@ -46,7 +46,7 @@ export default function InstancesList()
                     <TableColumn className={"w-0"}>Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
-                    {Array.from({length: 80}).map((_, index) =>
+                    {Array.from({length: 20}).map((_, index) =>
                     {
                         return (
                             <TableRow key={index}>
@@ -57,13 +57,13 @@ export default function InstancesList()
                                 <TableCell><Chip color={"success"} variant={"flat"}>4</Chip></TableCell>
                                 <TableCell>
                                     <div className={"flex flex-row items-center"}>
-                                        <Tooltip content={"View server page"}>
+                                        <Tooltip content={"Create Server"}>
                                             <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faCirclePlus}/> </Button>
                                         </Tooltip>
-                                        <Tooltip content={`Duplicate the Instance`}>
+                                        <Tooltip content={`Duplicate Instance`}>
                                             <Button variant={"light"} className={"min-w-0 w-2 data-[hover]:text-foreground text-neutral-400"}> <FontAwesomeIcon icon={faCopy}/> </Button>
                                         </Tooltip>
-                                        <Tooltip content={"View server page"}>
+                                        <Tooltip content={"Download Instance"}>
                                             <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <DownloadFile/> </Button>
                                         </Tooltip>
                                     </div>
