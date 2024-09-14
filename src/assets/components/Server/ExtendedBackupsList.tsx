@@ -6,7 +6,7 @@ import DownloadFile from "../../images/DownloadFile.svg.tsx";
 export default function ExtendedBackupsList()
 {
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[400px] h-dvh overflow-y-auto grow"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 overflow-y-auto"}>
             <div className={"flex flex-row"}>
 
                 <p className={"text-lg font-semibold mr-auto"}>Backups</p>
@@ -19,7 +19,7 @@ export default function ExtendedBackupsList()
                 isStriped
                 removeWrapper
                 isHeaderSticky
-                className={"max-h-[300px] h-[400px] overflow-y-auto"}
+                className={"h-full overflow-y-auto"}
                 color={"primary"}
                 classNames={{
                     tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
@@ -39,7 +39,7 @@ export default function ExtendedBackupsList()
                 </TableHeader>
 
                 <TableBody>
-                    {Array.from({length: 10}, (_, i) => (
+                    {Array.from({length: 20}, (_, i) => (
                         <TableRow key={i}>
                             <TableCell>Backup #{i}</TableCell>
                             <TableCell>Automatic backup</TableCell>
