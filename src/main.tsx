@@ -5,10 +5,12 @@ import $ from "jquery";
 import {NextUIProvider} from "@nextui-org/react";
 
 import "./assets/scss/index.scss";
-import DashboardOverview from "./assets/pages/DashboardOverview.tsx";
+import DashboardOverview from "./assets/pages/Dashboard/DashboardOverview.tsx";
 import Navigation from "./assets/components/Navigation.tsx";
-import {applyTheme} from "./assets/ts/Theme.ts";
 import Login from "./assets/pages/Login.tsx";
+import DashboardServers from "./assets/pages/Dashboard/DashboardServers.tsx";
+import DashboardInstances from "./assets/pages/Dashboard/DashboardInstances.tsx";
+import ServerDetails from "./assets/pages/Server/ServerDetails.tsx";
 
 
 export const debug_mode = true;
@@ -30,7 +32,6 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 export function MainContentRenderer()
 {
-    applyTheme();
     const navigate = useNavigate();
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
@@ -39,7 +40,11 @@ export function MainContentRenderer()
                 <Routes>
                     <Route>
                         <Route path="/" element={<Login/>}/>
-                        <Route path="/app" element={<DashboardOverview/>}/>
+                        <Route path="/app/" element={<DashboardOverview/>}/>
+                        <Route path="/app/servers/" element={<DashboardServers/>}/>
+                        <Route path="/app/instances/" element={<DashboardInstances/>}/>
+                        <Route path="/app/server/" element={<ServerDetails/>}/>
+                        <Route path="/app/server/properties/" element={<ServerDetails/>}/>
                     </Route>
                 </Routes>
             </main>
