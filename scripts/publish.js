@@ -5,7 +5,7 @@ publish();
 async function publish() {
     console.log("Publishing...");
     cleanup();
-    incrementVersion();
+    // incrementVersion();
     buildFrontend();
     buildBackend();
     await deploy();
