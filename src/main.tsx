@@ -11,6 +11,9 @@ import Login from "./assets/pages/Login.tsx";
 import DashboardServers from "./assets/pages/Dashboard/DashboardServers.tsx";
 import DashboardInstances from "./assets/pages/Dashboard/DashboardInstances.tsx";
 import ServerDetails from "./assets/pages/Server/ServerDetails.tsx";
+import ServerProperties from "./assets/pages/Server/ServerProperties.tsx";
+import ServerConsole from "./assets/pages/Server/ServerConsole.tsx";
+import ServerBackups from "./assets/pages/Server/ServerBackups.tsx";
 
 
 export const debug_mode = true;
@@ -44,7 +47,9 @@ export function MainContentRenderer()
                         <Route path="/app/servers/" element={<DashboardServers/>}/>
                         <Route path="/app/instances/" element={<DashboardInstances/>}/>
                         <Route path="/app/server/" element={<ServerDetails/>}/>
-                        <Route path="/app/server/properties/" element={<ServerDetails/>}/>
+                        <Route path="/app/server/properties/" element={<ServerProperties/>}/>
+                        <Route path="/app/server/console/" element={<ServerConsole/>}/>
+                        <Route path="/app/server/backups/" element={<ServerBackups/>}/>
                     </Route>
                 </Routes>
             </main>
