@@ -1,7 +1,7 @@
 {
     "name": "obsidian-server-panel",
     "private": true,
-    "version": "0.0.1",
+    "version": "0.0.0",
     "description": "A beautiful minecraft server dashboard panel",
     "author": "Drew Chase",
     "license": "GPL-3.0-or-later",
