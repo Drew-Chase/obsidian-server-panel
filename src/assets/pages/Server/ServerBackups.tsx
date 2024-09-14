@@ -8,7 +8,7 @@ export default function ServerBackups()
             <div className={"flex flex-row"}>
                 <p className={"text-xl font-semibold mr-auto"}>Server Backup</p>
             </div>
-            <div className={"flex flex-row"}>
+            <div className={"flex flex-row max-h-[calc(100dvh_-_130px)]"}>
                 <ExtendedBackupsList/>
                 <BackupOptionsPanel/>
             </div>
