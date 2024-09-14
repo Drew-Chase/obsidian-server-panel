@@ -7,7 +7,7 @@ import UserIcon from "../images/User.svg.tsx";
 import Folder from "../images/Folder.svg.tsx";
 import Settings from "../images/Settings.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChevronRight} from "@fortawesome/free-solid-svg-icons";
+import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
 
 export default function Navigation()
@@ -68,13 +68,23 @@ export default function Navigation()
                             navigate(`/app/${keys[0]}/`.replace(/\/\//g, "/"));
                         }
                     }}
-                    defaultExpandedKeys={[""]}
+                    defaultExpandedKeys={[window.location.pathname.substring(5).split("/")[0].replace(/\/\//g, "/")]}
                 >
                     <AccordionItem key={""} startContent={<Home/>} title={"Dashboard"} indicator={indicator}>
                         <NavbarItem key={"overview"} onClick={() => navigate("/app/")} isActive={pathname === "/app/"}>Overview</NavbarItem>
                         <NavbarItem key={"servers"} onClick={() => navigate("/app/servers/")} isActive={pathname === "/app/servers/"}>Servers</NavbarItem>
                         <NavbarItem key={"instances"} onClick={() => navigate("/app/instances/")} isActive={pathname === "/app/instances/"}>Instances</NavbarItem>
                         <NavbarItem key={"create-server"} onClick={() => navigate("/app/create-server/")} isActive={pathname === "/app/create-server/"}>Create Server</NavbarItem>
+                    </AccordionItem>
+                    <AccordionItem key={"server"} startContent={<FontAwesomeIcon icon={faFileLines}/>} title={"SMP Server"} indicator={indicator}>
+                        <NavbarItem key={"server-profile"} onClick={() => navigate("/app/server/")} isActive={pathname === "/app/server/"}>Details</NavbarItem>
+                        <NavbarItem key={"server-properties"} onClick={() => navigate("/app/server/properties/")} isActive={pathname === "/app/server/properties/"}>Properties</NavbarItem>
+                        <NavbarItem key={"server-mods"} onClick={() => navigate("/app/server/mods/")} isActive={pathname === "/app/server/mods/"}>Mods</NavbarItem>
+                        <NavbarItem key={"server-files"} onClick={() => navigate("/app/server/files/")} isActive={pathname === "/app/server/files/"}>Files</NavbarItem>
+                        <NavbarItem key={"server-logs"} onClick={() => navigate("/app/server/logs/")} isActive={pathname === "/app/server/logs/"}>Logs</NavbarItem>
+                        <NavbarItem key={"server-backups"} onClick={() => navigate("/app/server/backups/")} isActive={pathname === "/app/server/backups/"}>Backups</NavbarItem>
+                        <NavbarItem key={"server-console"} onClick={() => navigate("/app/server/console/")} isActive={pathname === "/app/server/console/"}>Console</NavbarItem>
+                        <NavbarItem key={"server-players"} onClick={() => navigate("/app/server/players/")} isActive={pathname === "/app/server/players/"}>Players</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"discover"} startContent={<MagnifyGlass/>} title={"Discover"} indicator={indicator}>
                         <NavbarItem key={"discover-all"} onClick={() => navigate("/app/discover/")} isActive={pathname === "/app/discover/"}>All</NavbarItem>
