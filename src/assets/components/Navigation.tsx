@@ -18,6 +18,9 @@ export default function Navigation()
     const navigate = useNavigate();
     const {pathname} = useLocation();
 
+    const sections = ["server", "discover", "users", "files", "settings", "profile"];
+    const section = sections.find((s) => pathname.startsWith(`/app/${s}`)) || "";
+
     return (
         <Navbar
             classNames={{
@@ -68,7 +71,9 @@ export default function Navigation()
                             navigate(`/app/${keys[0]}/`.replace(/\/\//g, "/"));
                         }
                     }}
-                    defaultExpandedKeys={[window.location.pathname.substring(5).split("/")[0].replace(/\/\//g, "/")]}
+                    disallowEmptySelection
+                    selectionMode={"single"}
+                    defaultExpandedKeys={[section]}
                 >
                     <AccordionItem key={""} startContent={<Home/>} title={"Dashboard"} indicator={indicator}>
                         <NavbarItem key={"overview"} onClick={() => navigate("/app/")} isActive={pathname === "/app/"}>Overview</NavbarItem>
