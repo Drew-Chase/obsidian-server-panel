@@ -1,6 +1,6 @@
 import {Button, CircularProgress, Listbox, ListboxItem, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faArrowDown} from "@fortawesome/free-solid-svg-icons";
+import {faArrowDown, faCircle} from "@fortawesome/free-solid-svg-icons";
 
 export default function ExtendedStorageStat()
 {
@@ -58,9 +58,7 @@ export default function ExtendedStorageStat()
                 <ListboxItem
                     key={"primary"}
                     startContent={
-                        <svg width="8" height="8">
-                            <rect x="0.742188" y="0.84082" width="7" height="7" rx="3.5" fill="#CB3CFF"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faCircle} width={8} color={"#CB3CFF"}/>
                     }
                     endContent={<p className={"text-tiny opacity-70"}> 400GB - 50%</p>}
                 >
@@ -69,9 +67,7 @@ export default function ExtendedStorageStat()
                 <ListboxItem
                     key={"secondary"}
                     startContent={
-                        <svg width="8" height="8">
-                            <rect x="0.742188" y="0.84082" width="7" height="7" rx="3.5" fill="#0E43FB"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faCircle} width={8} color={"#0E43FB"}/>
                     }
                     endContent={<p className={"text-tiny opacity-70"}>400GB - 50%</p>}
                 >
@@ -81,9 +77,7 @@ export default function ExtendedStorageStat()
                 <ListboxItem
                     key={"other"}
                     startContent={
-                        <svg width="8" height="8">
-                            <rect x="0.742188" y="0.84082" width="7" height="7" rx="3.5" fill="#00C2FF"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faCircle} width={8} color={"#00C2FF"}/>
                     }
                     endContent={<p className={"text-tiny opacity-70"}>400GB - 50%</p>}
                 >
@@ -91,5 +85,6 @@ export default function ExtendedStorageStat()
                 </ListboxItem>
             </Listbox>
         </div>
-    );
+    )
+        ;
 }
