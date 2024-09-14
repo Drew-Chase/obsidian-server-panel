@@ -1,21 +1,17 @@
-import {setTitle} from "../../main.tsx";
-import CalendarDropdown from "../components/Extends/CalendarDropdown.tsx";
-import StatCard from "../components/Dashboard/StatCard.tsx";
-import CPU from "../images/CPU.svg.tsx";
-import RAM from "../images/RAM.svg.tsx";
-import Storage from "../images/Storage.svg.tsx";
-import ExtendedStorageStat from "../components/Dashboard/ExtendedStorageStat.tsx";
+import StatCard from "../../components/Dashboard/StatCard.tsx";
+import CPU from "../../images/CPU.svg.tsx";
+import RAM from "../../images/RAM.svg.tsx";
+import Storage from "../../images/Storage.svg.tsx";
+import InstancesList from "../../components/Dashboard/InstancesList.tsx";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faUser} from "@fortawesome/free-solid-svg-icons";
 
-export default function DashboardOverview()
+export default function DashboardInstances()
 {
-    setTitle("Dashboard Overview");
     return (
         <div className={"flex flex-col gap-8"}>
             <div className={"flex flex-row"}>
-                <p className={"text-xl font-semibold mr-auto"}>Overview</p>
-                <CalendarDropdown
-                    showDay
-                />
+                <p className={"text-xl font-semibold mr-auto"}>Instances</p>
             </div>
             <div className={"flex flex-row w-full justify-between"}>
                 <StatCard
@@ -40,12 +36,10 @@ export default function DashboardOverview()
                     title={"Online Players"}
                     value={`4 Players`}
                     maxValue={20}
-                    icon={<CPU size={24}/>}
+                    icon={<FontAwesomeIcon icon={faUser}/>}
                 />
             </div>
-            <div className={"flex flex-row w-full justify-between"}>
-                <ExtendedStorageStat/>
-            </div>
+            <InstancesList/>
         </div>
     );
 }
