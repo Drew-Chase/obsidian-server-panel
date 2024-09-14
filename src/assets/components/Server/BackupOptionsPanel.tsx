@@ -1,4 +1,4 @@
-import {Input, Select, SelectItem, Slider} from "@nextui-org/react";
+import {Select, SelectItem, Slider} from "@nextui-org/react";
 import ExtendedSwitch from "../Extends/ExtendedSwitch.tsx";
 
 export default function BackupOptionsPanel()
