@@ -47,7 +47,7 @@ export default function ServerList()
                     <TableColumn className={"w-0"}>Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
-                    {Array.from({length: 80}).map((_, index) =>
+                    {Array.from({length: 20}).map((_, index) =>
                     {
                         const random = Math.floor(Math.random() * 3);
                         const statusName = random === 0 ? "Online" : random === 1 ? "Offline" : "Restarting";
@@ -65,13 +65,13 @@ export default function ServerList()
                                 <TableCell>1y 6m 24d 14h 30m</TableCell>
                                 <TableCell>
                                     <div className={"flex flex-row items-center"}>
-                                        <Tooltip content={"View server page"}>
+                                        <Tooltip content={"View Server"}>
                                             <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faEye}/> </Button>
                                         </Tooltip>
                                         <Tooltip content={`${isRunning ? "Start" : "Stop"} the Server`} color={isRunning ? "default" : "danger"}>
                                             <Button variant={"light"} className={cn("min-w-0 w-2 data-[hover]:text-foreground", isRunning ? "text-neutral-400" : "text-danger")}> <FontAwesomeIcon icon={isRunning ? faPlay : faStop}/> </Button>
                                         </Tooltip>
-                                        <Tooltip content={"View server page"}>
+                                        <Tooltip content={"Download Server"}>
                                             <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <DownloadFile/> </Button>
                                         </Tooltip>
                                     </div>
