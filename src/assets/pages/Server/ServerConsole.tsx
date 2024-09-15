@@ -35,32 +35,29 @@ export default function ServerConsole()
     }, []);
 
     return (
-        <div className={"flex flex-col gap-8"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
             <div className={"flex flex-row"}>
                 <p className={"text-xl font-semibold mr-auto"}>Server Console</p>
             </div>
-            <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
-                <ScrollShadow id={"log-view"} className={"max-h-[calc(100dvh_-_250px)] h-screen overflow-y-auto bg-neutral-800 rounded-2xl p-4"}>
-                    <SyntaxHighlighter language={"log"} style={duotoneDark} wrapLongLines wrapLines>
-                        {log}
-                    </SyntaxHighlighter>
-                </ScrollShadow>
-                <Autocomplete
-                    label={"Command"}
-                    placeholder={"Enter command..."}
-                    startContent={<FontAwesomeIcon icon={faTerminal}/>}
-                    endContent={<Button variant={"light"}><FontAwesomeIcon icon={faPaperPlane}/></Button>}
-                    autoFocus
-                    className={"w-full drop-shadow-lg shrink-0 pr-0"}
-                    inputProps={{
-                        classNames: {
-                            inputWrapper: "bg-neutral-700"
-                        }
-                    }}
-                >
-                    <AutocompleteItem key={"say"} value={"say"}>say</AutocompleteItem>
-                </Autocomplete>
-            </div>
+            <ScrollShadow id={"log-view"} className={"max-h-[calc(100dvh_-_250px)] h-screen overflow-y-auto bg-neutral-800 rounded-2xl p-4"}>
+                <SyntaxHighlighter language={"log"} style={duotoneDark} wrapLongLines wrapLines>
+                    {log}
+                </SyntaxHighlighter>
+            </ScrollShadow>
+            <Autocomplete
+                label={"Command"}
+                placeholder={"Enter command..."}
+                startContent={<FontAwesomeIcon icon={faTerminal}/>}
+                endContent={<Button variant={"light"}><FontAwesomeIcon icon={faPaperPlane}/></Button>}
+                className={"w-full drop-shadow-lg shrink-0 pr-0"}
+                inputProps={{
+                    classNames: {
+                        inputWrapper: "bg-neutral-700"
+                    }
+                }}
+            >
+                {Array.from({length: 20}, (_, i) => (<AutocompleteItem key={`say-${i}`} value={"say"}>say {i}</AutocompleteItem>))}
+            </Autocomplete>
         </div>
     );
 }
