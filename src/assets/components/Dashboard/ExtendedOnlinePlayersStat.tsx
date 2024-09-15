@@ -27,7 +27,7 @@ export default function ExtendedOnlinePlayersStat()
         {
             const total = payload.reduce((acc, cur) => acc + cur.value, 0);
             return (
-                <div className="bg-neutral-800 shadow-xl p-4 rounded-md flex flex-col w-[300px]">
+                <div className="bg-neutral-800 shadow-xl p-4 rounded-md flex flex-col w-[300px] shrink-0 grow">
                     <p className="font-light text-tiny">{label}</p>
                     <Divider/>
                     {
