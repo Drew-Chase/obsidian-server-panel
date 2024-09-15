@@ -4,7 +4,6 @@ import {Accordion, AccordionItem, cn, Input, User} from "@nextui-org/react";
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import Home from "../images/Home.svg.tsx";
 import UserIcon from "../images/User.svg.tsx";
-import Folder from "../images/Folder.svg.tsx";
 import Settings from "../images/Settings.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
@@ -26,9 +25,9 @@ export default function Navigation()
             classNames={{
                 wrapper: "flex flex-col pt-8",
                 item: cn(
-                    "text-neutral-400 text-medium p-4 cursor-pointer hover:bg-neutral-700 hover:text-neutral-100 rounded-md",
+                    "text-neutral-400 text-medium p-4 cursor-pointer hover:bg-black/30 hover:text-neutral-100 rounded-md",
                     "border-l-4 border-transparent",
-                    "data-[active=true]:bg-neutral-700 data-[active=true]:border-primary"
+                    "data-[active=true]:bg-black/30 data-[active=true]:border-primary"
                 )
             }}
             className={
@@ -60,7 +59,7 @@ export default function Navigation()
                     itemClasses={{
                         title: "data-[open=true]:text-primary",
                         base: "data-[open=true]:text-primary",
-                        trigger: "p-4 rounded-lg hover:bg-neutral-800 data-[open=true]:bg-neutral-800",
+                        trigger: "p-4 rounded-lg hover:bg-black/40 data-[open=true]:bg-black/40",
                         content: "ml-6 flex flex-col gap-2"
                     }}
                     onSelectionChange={(selected) =>
@@ -86,7 +85,6 @@ export default function Navigation()
                         <NavbarItem key={"server-properties"} onClick={() => navigate("/app/server/properties/")} isActive={pathname === "/app/server/properties/"}>Properties</NavbarItem>
                         <NavbarItem key={"server-mods"} onClick={() => navigate("/app/server/mods/")} isActive={pathname === "/app/server/mods/"}>Mods</NavbarItem>
                         <NavbarItem key={"server-files"} onClick={() => navigate("/app/server/files/")} isActive={pathname === "/app/server/files/"}>Files</NavbarItem>
-                        <NavbarItem key={"server-logs"} onClick={() => navigate("/app/server/logs/")} isActive={pathname === "/app/server/logs/"}>Logs</NavbarItem>
                         <NavbarItem key={"server-backups"} onClick={() => navigate("/app/server/backups/")} isActive={pathname === "/app/server/backups/"}>Backups</NavbarItem>
                         <NavbarItem key={"server-console"} onClick={() => navigate("/app/server/console/")} isActive={pathname === "/app/server/console/"}>Console</NavbarItem>
                         <NavbarItem key={"server-players"} onClick={() => navigate("/app/server/players/")} isActive={pathname === "/app/server/players/"}>Players</NavbarItem>
@@ -101,10 +99,6 @@ export default function Navigation()
                         <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
                         <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
                         <NavbarItem key={"add-user"} onClick={() => navigate("/app/users/add/")} isActive={pathname === "/app/users/add/"}>Add User</NavbarItem>
-                    </AccordionItem>
-                    <AccordionItem key={"files"} startContent={<Folder/>} title={"Files"} indicator={indicator}>
-                        <NavbarItem key={"manage-files"} onClick={() => navigate("/app/files/")} isActive={pathname === "/app/files/"}>Manage Files</NavbarItem>
-                        <NavbarItem key={"manage-files"} onClick={() => navigate("/app/files/backups")} isActive={pathname === "/app/files/backups"}>Manage Backups</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"settings"} startContent={<Settings/>} title={"Settings"} indicator={indicator}>
                         <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>General Settings</NavbarItem>
