@@ -42,6 +42,13 @@ export interface Token
     hash: string;
 }
 
+export interface AccessToken
+{
+    id: number;
+    token: string;
+    created_at: string;
+}
+
 export default class Authentication
 {
     private static _instance: Authentication;
@@ -107,6 +114,21 @@ export default class Authentication
         }
     }
 
+    public async validate_registration_code(code: string): Promise<boolean>
+    {
+        console.log("Validating registration code");
+        try
+        {
+            let response: boolean = await $.ajax(`${api_domain}/api/auth/register/validate-access-token`, {method: "POST", data: JSON.stringify({token: code}), contentType: "application/json", dataType: "json"});
+            console.log("Registration code validated", response);
+            return response;
+        } catch (e)
+        {
+            console.error("Failed to validate registration code", e);
+            return false;
+        }
+    }
+
     public logout(): void
     {
         console.log("Logging out");
@@ -115,6 +137,22 @@ export default class Authentication
         document.cookie = `token=; path=/; max-age=0`;
         this._is_logged_in = false;
         localStorage.removeItem("user");
+    }
+
+    public static async get_registration_codes(): Promise<string[]>
+    {
+        console.log("Getting registration codes");
+        try
+        {
+            let response: string[] = await $.ajax(`${api_domain}/api/auth/register/access-tokens`, {method: "GET", dataType: "json"});
+            console.log("Registration codes retrieved", response);
+            return response;
+        } catch (e)
+        {
+            console.error("Failed to get registration codes", e);
+            return [];
+        }
+
     }
 
     public static getInstance(): Authentication
