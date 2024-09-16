@@ -4,7 +4,6 @@ import {Accordion, AccordionItem, cn, Input, User} from "@nextui-org/react";
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import Home from "../images/Home.svg.tsx";
 import UserIcon from "../images/User.svg.tsx";
-import Settings from "../images/Settings.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -96,10 +95,9 @@ export default function Navigation()
                         <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
                         <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"settings"} startContent={<Settings/>} title={"Settings"} indicator={indicator}>
+                    <AccordionItem key={"profile"} startContent={<User name={"Drew Chase"} description={"Administrator"}/>} indicator={indicator}>
+                        <NavbarItem key={"profile"} onClick={() => navigate("/app/profile/")} isActive={pathname === "/app/profile/"}>Profile Settings</NavbarItem>
                         <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>Application Settings</NavbarItem>
-                    </AccordionItem>
-                    <AccordionItem key={"profile"} startContent={<User name={"Drew Chase"} description={"Account Settings"}/>} indicator={indicator}>
                         <NavbarItem key={"logout"} onClick={() => navigate("/")}>Logout</NavbarItem>
                     </AccordionItem>
                 </Accordion>
