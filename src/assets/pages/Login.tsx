@@ -111,7 +111,7 @@ export default function Login()
                                 description={"This will keep you logged in until you log out."}
                                 className={"max-w-full"}
                                 onToggle={setRememberMe}
-                                selected={rememberMe}
+                                toggle={rememberMe}
                             />
                             {error && <p className={"text-danger"}><strong>Error:</strong> {error}</p>}
                             <Button radius={"lg"} color={"primary"} isLoading={isLoggingIn} onClick={login}>Log In</Button>
