@@ -2,9 +2,11 @@ import {Tab, Tabs} from "@nextui-org/react";
 import {useState} from "react";
 import InstalledModsList from "../../components/Server/InstalledModsList.tsx";
 import DiscoverMods from "../../components/Server/DiscoverMods.tsx";
+import {setTitle} from "../../../main.tsx";
 
 export default function ServerMods()
 {
+    setTitle("Server Mods");
     const [tab, setTab] = useState("installed");
     return (
         <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
