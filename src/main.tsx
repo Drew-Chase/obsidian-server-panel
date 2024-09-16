@@ -22,6 +22,7 @@ import DiscoverModpacks from "./assets/pages/DiscoverModpacks.tsx";
 import Users from "./assets/pages/Users/Users.tsx";
 import UserGroups from "./assets/pages/Users/UserGroups.tsx";
 import ApplicationSettings from "./assets/pages/Settings/ApplicationSettings.tsx";
+import ProfileSettings from "./assets/pages/Profile/ProfileSettings.tsx";
 
 
 export const debug_mode = true;
@@ -70,6 +71,7 @@ export function MainContentRenderer()
                         <Route path="/app/users/" element={<Users/>}/>
                         <Route path="/app/users/groups/" element={<UserGroups/>}/>
                         {/* Settings */}
+                        <Route path="/app/profile/" element={<ProfileSettings/>}/>
                         <Route path="/app/settings/" element={<ApplicationSettings/>}/>
                     </Route>
                 </Routes>
