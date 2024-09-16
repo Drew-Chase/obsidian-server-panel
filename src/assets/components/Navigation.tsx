@@ -95,8 +95,8 @@ export default function Navigation()
                         <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
                         <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"profile"} startContent={<User name={"Drew Chase"} description={"Administrator"}/>} indicator={indicator}>
-                        <NavbarItem key={"profile"} onClick={() => navigate("/app/profile/")} isActive={pathname === "/app/profile/"}>Profile Settings</NavbarItem>
+                    <AccordionItem key={"settings/profile"} startContent={<User name={"Drew Chase"} description={"Administrator"}/>} indicator={indicator}>
+                        <NavbarItem key={"profile"} onClick={() => navigate("/app/settings/profile/")} isActive={pathname === "/app/settings/profile/"}>Profile Settings</NavbarItem>
                         <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>Application Settings</NavbarItem>
                         <NavbarItem key={"logout"} onClick={() => navigate("/")}>Logout</NavbarItem>
                     </AccordionItem>
