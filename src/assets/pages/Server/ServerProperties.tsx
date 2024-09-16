@@ -18,44 +18,42 @@ export default function ServerProperties()
     const [search, setSearch] = useState("");
 
     return (
-        <div className={"flex flex-col gap-8"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
             <div className={"flex flex-row"}>
                 <p className={"text-xl font-semibold mr-auto"}>Server Properties</p>
             </div>
-            <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
-                <Input
-                    label={"Search"}
-                    placeholder={"Search for..."}
-                    value={search}
-                    startContent={<MagnifyGlass/>}
-                    onValueChange={setSearch}
-                    autoFocus
-                    variant={"underlined"}
-                />
-                <ScrollShadow className={"flex flex-col max-h-[calc(100dvh_-_250px)] gap-4 overflow-y-auto pr-4 shrink-0"}>
-                    {properties
-                        .filter(({name}) => name.replace(/[-._]/g, " ").toLowerCase().includes(search.toLowerCase()))
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map(({name, value, type}) => (
-                            type === "string" || type === "number" ? (
-                                <Input
-                                    label={name}
-                                    value={value}
-                                    className={"w-full drop-shadow-lg shrink-0"}
-                                    classNames={{
-                                        inputWrapper: "bg-neutral-700"
-                                    }}
-                                />
-                            ) : (
-                                <ExtendedSwitch
-                                    label={name}
-                                    selected={value === "true"}
-                                    className={"max-w-full shrink-0"}
-                                />
-                            )
-                        ))}
-                </ScrollShadow>
-            </div>
+            <Input
+                label={"Search"}
+                placeholder={"Search for..."}
+                value={search}
+                startContent={<MagnifyGlass/>}
+                onValueChange={setSearch}
+                autoFocus
+                variant={"underlined"}
+            />
+            <ScrollShadow className={"flex flex-col max-h-[calc(100dvh_-_250px)] gap-4 overflow-y-auto pr-4 shrink-0"}>
+                {properties
+                    .filter(({name}) => name.replace(/[-._]/g, " ").toLowerCase().includes(search.toLowerCase()))
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(({name, value, type}) => (
+                        type === "string" || type === "number" ? (
+                            <Input
+                                label={name}
+                                value={value}
+                                className={"w-full drop-shadow-lg shrink-0"}
+                                classNames={{
+                                    inputWrapper: "bg-neutral-700"
+                                }}
+                            />
+                        ) : (
+                            <ExtendedSwitch
+                                label={name}
+                                toggle={value === "true"}
+                                className={"max-w-full shrink-0"}
+                            />
+                        )
+                    ))}
+            </ScrollShadow>
         </div>
     );
 }
