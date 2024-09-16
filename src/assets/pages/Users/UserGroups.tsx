@@ -2,9 +2,11 @@ import {Button, Checkbox, CheckboxGroup, Input, Modal, ModalBody, ModalContent, 
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faTrash, faUserEdit} from "@fortawesome/free-solid-svg-icons";
 import {useState} from "react";
+import {setTitle} from "../../../main.tsx";
 
 export default function UserGroups()
 {
+    setTitle("User Groups");
     const {onOpen, isOpen, onOpenChange} = useDisclosure();
     const [isAdmin, setIsAdmin] = useState(false);
     return (
