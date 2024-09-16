@@ -90,18 +90,14 @@ export default function Navigation()
                         <NavbarItem key={"server-players"} onClick={() => navigate("/app/server/players/")} isActive={pathname === "/app/server/players/"}>Players</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"discover"} startContent={<MagnifyGlass/>} title={"Discover"} indicator={indicator}>
-                        <NavbarItem key={"discover-all"} onClick={() => navigate("/app/discover/")} isActive={pathname === "/app/discover/"}>All</NavbarItem>
-                        <NavbarItem key={"discover-modrinth"} onClick={() => navigate("/app/discover/modrinth/")} isActive={pathname === "/app/discover/modrinth/"}>Modrinth</NavbarItem>
-                        <NavbarItem key={"discover-curseforge"} onClick={() => navigate("/app/discover/curseforge/")} isActive={pathname === "/app/discover/curseforge/"}>CurseForge</NavbarItem>
-                        <NavbarItem key={"discover-atlauncher"} onClick={() => navigate("/app/discover/atlauncher/")} isActive={pathname === "/app/discover/atlauncher/"}>ATLauncher</NavbarItem>
+                        <NavbarItem key={"discover-all"} onClick={() => navigate("/app/discover/")} isActive={pathname === "/app/discover/"}>Instances</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"users"} startContent={<UserIcon/>} title={"Users"} indicator={indicator}>
                         <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
                         <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
-                        <NavbarItem key={"add-user"} onClick={() => navigate("/app/users/add/")} isActive={pathname === "/app/users/add/"}>Add User</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"settings"} startContent={<Settings/>} title={"Settings"} indicator={indicator}>
-                        <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>General Settings</NavbarItem>
+                        <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>Application Settings</NavbarItem>
                     </AccordionItem>
                     <AccordionItem key={"profile"} startContent={<User name={"Drew Chase"} description={"Account Settings"}/>} indicator={indicator}>
                         <NavbarItem key={"logout"} onClick={() => navigate("/")}>Logout</NavbarItem>
