@@ -2,9 +2,11 @@ import {Input, Listbox, ListboxItem, Select, SelectItem} from "@nextui-org/react
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import DiscoverModItem from "../components/Server/DiscoverModItem.tsx";
 import icon from "../images/demo/test-mod-icon.webp";
+import {setTitle} from "../../main.tsx";
 
 export default function DiscoverModpacks()
 {
+    setTitle("Discover Modpacks");
     return (
 
         <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
