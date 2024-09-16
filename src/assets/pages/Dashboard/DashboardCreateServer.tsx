@@ -3,9 +3,11 @@ import {useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUpload} from "@fortawesome/free-solid-svg-icons";
 import ExtendedSwitch from "../../components/Extends/ExtendedSwitch.tsx";
+import {setTitle} from "../../../main.tsx";
 
 export default function DashboardCreateServer()
 {
+    setTitle("Create Server");
     const [serverName, setServerName] = useState<string>("");
     const [serverPort, setServerPort] = useState<string>("25565");
     const [serverDifficulty, setServerDifficulty] = useState<string>("easy");
