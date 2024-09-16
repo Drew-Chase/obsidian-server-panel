@@ -1,3 +1,6 @@
+mod authentication_endpoint;
+mod minecraft_endpoint;
+
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::error::ErrorInternalServerError;
@@ -13,7 +16,7 @@ async fn index() -> Result<impl Responder, actix_web::Error> {
 }
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-	std::env::set_var("RUST_LOG", "actix_web=info");
+	std::env::set_var("RUST_LOG", "actix_web=trace");
 	env_logger::init();
 
 	let port = 1420; // Port to listen on
@@ -43,7 +46,21 @@ async fn main() -> std::io::Result<()> {
 			// Handle API routes here
 			.service(
 				web::scope("api")
-					.service(status),
+					.service(
+						web::scope("auth")
+							.service(authentication_endpoint::create_user)
+							.service(authentication_endpoint::login)
+							.service(authentication_endpoint::login_with_token)
+							.service(authentication_endpoint::generate_access_token)
+							.service(authentication_endpoint::get_access_tokens)
+							.service(authentication_endpoint::check_if_access_token_exists)
+							.service(authentication_endpoint::get_users)
+					)
+					.service(
+						web::scope("minecraft")
+							.service(minecraft_endpoint::get_minecraft_versions)
+							.service(minecraft_endpoint::get_java_versions)
+					)
 			)
 			// Serve static files from the wwwroot directory
 			.service(
@@ -57,10 +74,4 @@ async fn main() -> std::io::Result<()> {
 		.bind(format!("0.0.0.0:{port}", port = port))?
 		.run()
 		.await
-}
-
-
-#[actix_web::get("/")]
-async fn status() -> impl Responder {
-	HttpResponse::Ok().json(json!({ "status": "ok" }))
 }
