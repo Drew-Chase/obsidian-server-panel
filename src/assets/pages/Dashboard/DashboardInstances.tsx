@@ -5,9 +5,11 @@ import Storage from "../../images/Storage.svg.tsx";
 import InstancesList from "../../components/Dashboard/InstancesList.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
+import {setTitle} from "../../../main.tsx";
 
 export default function DashboardInstances()
 {
+    setTitle("Dashboard Instances");
     return (
         <div className={"flex flex-col gap-8"}>
             <div className={"flex flex-row"}>
