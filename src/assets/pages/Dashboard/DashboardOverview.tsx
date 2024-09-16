@@ -50,7 +50,7 @@ export default function DashboardOverview()
                 <ExtendedStorageStat/>
                 <ExtendedOnlinePlayersStat/>
             </div>
-            <div className={"flex flex-row w-full justify-between"}>
+            <div className={"flex flex-row w-full justify-between gap-4"}>
                 <RecentConnectionsStat/>
                 <CrashReportsStat/>
                 <BackupsStat/>
