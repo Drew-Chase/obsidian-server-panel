@@ -28,7 +28,8 @@ import Register from "./assets/pages/Register.tsx";
 
 export const debug_mode = true;
 
-export const api_domain = "http://localhost:1420";
+export const api_domain = "";
+// export const api_domain = "http://localhost:1420";
 export const setTitle = (title: string) =>
 {
     document.title = `${title} - Obsidian Minecraft Server Panel`;
