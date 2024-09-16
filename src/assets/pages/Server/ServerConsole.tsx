@@ -10,9 +10,11 @@ import "../../scss/logpage.scss";
 import {useEffect} from "react";
 
 import $ from "jquery";
+import {setTitle} from "../../../main.tsx";
 
 export default function ServerConsole()
 {
+    setTitle("Server Console");
     let scrollLock: boolean = true;
 
     useEffect(() =>
