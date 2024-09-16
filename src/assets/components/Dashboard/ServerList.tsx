@@ -1,6 +1,6 @@
 import {Avatar, Button, Chip, cn, Link, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCalendar, faCheckSquare, faCircle, faClock, faEye, faLayerGroup, faPlay, faPlus, faStop, faUser} from "@fortawesome/free-solid-svg-icons";
+import {faCalendar, faCheckCircle, faCheckSquare, faCircle, faClock, faLayerGroup, faPlay, faPlus, faStop, faUser} from "@fortawesome/free-solid-svg-icons";
 import testIcon from "../../images/demo/test-server.png";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 
@@ -65,8 +65,8 @@ export default function ServerList()
                                 <TableCell>1y 6m 24d 14h 30m</TableCell>
                                 <TableCell>
                                     <div className={"flex flex-row items-center"}>
-                                        <Tooltip content={"View Server"}>
-                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faEye}/> </Button>
+                                        <Tooltip content={"Select Server"}>
+                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faCheckCircle}/> </Button>
                                         </Tooltip>
                                         <Tooltip content={`${isRunning ? "Start" : "Stop"} the Server`} color={isRunning ? "default" : "danger"}>
                                             <Button variant={"light"} className={cn("min-w-0 w-2 data-[hover]:text-foreground", isRunning ? "text-neutral-400" : "text-danger")}> <FontAwesomeIcon icon={isRunning ? faPlay : faStop}/> </Button>
