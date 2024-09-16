@@ -5,7 +5,7 @@ import DownloadFile from "../../images/DownloadFile.svg.tsx";
 export default function MinecraftVersionsList()
 {
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 grow w-full mx-2 max-h-[400px] h-dvh overflow-y-auto"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-h-[400px] h-dvh overflow-y-auto"}>
             <div className={"flex flex-row"}>
 
                 <p className={"text-lg font-semibold mr-auto"}>Minecraft Versions</p>
