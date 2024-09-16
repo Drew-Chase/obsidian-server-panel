@@ -17,6 +17,11 @@ import ServerBackups from "./assets/pages/Server/ServerBackups.tsx";
 import DashboardCreateServer from "./assets/pages/Dashboard/DashboardCreateServer.tsx";
 import ServerPlayers from "./assets/pages/Server/ServerPlayers.tsx";
 import ServerFiles from "./assets/pages/Server/ServerFiles.tsx";
+import ServerMods from "./assets/pages/Server/ServerMods.tsx";
+import DiscoverModpacks from "./assets/pages/DiscoverModpacks.tsx";
+import Users from "./assets/pages/Users/Users.tsx";
+import UserGroups from "./assets/pages/Users/UserGroups.tsx";
+import ApplicationSettings from "./assets/pages/Settings/ApplicationSettings.tsx";
 
 
 export const debug_mode = true;
@@ -58,6 +63,14 @@ export function MainContentRenderer()
                         <Route path="/app/server/backups/" element={<ServerBackups/>}/>
                         <Route path="/app/server/players/" element={<ServerPlayers/>}/>
                         <Route path="/app/server/files/" element={<ServerFiles/>}/>
+                        <Route path="/app/server/mods/" element={<ServerMods/>}/>
+                        {/* Discover */}
+                        <Route path="/app/discover/" element={<DiscoverModpacks/>}/>
+                        {/* Users */}
+                        <Route path="/app/users/" element={<Users/>}/>
+                        <Route path="/app/users/groups/" element={<UserGroups/>}/>
+                        {/* Settings */}
+                        <Route path="/app/settings/" element={<ApplicationSettings/>}/>
                     </Route>
                 </Routes>
             </main>
