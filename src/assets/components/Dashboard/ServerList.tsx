@@ -1,7 +1,7 @@
 import {Avatar, Button, Chip, cn, Link, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCalendar, faCheckSquare, faCircle, faClock, faEye, faLayerGroup, faPlay, faPlus, faStop, faUser} from "@fortawesome/free-solid-svg-icons";
-import testIcon from "../../images/test-server.png";
+import testIcon from "../../images/demo/test-server.png";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 
 export default function ServerList()
