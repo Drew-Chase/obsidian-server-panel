@@ -2,9 +2,11 @@ import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, Tab
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTrash} from "@fortawesome/free-solid-svg-icons";
+import {setTitle} from "../../../main.tsx";
 
 export default function ServerFiles()
 {
+    setTitle("Server Files");
     return (
         <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4 max-h-[calc(100dvh_-_60px)]"}>
             <div className={"flex flex-row"}>
