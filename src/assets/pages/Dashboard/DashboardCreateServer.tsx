@@ -11,6 +11,7 @@ export default function DashboardCreateServer()
     const [serverDifficulty, setServerDifficulty] = useState<string>("easy");
     const [serverGamemode, setServerGamemode] = useState<string>("survival");
     const [serverMaxPlayers, setServerMaxPlayers] = useState<string>("20");
+    const [hardcoreMode, setHardcoreMode] = useState<boolean>(false);
 
     const [portError, setPortError] = useState<string | null>(null);
 
@@ -70,12 +71,12 @@ export default function DashboardCreateServer()
                 selectedKeys={[serverDifficulty]}
                 onSelectionChange={(e) => setServerDifficulty([...e][0] as string)}
                 isRequired
+                isDisabled={hardcoreMode}
             >
                 <SelectItem key={"peaceful"}>Peaceful</SelectItem>
                 <SelectItem key={"easy"}>Easy</SelectItem>
                 <SelectItem key={"normal"}>Normal</SelectItem>
                 <SelectItem key={"hard"}>Hard</SelectItem>
-                <SelectItem key={"hardcore"}>Hardcore</SelectItem>
             </Select>
 
             <Select
@@ -84,6 +85,7 @@ export default function DashboardCreateServer()
                 defaultSelectedKeys={["survival"]}
                 classNames={{trigger: "bg-neutral-700"}}
                 selectedKeys={[serverGamemode]}
+                isDisabled={hardcoreMode}
                 onSelectionChange={(e) => setServerGamemode([...e][0] as string)}
                 isRequired
             >
@@ -91,6 +93,21 @@ export default function DashboardCreateServer()
                 <SelectItem key={"creative"}>Creative</SelectItem>
                 <SelectItem key={"adventure"}>Adventure</SelectItem>
             </Select>
+
+            <ExtendedSwitch
+                label={"Enable Hardcore Mode"}
+                description={"Enable hardcore mode for the server"}
+                toggle={hardcoreMode}
+                onToggle={value =>
+                {
+                    if (value)
+                    {
+                        setServerGamemode("survival");
+                        setServerDifficulty("hard");
+                    }
+                    setHardcoreMode(value);
+                }}
+            />
 
             <Slider
                 minValue={1}
@@ -121,6 +138,7 @@ export default function DashboardCreateServer()
                     />;
                 }}
             />
+
             <Autocomplete
                 label={"Minecraft Version"}
                 placeholder={"Select a Minecraft version"}
