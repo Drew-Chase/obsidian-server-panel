@@ -1,5 +1,5 @@
 import {Avatar, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
-import testImage from "../../images/test-server.png";
+import testImage from "../../images/demo/test-server.png";
 
 export default function RecentConnectionsStat()
 {
