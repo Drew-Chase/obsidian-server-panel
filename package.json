@@ -27,7 +27,7 @@
 		"@fortawesome/free-regular-svg-icons": "^6.6.0",
 		"@fortawesome/free-solid-svg-icons": "^6.6.0",
 		"@fortawesome/react-fontawesome": "^0.2.2",
-		"@nextui-org/react": "^2.4.6",
+		"@nextui-org/react": "^2.4.8",
 		"framer-motion": "^11.5.4",
 		"jquery": "^3.7.1",
 		"react": "^18.3.1",
@@ -39,22 +39,22 @@
 	},
 	"devDependencies": {
 		"@types/jquery": "^3.5.30",
-		"@types/react": "^18.3.5",
+		"@types/react": "^18.3.7",
 		"@types/react-dom": "^18.3.0",
-		"@typescript-eslint/eslint-plugin": "^8.5.0",
-		"@typescript-eslint/parser": "^8.5.0",
+		"@typescript-eslint/eslint-plugin": "^8.6.0",
+		"@typescript-eslint/parser": "^8.6.0",
 		"@vitejs/plugin-react": "^4.3.1",
 		"archiver": "^7.0.1",
 		"autoprefixer": "^10.4.20",
 		"basic-ftp": "^5.0.5",
 		"eslint-plugin-react-hooks": "^4.6.2",
-		"eslint-plugin-react-refresh": "^0.4.11",
-		"postcss": "^8.4.45",
+		"eslint-plugin-react-refresh": "^0.4.12",
+		"postcss": "^8.4.47",
 		"postcss-import": "^16.1.0",
 		"sass": "^1.78.0",
 		"sass-loader": "^16.0.1",
-		"tailwindcss": "^3.4.11",
+		"tailwindcss": "^3.4.12",
 		"typescript": "^5.6.2",
-		"vite": "^5.4.4"
+		"vite": "^5.4.6"
 	}
 }
