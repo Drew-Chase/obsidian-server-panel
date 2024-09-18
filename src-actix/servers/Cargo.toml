@@ -1,0 +1,13 @@
+[package]
+name = "servers"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sqlite = "0.36.1"
+serde = "1.0.210"
+serde_json = "1.0.128"
+serde_derive = "1.0.210"
+log = "0.4.22"
