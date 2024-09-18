@@ -5,6 +5,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/authentication/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/minecraft/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/servers/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/testing/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
