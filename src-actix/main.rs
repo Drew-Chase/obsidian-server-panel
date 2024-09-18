@@ -1,7 +1,10 @@
 mod authentication_endpoint;
-mod minecraft_endpoint;
 mod java_endpoint;
+mod minecraft_endpoint;
+mod system_stats_endpoint;
+mod server_endpoint;
 
+use std::sync::Mutex;
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::error::ErrorInternalServerError;
@@ -9,6 +12,7 @@ use actix_web::{error, middleware, web, App, HttpResponse, HttpServer, Responder
 use serde_json::json;
 
 use log::info;
+use sysinfo::System;
 
 // Function to serve the index.html file
 async fn index() -> Result<impl Responder, actix_web::Error> {
@@ -22,6 +26,8 @@ async fn main() -> std::io::Result<()> {
 	std::env::set_var("RUST_LOG", "trace");
 	env_logger::init();
 	let port = 1420; // Port to listen on
+
+	let sys = web::Data::new(Mutex::new(System::new_all()));
 
 	let server = HttpServer::new(move || {
 		App::new()
@@ -52,14 +58,21 @@ async fn main() -> std::io::Result<()> {
 							.service(authentication_endpoint::get_users),
 					)
 					.service(
-						web::scope("minecraft")
-							.service(minecraft_endpoint::get_minecraft_versions)
+						web::scope("minecraft").service(minecraft_endpoint::get_minecraft_versions),
+					)
+					.service(web::scope("java").service(java_endpoint::get_java_versions))
+					.service(
+						web::scope("system")
+							.service(system_stats_endpoint::get_system_info)
+							.service(system_stats_endpoint::get_system_usage)
+							.service(system_stats_endpoint::get_storage_info)
+							.app_data(sys.clone())
 					)
 					.service(
-						web::scope("java")
-							.service(java_endpoint::get_java_versions),
+						web::scope("server")
+							.service(server_endpoint::get_servers)
+							.service(server_endpoint::get_server_by_id)
 					)
-
 				,
 			)
 			// Serve static files from the wwwroot directory
