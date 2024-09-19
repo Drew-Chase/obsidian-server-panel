@@ -22,6 +22,11 @@ pub struct Server {
 	pub updated_at: String,
 }
 
+/// Initializes the servers database by creating the `servers` table if it does not exist.
+///
+/// # Panics
+///
+/// This function will panic if it fails to connect to the database.
 pub fn initialize() {
 	info!("Initializing servers database");
 	let conn = create_connection().expect("Failed to connect to database");
@@ -53,6 +58,26 @@ pub fn initialize() {
 	}
 }
 
+/// Creates a new server entry in the database.
+///
+/// # Arguments
+///
+/// * `name` - The name of the server.
+/// * `owner` - The ID of the server owner.
+///
+/// # Returns
+///
+/// * `Ok(Server)` - If the server was successfully created and retrieved.
+/// * `Err(String)` - If there was an error creating the server. The error message is returned as a `String`.
+///
+/// # Example
+///
+/// ```
+/// match create_server("Test Server", 1) {
+///     Ok(server) => println!("Server created successfully: {:?}", server),
+///     Err(e) => println!("Error creating server: {}", e),
+/// }
+/// ```
 pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 {
 	info!("Creating server with name: {} and owner: {}", name, owner);
@@ -117,6 +142,26 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 	}
 }
 
+/// Fetches the server with the specified ID.
+///
+/// # Arguments
+///
+/// * `id` - The ID of the server to fetch.
+///
+/// # Returns
+///
+/// * `Some(Server)` - If the server was successfully fetched.
+/// * `None` - If there was an error or the server does not exist.
+///
+/// # Example
+///
+/// ```
+/// if let Some(server) = get_server_by_id(1) {
+///     println!("Server fetched successfully.");
+/// } else {
+///     println!("Error fetching server or server does not exist.");
+/// }
+/// ```
 pub fn get_server_by_id(id: i64) -> Option<Server>
 {
 	debug!("Fetching server with id: {}", id);
@@ -168,229 +213,26 @@ pub fn get_server_by_id(id: i64) -> Option<Server>
 	Some(server)
 }
 
-pub fn get_servers() -> Result<Vec<Server>, String>
-{
-	info!("Fetching all servers");
-	let conn = match create_connection() {
-		Ok(conn) => {
-			debug!("Successfully connected to the database.");
-			conn
-		},
-		Err(e) => {
-			error!("Failed to connect to database: {}", e);
-			return Err(format!("Failed to connect to database: {}", e));
-		}
-	};
-
-	let mut statement = match conn.prepare("SELECT * FROM servers") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the SELECT statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
-
-	let mut servers: Vec<Server> = vec![];
-	let mut state = statement.next().unwrap();
-	while state != State::Done {
-		let server = Server {
-			id: statement.read::<i64, _>("id").unwrap() as i32,
-			name: statement.read::<String, _>("name").unwrap(),
-			instance: Some(statement.read::<i64, _>("instance").unwrap() as i32),
-			owner: statement.read::<i64, _>("owner").unwrap() as i32,
-			size: statement.read::<i64, _>("size").unwrap(),
-			auto_start: statement.read::<i64, _>("auto_start").unwrap() == 1,
-			min_ram: statement.read::<i64, _>("min_ram").unwrap(),
-			max_ram: statement.read::<i64, _>("max_ram").unwrap(),
-			executable: statement.read::<Option<String>, _>("executable").unwrap(),
-			minecraft_arguments: statement.read::<Option<String>, _>("minecraft_arguments").unwrap(),
-			java_arguments: statement.read::<Option<String>, _>("java_arguments").unwrap(),
-			minecraft_version: statement.read::<Option<String>, _>("minecraft_version").unwrap(),
-			loader: statement.read::<i64, _>("loader").unwrap() as i8,
-			loader_version: statement.read::<Option<String>, _>("loader_version").unwrap(),
-			created_at: statement.read::<String, _>("created_at").unwrap(),
-			updated_at: statement.read::<String, _>("updated_at").unwrap(),
-		};
-		servers.push(server);
-		state = statement.next().unwrap();
-	}
-
-	info!("Successfully fetched all servers");
-	Ok(servers)
-}
-
-pub fn set_ram_allocation(id: i32, min_ram: i64, max_ram: i64) -> Result<(), String>
-{
-	info!("Setting RAM allocation for server with id: {} to min: {} MB, max: {} MB", id, min_ram, max_ram);
-	let conn = match create_connection() {
-		Ok(conn) => {
-			debug!("Successfully connected to the database.");
-			conn
-		},
-		Err(e) => {
-			error!("Failed to connect to the database: {}", e);
-			return Err(format!("Failed to connect to database: {}", e));
-		}
-	};
-
-	let mut statement = match conn.prepare("UPDATE servers SET min_ram = ?, max_ram = ? WHERE id = ?") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the UPDATE statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare the UPDATE statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
-
-	statement.bind((1, min_ram)).map_err(|e| {
-		error!("Failed to bind min_ram: {}", e);
-		format!("Failed to bind min_ram: {}", e)
-	})?;
-	statement.bind((2, max_ram)).map_err(|e| {
-		error!("Failed to bind max_ram: {}", e);
-		format!("Failed to bind max_ram: {}", e)
-	})?;
-	statement.bind((3, id as i64)).map_err(|e| {
-		error!("Failed to bind id: {}", e);
-		format!("Failed to bind id: {}", e)
-	})?;
-	statement.next().map_err(|e| {
-		error!("Failed to execute statement: {}", e);
-		format!("Failed to execute statement: {}", e)
-	})?;
-
-	info!("Successfully set RAM allocation for server with id: {}", id);
-	Ok(())
-}
-
-pub fn set_autostart(id: i32, auto_start: bool) -> Result<(), String>
-{
-	info!("Setting autostart for server with id: {} to {}", id, auto_start);
-	let conn = match create_connection() {
-		Ok(conn) => {
-			debug!("Successfully connected to the database.");
-			conn
-		},
-		Err(e) => {
-			error!("Failed to connect to the database: {}", e);
-			return Err(format!("Failed to connect to database: {}", e));
-		}
-	};
-
-	let mut statement = match conn.prepare("UPDATE servers SET auto_start = ? WHERE id = ?") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the UPDATE statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare the UPDATE statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
-	statement.bind((1, auto_start as i64)).map_err(|e| {
-		error!("Failed to bind auto_start: {}", e);
-		format!("Failed to bind auto_start: {}", e)
-	})?;
-	statement.bind((2, id as i64)).map_err(|e| {
-		error!("Failed to bind id: {}", e);
-		format!("Failed to bind id: {}", e)
-	})?;
-	statement.next().map_err(|e| {
-		error!("Failed to execute statement: {}", e);
-		format!("Failed to execute statement: {}", e)
-	})?;
-
-	info!("Successfully set autostart for server with id: {}", id);
-	Ok(())
-}
-
-pub fn set_executable(id: i32, executable: &str) -> Result<(), String>
-{
-	info!("Setting executable for server with id: {} to {}", id, executable);
-	let conn = match create_connection() {
-		Ok(conn) => {
-			debug!("Successfully connected to the database.");
-			conn
-		},
-		Err(e) => {
-			error!("Failed to connect to the database: {}", e);
-			return Err(format!("Failed to connect to database: {}", e));
-		}
-	};
-
-	let mut statement = match conn.prepare("UPDATE servers SET executable = ? WHERE id = ?") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the UPDATE statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare the UPDATE statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
-	statement.bind((1, executable)).map_err(|e| {
-		error!("Failed to bind executable: {}", e);
-		format!("Failed to bind executable: {}", e)
-	})?;
-	statement.bind((2, id as i64)).map_err(|e| {
-		error!("Failed to bind id: {}", e);
-		format!("Failed to bind id: {}", e)
-	})?;
-	statement.next().map_err(|e| {
-		error!("Failed to execute statement: {}", e);
-		format!("Failed to execute statement: {}", e)
-	})?;
-
-	info!("Successfully set executable for server with id: {}", id);
-	Ok(())
-}
-
-pub fn set_minecraft_arguments(id: i32, minecraft_arguments: &str) -> Result<(), String>
-{
-	info!("Setting Minecraft arguments for server with id: {} to {}", id, minecraft_arguments);
-	let conn = match create_connection() {
-		Ok(conn) => {
-			debug!("Successfully connected to the database.");
-			conn
-		},
-		Err(e) => {
-			error!("Failed to connect to the database: {}", e);
-			return Err(format!("Failed to connect to database: {}", e));
-		}
-	};
-
-	let mut statement = match conn.prepare("UPDATE servers SET minecraft_arguments = ? WHERE id = ?") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the UPDATE statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare the UPDATE statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
-	statement.bind((1, minecraft_arguments)).map_err(|e| {
-		error!("Failed to bind minecraft_arguments: {}", e);
-		format!("Failed to bind minecraft_arguments: {}", e)
-	})?;
-	statement.bind((2, id as i64)).map_err(|e| {
-		error!("Failed to bind id: {}", e);
-		format!("Failed to bind id: {}", e)
-	})?;
-	statement.next().map_err(|e| {
-		error!("Failed to execute statement: {}", e);
-		format!("Failed to execute statement: {}", e)
-	})?;
-
-	info!("Successfully set Minecraft arguments for server with id: {}", id);
-	Ok(())
-}
-
+/// Sets the Java arguments for the specified server.
+///
+/// # Arguments
+///
+/// * `id` - The ID of the server.
+/// * `java_arguments` - The Java arguments to set for the server.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the Java arguments were successfully set.
+/// * `Err(String)` - If there was an error setting the Java arguments. The error message is returned as a `String`.
+///
+/// # Example
+///
+/// ```
+/// match set_java_arguments(1, "-Xmx1024M -Xms512M") {
+///     Ok(()) => println!("Java arguments set successfully."),
+///     Err(e) => println!("Error setting Java arguments: {}", e),
+/// }
+/// ```
 pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
 {
 	info!("Setting Java arguments for server with id: {} to {}", id, java_arguments);
@@ -432,6 +274,26 @@ pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
 	Ok(())
 }
 
+/// Sets the Minecraft version for the specified server.
+///
+/// # Arguments
+///
+/// * `id` - The ID of the server.
+/// * `minecraft_version` - The Minecraft version to set for the server.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the Minecraft version was successfully set.
+/// * `Err(String)` - If there was an error setting the Minecraft version. The error message is returned as a `String`.
+///
+/// # Example
+///
+/// ```
+/// match set_minecraft_version(1, "1.17.1") {
+///     Ok(()) => println!("Minecraft version set successfully."),
+///     Err(e) => println!("Error setting Minecraft version: {}", e),
+/// }
+/// ```
 pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), String>
 {
 	info!("Setting Minecraft version for server with id: {} to {}", id, minecraft_version);
@@ -473,6 +335,27 @@ pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), Str
 	Ok(())
 }
 
+/// Sets the loader and loader version for the specified server.
+///
+/// # Arguments
+///
+/// * `id` - The ID of the server.
+/// * `loader` - The loader to set for the server.
+/// * `loader_version` - The loader version to set for the server.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the loader and loader version were successfully set.
+/// * `Err(String)` - If there was an error setting the loader or loader version. The error message is returned as a `String`.
+///
+/// # Example
+///
+/// ```
+/// match set_loader(1, 2, "0.11.2") {
+///     Ok(()) => println!("Loader set successfully."),
+///     Err(e) => println!("Error setting loader: {}", e),
+/// }
+/// ```
 pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), String>
 {
 	info!("Updating loader for server with id: {}", id);
@@ -522,8 +405,26 @@ pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), Strin
 	Ok(())
 }
 
-pub fn delete_server(id: i32) -> Result<(), String>
-{
+/// Deletes the server with the given ID from the database.
+///
+/// # Arguments
+///
+/// * `id` - The ID of the server to be deleted.
+///
+/// # Returns
+///
+/// * `Ok(())` - If the server was successfully deleted.
+/// * `Err(String)` - If there was an error deleting the server. The error message is returned as a `String`.
+///
+/// # Example
+///
+/// ```
+/// match delete_server(1) {
+///     Ok(()) => println!("Server deleted successfully."),
+///     Err(e) => println!("Error deleting server: {}", e),
+/// }
+/// ```
+pub fn delete_server(id: i32) -> Result<(), String> {
 	info!("Deleting server with id: {}", id);
 	let conn = match create_connection() {
 		Ok(conn) => {
