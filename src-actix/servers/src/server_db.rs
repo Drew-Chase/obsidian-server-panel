@@ -1,6 +1,5 @@
 use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
-use sqlite::State;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Server {
@@ -18,6 +17,7 @@ pub struct Server {
 	pub minecraft_version: Option<String>,
 	pub loader: i8,
 	pub loader_version: Option<String>,
+	pub directory: Option<String>,
 	pub created_at: String,
 	pub updated_at: String,
 }
@@ -48,6 +48,7 @@ pub fn initialize() {
 				minecraft_version TEXT DEFAULT NULL,
 				loader INTEGER DEFAULT 0,
 				loader_version TEXT DEFAULT NULL,
+				directory TEXT DEFAULT NULL,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			);
@@ -72,20 +73,19 @@ pub fn initialize() {
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// match create_server("Test Server", 1) {
 ///     Ok(server) => println!("Server created successfully: {:?}", server),
 ///     Err(e) => println!("Error creating server: {}", e),
 /// }
 /// ```
-pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
-{
+pub fn create_server(name: &str, owner: i64) -> Result<Server, String> {
 	info!("Creating server with name: {} and owner: {}", name, owner);
 	let conn = match create_connection() {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(e) => {
 			error!("Failed to connect to database: {}", e);
 			return Err(format!("Failed to connect to database: {}", e));
@@ -96,7 +96,7 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 		Ok(stmt) => {
 			debug!("Successfully prepared the INSERT statement.");
 			stmt
-		},
+		}
 		Err(e) => {
 			error!("Failed to prepare statement: {}", e);
 			return Err(format!("Failed to prepare statement: {}", e));
@@ -117,10 +117,12 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 	})?;
 
 	debug!("Getting the inserted id for the new server.");
-	let mut statement = conn.prepare("select seq from sqlite_sequence WHERE name = 'servers'").map_err(|e| {
-		error!("Failed to get inserted id: {}", e);
-		format!("Failed to get inserted id: {}", e)
-	})?;
+	let mut statement = conn
+		.prepare("select seq from sqlite_sequence WHERE name = 'servers'")
+		.map_err(|e| {
+			error!("Failed to get inserted id: {}", e);
+			format!("Failed to get inserted id: {}", e)
+		})?;
 	statement.next().map_err(|e| {
 		error!("Failed to get inserted id: {}", e);
 		format!("Failed to get inserted id: {}", e)
@@ -130,11 +132,11 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 		format!("Failed to get inserted id: {}", e)
 	})?;
 
-	match get_server_by_id(id) {
+	match get_server_by_id(id as i32) {
 		Some(server) => {
 			info!("Successfully created server with id: {}", id);
 			Ok(server)
-		},
+		}
 		None => {
 			error!("Server id not present in server list. This usually means that the server failed to be inserted into the database.");
 			Err("Something went wrong, server id not present in server list. This usually means that the server failed to be inserted into the database.".to_string())
@@ -155,21 +157,20 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String>
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// if let Some(server) = get_server_by_id(1) {
 ///     println!("Server fetched successfully.");
 /// } else {
 ///     println!("Error fetching server or server does not exist.");
 /// }
 /// ```
-pub fn get_server_by_id(id: i64) -> Option<Server>
-{
+pub fn get_server_by_id(id: i32) -> Option<Server> {
 	debug!("Fetching server with id: {}", id);
 	let conn = match create_connection() {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(_) => {
 			error!("Failed to connect to database.");
 			return None;
@@ -180,14 +181,14 @@ pub fn get_server_by_id(id: i64) -> Option<Server>
 		Ok(stmt) => {
 			debug!("Successfully prepared the SELECT statement.");
 			stmt
-		},
+		}
 		Err(_) => {
 			error!("Failed to prepare the SELECT statement.");
 			return None;
 		}
 	};
 
-	statement.bind((1, id)).ok()?;
+	statement.bind((1, id as i64)).ok()?;
 	statement.next().ok()?;
 
 	let server = Server {
@@ -200,11 +201,16 @@ pub fn get_server_by_id(id: i64) -> Option<Server>
 		min_ram: statement.read::<i64, _>("min_ram").ok()?,
 		max_ram: statement.read::<i64, _>("max_ram").ok()?,
 		executable: statement.read::<Option<String>, _>("executable").ok()?,
-		minecraft_arguments: statement.read::<Option<String>, _>("minecraft_arguments").ok()?,
+		minecraft_arguments: statement
+			.read::<Option<String>, _>("minecraft_arguments")
+			.ok()?,
 		java_arguments: statement.read::<Option<String>, _>("java_arguments").ok()?,
-		minecraft_version: statement.read::<Option<String>, _>("minecraft_version").ok()?,
+		minecraft_version: statement
+			.read::<Option<String>, _>("minecraft_version")
+			.ok()?,
 		loader: statement.read::<i64, _>("loader").ok()? as i8,
 		loader_version: statement.read::<Option<String>, _>("loader_version").ok()?,
+		directory: statement.read::<Option<String>, _>("directory").ok()?,
 		created_at: statement.read::<String, _>("created_at").ok()?,
 		updated_at: statement.read::<String, _>("updated_at").ok()?,
 	};
@@ -227,20 +233,22 @@ pub fn get_server_by_id(id: i64) -> Option<Server>
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// match set_java_arguments(1, "-Xmx1024M -Xms512M") {
 ///     Ok(()) => println!("Java arguments set successfully."),
 ///     Err(e) => println!("Error setting Java arguments: {}", e),
 /// }
 /// ```
-pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
-{
-	info!("Setting Java arguments for server with id: {} to {}", id, java_arguments);
+pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String> {
+	info!(
+        "Setting Java arguments for server with id: {} to {}",
+        id, java_arguments
+    );
 	let conn = match create_connection() {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(e) => {
 			error!("Failed to connect to the database: {}", e);
 			return Err(format!("Failed to connect to database: {}", e));
@@ -251,7 +259,7 @@ pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
 		Ok(stmt) => {
 			debug!("Successfully prepared the UPDATE statement.");
 			stmt
-		},
+		}
 		Err(e) => {
 			error!("Failed to prepare the UPDATE statement: {}", e);
 			return Err(format!("Failed to prepare statement: {}", e));
@@ -288,31 +296,34 @@ pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// match set_minecraft_version(1, "1.17.1") {
 ///     Ok(()) => println!("Minecraft version set successfully."),
 ///     Err(e) => println!("Error setting Minecraft version: {}", e),
 /// }
 /// ```
-pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), String>
-{
-	info!("Setting Minecraft version for server with id: {} to {}", id, minecraft_version);
+pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), String> {
+	info!(
+        "Setting Minecraft version for server with id: {} to {}",
+        id, minecraft_version
+    );
 	let conn = match create_connection() {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(e) => {
 			error!("Failed to connect to the database: {}", e);
 			return Err(format!("Failed to connect to database: {}", e));
 		}
 	};
 
-	let mut statement = match conn.prepare("UPDATE servers SET minecraft_version = ? WHERE id = ?") {
+	let mut statement = match conn.prepare("UPDATE servers SET minecraft_version = ? WHERE id = ?")
+	{
 		Ok(stmt) => {
 			debug!("Successfully prepared the UPDATE statement.");
 			stmt
-		},
+		}
 		Err(e) => {
 			error!("Failed to prepare the UPDATE statement: {}", e);
 			return Err(format!("Failed to prepare statement: {}", e));
@@ -331,7 +342,57 @@ pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), Str
 		format!("Failed to execute statement: {}", e)
 	})?;
 
-	info!("Successfully set Minecraft version for server with id: {}", id);
+	info!(
+        "Successfully set Minecraft version for server with id: {}",
+        id
+    );
+	Ok(())
+}
+
+pub fn set_server_directory(id: i32, dir: &str) -> Result<(), String> {
+	info!(
+        "Setting server directory for server with id: {} to {}",
+        id, dir
+    );
+	let conn = match create_connection() {
+		Ok(conn) => {
+			debug!("Successfully connected to the database.");
+			conn
+		}
+		Err(e) => {
+			error!("Failed to connect to database: {}", e);
+			return Err(format!("Failed to connect to database: {}", e));
+		}
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET directory = ? WHERE id = ?") {
+		Ok(stmt) => {
+			debug!("Successfully prepared the UPDATE statement.");
+			stmt
+		}
+		Err(e) => {
+			error!("Failed to prepare the UPDATE statement: {}", e);
+			return Err(format!("Failed to prepare statement: {}", e));
+		}
+	};
+
+	statement.bind((1, dir)).map_err(|e| {
+		error!("Failed to bind directory: {}", e);
+		format!("Failed to bind directory: {}", e)
+	})?;
+	statement.bind((2, id as i64)).map_err(|e| {
+		error!("Failed to bind id: {}", e);
+		format!("Failed to bind id: {}", e)
+	})?;
+	statement.next().map_err(|e| {
+		error!("Failed to execute statement: {}", e);
+		format!("Failed to execute statement: {}", e)
+	})?;
+
+	info!(
+        "Successfully set server directory for server with id: {}",
+        id
+    );
 	Ok(())
 }
 
@@ -350,36 +411,36 @@ pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), Str
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// match set_loader(1, 2, "0.11.2") {
 ///     Ok(()) => println!("Loader set successfully."),
 ///     Err(e) => println!("Error setting loader: {}", e),
 /// }
 /// ```
-pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), String>
-{
+pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), String> {
 	info!("Updating loader for server with id: {}", id);
 	let conn = match create_connection() {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(e) => {
 			error!("Failed to connect to the database: {}", e);
 			return Err(format!("Failed to connect to database: {}", e));
 		}
 	};
 
-	let mut statement = match conn.prepare("UPDATE servers SET loader = ?, loader_version = ? WHERE id = ?") {
-		Ok(stmt) => {
-			debug!("Successfully prepared the UPDATE statement.");
-			stmt
-		},
-		Err(e) => {
-			error!("Failed to prepare the UPDATE statement: {}", e);
-			return Err(format!("Failed to prepare statement: {}", e));
-		}
-	};
+	let mut statement =
+		match conn.prepare("UPDATE servers SET loader = ?, loader_version = ? WHERE id = ?") {
+			Ok(stmt) => {
+				debug!("Successfully prepared the UPDATE statement.");
+				stmt
+			}
+			Err(e) => {
+				error!("Failed to prepare the UPDATE statement: {}", e);
+				return Err(format!("Failed to prepare statement: {}", e));
+			}
+		};
 
 	if let Err(e) = statement.bind((1, loader as i64)) {
 		error!("Failed to bind loader: {}", e);
@@ -418,7 +479,7 @@ pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), Strin
 ///
 /// # Example
 ///
-/// ```
+/// ```ignore
 /// match delete_server(1) {
 ///     Ok(()) => println!("Server deleted successfully."),
 ///     Err(e) => println!("Error deleting server: {}", e),
@@ -430,7 +491,7 @@ pub fn delete_server(id: i32) -> Result<(), String> {
 		Ok(conn) => {
 			debug!("Successfully connected to the database.");
 			conn
-		},
+		}
 		Err(e) => {
 			error!("Failed to connect to the database: {}", e);
 			return Err(format!("Failed to connect to database: {}", e));
@@ -441,7 +502,7 @@ pub fn delete_server(id: i32) -> Result<(), String> {
 		Ok(stmt) => {
 			debug!("Successfully prepared the DELETE statement.");
 			stmt
-		},
+		}
 		Err(e) => {
 			error!("Failed to prepare the DELETE statement: {}", e);
 			return Err(format!("Failed to prepare statement: {}", e));
@@ -462,14 +523,13 @@ pub fn delete_server(id: i32) -> Result<(), String> {
 	Ok(())
 }
 
-
 fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
 	debug!("Attempting to open the database connection for servers.");
 	match sqlite::Connection::open("servers.db") {
 		Ok(conn) => {
 			debug!("Servers database connection opened successfully.");
 			Ok(conn)
-		},
+		}
 		Err(e) => {
 			error!("Failed to open servers database connection: {}", e);
 			Err(e)
