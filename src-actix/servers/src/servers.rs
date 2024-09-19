@@ -1,5 +1,5 @@
-use serde_derive::{Deserialize, Serialize};
 use log::info;
+use serde_derive::{Deserialize, Serialize};
 use sqlite::State;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -151,6 +151,154 @@ pub fn get_servers() -> Result<Vec<Server>, String>
 
 	Ok(servers)
 }
+
+pub fn set_ram_allocation(id: i32, min_ram: i64, max_ram: i64) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET min_ram = ?, max_ram = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+
+	statement.bind((1, min_ram)).map_err(|e| format!("Failed to bind min_ram: {}", e))?;
+	statement.bind((2, max_ram)).map_err(|e| format!("Failed to bind max_ram: {}", e))?;
+	statement.bind((3, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_autostart(id: i32, auto_start: bool) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET auto_start = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, auto_start as i64)).map_err(|e| format!("Failed to bind auto_start: {}", e))?;
+	statement.bind((2, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_executable(id: i32, executable: &str) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET executable = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, executable)).map_err(|e| format!("Failed to bind executable: {}", e))?;
+	statement.bind((2, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_minecraft_arguments(id: i32, minecraft_arguments: &str) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET minecraft_arguments = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, minecraft_arguments)).map_err(|e| format!("Failed to bind minecraft_arguments: {}", e))?;
+	statement.bind((2, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET java_arguments = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, java_arguments)).map_err(|e| format!("Failed to bind java_arguments: {}", e))?;
+	statement.bind((2, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET minecraft_version = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, minecraft_version)).map_err(|e| format!("Failed to bind minecraft_version: {}", e))?;
+	statement.bind((2, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("UPDATE servers SET loader = ?, loader_version = ? WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, loader as i64)).map_err(|e| format!("Failed to bind loader: {}", e))?;
+	statement.bind((2, loader_version)).map_err(|e| format!("Failed to bind loader_version: {}", e))?;
+	statement.bind((3, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+pub fn delete_server(id: i32) -> Result<(), String>
+{
+	let conn = match create_connection() {
+		Ok(conn) => conn,
+		Err(e) => return Err(format!("Failed to connect to database: {}", e))
+	};
+
+	let mut statement = match conn.prepare("DELETE FROM servers WHERE id = ?") {
+		Ok(stmt) => stmt,
+		Err(e) => return Err(format!("Failed to prepare statement: {}", e))
+	};
+	statement.bind((1, id as i64)).map_err(|e| format!("Failed to bind id: {}", e))?;
+	statement.next().map_err(|e| format!("Failed to execute statement: {}", e))?;
+
+	Ok(())
+}
+
+
 
 fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
 	sqlite::Connection::open("servers.db")
