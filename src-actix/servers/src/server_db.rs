@@ -92,13 +92,14 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String> {
 		}
 	};
 
-	let mut statement = match conn.prepare("INSERT INTO servers (name, owner) VALUES (?, ?, ?)") {
+	let mut statement = match conn.prepare("INSERT INTO servers (name, owner) VALUES (?, ?)") {
 		Ok(stmt) => {
 			debug!("Successfully prepared the INSERT statement.");
 			stmt
 		}
 		Err(e) => {
 			error!("Failed to prepare statement: {}", e);
+			error!("Failed to create server with name: {} and owner: {}", name, owner);
 			return Err(format!("Failed to prepare statement: {}", e));
 		}
 	};
