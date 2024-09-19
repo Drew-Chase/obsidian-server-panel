@@ -1,2 +1,2 @@
-pub mod servers;
+pub mod server_db;
 pub mod properties;
