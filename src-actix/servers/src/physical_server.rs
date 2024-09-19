@@ -1,5 +1,6 @@
 use crate::server_db::{get_server_by_id, Server};
 use log::{debug, error, info};
+use std::fmt::format;
 use std::fs::create_dir;
 use std::path::{Path, PathBuf};
 
@@ -56,9 +57,25 @@ fn find_unique_directory_name(path: &PathBuf) -> PathBuf {
 }
 
 pub fn get_servers_directory() -> PathBuf {
-	let path = Path::new("./servers").canonicalize().unwrap();
+	let path = "./servers";
+	let path = match Path::new(path).canonicalize() {
+		Ok(p) => p,
+		Err(e) => {
+			let msg = format!("Could not canonicalize servers directory: {} {}", path, e);
+			error!("{}",msg);
+			panic!("{}", msg);
+		}
+	};
 	if !path.exists() {
-		create_dir(&path).unwrap();
+		match create_dir(&path) {
+			Ok(_) => {
+				info!("Created servers directory: {:?}", path);
+			}
+			Err(e) => {
+				error!("Failed to create servers directory: {}", e);
+				panic!("Failed to create servers directory: {}", e);
+			}
+		};
 	}
 	info!("Using servers directory: {:?}", path);
 	path
