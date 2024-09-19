@@ -1,0 +1,17 @@
+meta {
+  name: Login with Token
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:1420/api/auth/login/token
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "token": ""
+  }
+}

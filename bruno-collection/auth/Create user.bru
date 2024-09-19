@@ -1,0 +1,19 @@
+meta {
+  name: Create user
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:1420/api/auth/register
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "",
+    "password": "",
+    "email": ""
+  }
+}

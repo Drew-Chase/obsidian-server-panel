@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  title: openapi
+  version: 1.0.0
+paths:
+  /api/auth/login:
+    post:
+      summary: Login
+      operationId: Login
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login'
+  /api/auth/login/token:
+    post:
+      summary: Login with Token
+      operationId: Login with Token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login_with_token'
+  /api/auth/register:
+    post:
+      summary: Create user
+      operationId: Create user
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/create_user'
+  /api/auth/users:
+    get:
+      summary: Get users
+      operationId: Get users
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/register/validate-access-token:
+    post:
+      summary: Validate access token
+      operationId: Validate access token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/exists:
+    get:
+      summary: Check if access token exists
+      operationId: Check if access token exists
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: token
+          in: query
+          description: ''
+          required: false
+          example: ''
+  /api/auth/register/access-tokens:
+    get:
+      summary: Get all access tokens
+      operationId: Get all access tokens
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/register/generate-access-token:
+    post:
+      summary: Generate registration access token
+      operationId: Generate registration access token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system:
+    get:
+      summary: Get system information
+      operationId: Get system information
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system/usage:
+    get:
+      summary: Get system usage
+      operationId: Get system usage
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system/storage:
+    get:
+      summary: Get storage information
+      operationId: Get storage information
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/server/:
+    post:
+      summary: Create a new server
+      operationId: Create a new server
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/create_a_new_server'
+servers:
+  - url: http://localhost:1420
+components:
+  schemas:
+    login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    login_with_token:
+      type: object
+      properties:
+        token:
+          type: string
+    create_user:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+    create_a_new_server:
+      type: object
+      properties:
+        name:
+          type: string
+        port:
+          type: string
+        difficulty:
+          type: string
+        gamemode:
+          type: string
+        hardcore:
+          type: string
+        max_players:
+          type: string
+        minecraft_version:
+          type: string
+        loader:
+          type: string
+        loader_version:
+          type: string
+  requestBodies:
+    login:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/login'
+      description: ''
+      required: true
+    login_with_token:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/login_with_token'
+      description: ''
+      required: true
+    create_user:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/create_user'
+      description: ''
+      required: true
+    create_a_new_server:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/create_a_new_server'
+      description: ''
+      required: true
+  securitySchemes: {}

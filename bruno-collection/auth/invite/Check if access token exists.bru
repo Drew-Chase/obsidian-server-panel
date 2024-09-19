@@ -1,0 +1,15 @@
+meta {
+  name: Check if access token exists
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:1420/api/auth/exists
+  body: none
+  auth: none
+}
+
+params:query {
+  ~token: 
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Create a new server
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:1420/api/server/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Survival Multiplayer Server",
+    "port": 25565,
+    "difficulty": "easy",
+    "gamemode": "survival",
+    "hardcore": false,
+    "max_players": 20,
+    "minecraft_version": "1.20.4",
+    "loader": 0
+  }
+}
