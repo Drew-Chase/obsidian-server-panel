@@ -4,21 +4,20 @@ use std::env::current_exe;
 use std::sync::Mutex;
 use sysinfo::{Disks, System};
 #[get("/")]
-pub async fn get_system_info() -> impl Responder
-{
+pub async fn get_system_info() -> impl Responder {
 	HttpResponse::Ok().json(json!({
-		"name": System::name(),
-		"kernel_version": System::kernel_version(),
-		"os_version": System::os_version(),
-		"host_name": System::host_name(),
-	}))
+        "name": System::name(),
+        "kernel_version": System::kernel_version(),
+        "os_version": System::os_version(),
+        "host_name": System::host_name(),
+    }))
 }
 
 #[get("/usage")]
 pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl Responder {
 	let mut sys = match sys.lock() {
 		Ok(sys) => sys,
-		Err(_) => return HttpResponse::InternalServerError().finish()
+		Err(_) => return HttpResponse::InternalServerError().finish(),
 	};
 
 	//	let mut sys = System::new_all();
@@ -50,7 +49,11 @@ pub async fn get_storage_info() -> impl Responder {
 	let mut disks = vec![];
 	let mut current_drive: String = "".to_string();
 	for disk in disks_list.iter() {
-		let is_current_drive = current_exe().unwrap().parent().unwrap().starts_with(disk.mount_point());
+		let is_current_drive = current_exe()
+			.unwrap()
+			.parent()
+			.unwrap()
+			.starts_with(disk.mount_point());
 		if is_current_drive {
 			current_drive = disk.name().to_str().unwrap().to_string();
 		}
@@ -67,7 +70,7 @@ pub async fn get_storage_info() -> impl Responder {
 	}
 
 	HttpResponse::Ok().json(json!({
-		"current_drive": current_drive,
-		"disks": disks
-	}))
+        "current_drive": current_drive,
+        "disks": disks
+    }))
 }
