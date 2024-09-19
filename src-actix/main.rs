@@ -1,17 +1,18 @@
+mod auth_middleware;
 mod authentication_endpoint;
 mod java_endpoint;
 mod minecraft_endpoint;
-mod system_stats_endpoint;
 mod server_endpoint;
+mod system_stats_endpoint;
 
-use std::sync::Mutex;
 use actix_files::Files;
 use actix_files::NamedFile;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, middleware, web, App, HttpResponse, HttpServer, Responder};
 use serde_json::json;
+use std::sync::Mutex;
 
-use log::info;
+use log::{error, info};
 use sysinfo::System;
 
 // Function to serve the index.html file
@@ -27,11 +28,17 @@ async fn main() -> std::io::Result<()> {
 	env_logger::init();
 	let port = 1420; // Port to listen on
 
+	match authentication::init_auth() {
+		Ok(_) => info!("Authentication initialized"),
+		Err(e) => error!("Failed to initialize authentication: {}", e),
+	}
+
 	let sys = web::Data::new(Mutex::new(System::new_all()));
 
 	let server = HttpServer::new(move || {
 		App::new()
 			.wrap(middleware::Logger::default())
+			.wrap(auth_middleware::AuthMiddleware)
 			.app_data(
 				web::JsonConfig::default()
 					.limit(4096)
@@ -66,14 +73,13 @@ async fn main() -> std::io::Result<()> {
 							.service(system_stats_endpoint::get_system_info)
 							.service(system_stats_endpoint::get_system_usage)
 							.service(system_stats_endpoint::get_storage_info)
-							.app_data(sys.clone())
+							.app_data(sys.clone()),
 					)
 					.service(
 						web::scope("server")
 							.service(server_endpoint::get_servers)
-							.service(server_endpoint::get_server_by_id)
-					)
-				,
+							.service(server_endpoint::get_server_by_id),
+					),
 			)
 			// Serve static files from the wwwroot directory
 			.service(Files::new("/", "wwwroot").index_file("index.html"))
