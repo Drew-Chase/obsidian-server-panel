@@ -33,6 +33,9 @@ async fn main() -> std::io::Result<()> {
 		Err(e) => error!("Failed to initialize authentication: {}", e),
 	}
 
+	servers::server_db::initialize();
+
+
 	let sys = web::Data::new(Mutex::new(System::new_all()));
 
 	let server = HttpServer::new(move || {
@@ -78,7 +81,8 @@ async fn main() -> std::io::Result<()> {
 					.service(
 						web::scope("server")
 							.service(server_endpoint::get_servers)
-							.service(server_endpoint::get_server_by_id),
+							.service(server_endpoint::get_server_by_id)
+							.service(server_endpoint::create_server),
 					),
 			)
 			// Serve static files from the wwwroot directory
