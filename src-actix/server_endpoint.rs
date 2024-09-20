@@ -6,8 +6,8 @@ use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server::create_server_directory;
 use servers::properties::Properties;
-use servers::server_db;
-use servers::server_db::Server;
+use servers::server_db::{HashedServer, Server};
+use servers::{physical_server, server_db};
 use std::path::Path;
 
 #[get("/")]
@@ -20,6 +20,12 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
                 return HttpResponse::BadRequest().json(json!({"error":e}));
             }
         };
+
+        let servers: Vec<HashedServer> = servers
+            .iter()
+            .map(|s| HashedServer::from_server(s.clone()))
+            .collect();
+
         return HttpResponse::Ok().json(servers);
     }
 
@@ -42,7 +48,7 @@ pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl R
             }
         };
         if server.owner == user.id {
-            return HttpResponse::Ok().json(server);
+            return HttpResponse::Ok().json(HashedServer::from_server(server));
         }
     }
 
@@ -83,6 +89,14 @@ pub async fn create_server(
             }
         };
 
+        match server_db::set_server_directory(server.id, &dir.to_str().unwrap()) {
+            Ok(_) => (),
+            Err(e) => {
+                error!("Failed to set the servers directory to {:?}, {}", &dir, e);
+                return HttpResponse::BadRequest().json(json!({"error":e}));
+            }
+        }
+
         let mut properties: Properties =
             match Properties::new(&Path::join(&*dir, Path::new("server.properties"))) {
                 Ok(p) => p,
@@ -98,7 +112,50 @@ pub async fn create_server(
         properties.set("hardcore", &body.hardcore.to_string());
         properties.set("max-players", &body.max_players.to_string());
 
-        return HttpResponse::Ok().json(server);
+        match properties.write() {
+            Ok(_) => (),
+            Err(e) => {
+                error!("{}", e);
+                return HttpResponse::BadRequest()
+                    .json(json!({"Failed to save the properties file: ":e}));
+            }
+        }
+
+        return HttpResponse::Ok().json(HashedServer::from_server(server));
+    }
+
+    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+}
+
+#[get("/{id}/properties")]
+pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> impl Responder {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id_number = match decode(id.as_str()).first() {
+            Some(i) => *i as u32,
+            None => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        };
+        let server = match server_db::get_server_by_id(id_number) {
+            Some(s) => s,
+            None => {
+                let msg = format!("Server with id: {} not found", id_number);
+                error!("{}", msg);
+                return HttpResponse::BadRequest().json(json!({"error":msg}));
+            }
+        };
+        if server.owner == user.id {
+            let properties: Properties = match Properties::new(&Path::join(
+                Path::new(server.directory.unwrap().as_str()),
+                Path::new("server.properties"),
+            )) {
+                Ok(p) => p,
+                Err(e) => {
+                    error!("{}", e);
+                    return HttpResponse::BadRequest().json(json!({"error":e}));
+                }
+            };
+
+            return HttpResponse::Ok().json(properties.items);
+        }
     }
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
