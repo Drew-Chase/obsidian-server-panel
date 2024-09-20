@@ -13,7 +13,7 @@ pub fn clean_file_path_string(name: &str) -> String {
     clean
 }
 
-pub fn create_server_directory(id: i32) -> Result<PathBuf, String> {
+pub fn create_server_directory(id: u32) -> Result<PathBuf, String> {
     let server: Server = match get_server_by_id(id) {
         Some(s) => s,
         None => {
