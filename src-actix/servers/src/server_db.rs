@@ -5,19 +5,20 @@ use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Server {
-    pub id: i32,
+    pub id: u32,
     pub name: String,
-    pub instance: Option<i32>,
-    pub owner: i32,
-    pub size: i64,
+    pub instance: Option<u32>,
+    pub owner: u32,
+    pub members: Vec<u32>,
+    pub size: u64,
     pub auto_start: bool,
-    pub min_ram: i64,
-    pub max_ram: i64,
+    pub min_ram: u64,
+    pub max_ram: u64,
     pub executable: Option<String>,
     pub minecraft_arguments: Option<String>,
     pub java_arguments: Option<String>,
     pub minecraft_version: Option<String>,
-    pub loader: i8,
+    pub loader: u8,
     pub loader_version: Option<String>,
     pub directory: Option<String>,
     pub created_at: String,
@@ -34,6 +35,7 @@ pub fn initialize() {
 			name TEXT NOT NULL,
 			instance INTEGER DEFAULT NULL,
 			owner INTEGER NOT NULL,
+            members TEXT DEFAULT NULL,
 			size INTEGER DEFAULT 0,
 			auto_start INTEGER DEFAULT 0,
 			min_ram INTEGER DEFAULT 0,
@@ -61,7 +63,7 @@ pub fn initialize() {
     }
 }
 
-pub fn create_server(name: &str, owner: i64) -> Result<Server, String> {
+pub fn create_server(name: &str, owner: u32) -> Result<Server, String> {
     info!("Creating server with name: {} and owner: {}", name, owner);
     let conn = create_connection().map_err(|e| format!("Failed to connect to database: {}", e))?;
 
@@ -73,7 +75,7 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String> {
         .bind((1, name))
         .map_err(|e| format!("Failed to bind name: {}", e))?;
     statement
-        .bind((2, owner))
+        .bind((2, owner as i64))
         .map_err(|e| format!("Failed to bind owner: {}", e))?;
     statement
         .next()
@@ -85,10 +87,10 @@ pub fn create_server(name: &str, owner: i64) -> Result<Server, String> {
         .map_err(|e| format!("Failed to get inserted id: {}", e))?
         .map_err(|e| format!("Failed to read inserted id: {}", e))?; // Get the last inserted id
 
-    get_server_by_id(id as i32).ok_or_else(|| "Failed to retrieve the new server".to_string())
+    get_server_by_id(id as u32).ok_or_else(|| "Failed to retrieve the new server".to_string())
 }
 
-pub fn get_server_by_id(id: i32) -> Option<Server> {
+pub fn get_server_by_id(id: u32) -> Option<Server> {
     let conn = create_connection().ok()?;
     let mut statement = conn
         .prepare("SELECT * FROM servers WHERE id = ? LIMIT 1")
@@ -98,19 +100,40 @@ pub fn get_server_by_id(id: i32) -> Option<Server> {
     get_server_from_statement(&statement).ok()
 }
 
-pub fn set_java_arguments(id: i32, java_arguments: &str) -> Result<(), String> {
+pub fn get_servers_by_owner(owner: u32) -> Result<Vec<Server>, String> {
+    let conn = create_connection().map_err(|e| format!("Failed to connect to database: {}", e))?;
+    let mut statement = conn
+        .prepare("SELECT * FROM servers WHERE owner = ?")
+        .map_err(|e| format!("Failed to prepare statement: {}", e))?;
+    statement
+        .bind((1, owner as i64))
+        .map_err(|e| format!("Failed to bind owner: {}", e))?;
+    let mut servers = Vec::new();
+    while let State::Row = statement
+        .next()
+        .map_err(|e| format!("Failed to execute statement: {}", e))?
+    {
+        servers.push(
+            get_server_from_statement(&statement)
+                .map_err(|e| format!("Failed to get server from statement: {}", e))?,
+        );
+    }
+    Ok(servers)
+}
+
+pub fn set_java_arguments(id: u32, java_arguments: &str) -> Result<(), String> {
     update_server_attribute("java_arguments", java_arguments, id)
 }
 
-pub fn set_minecraft_version(id: i32, minecraft_version: &str) -> Result<(), String> {
+pub fn set_minecraft_version(id: u32, minecraft_version: &str) -> Result<(), String> {
     update_server_attribute("minecraft_version", minecraft_version, id)
 }
 
-pub fn set_server_directory(id: i32, dir: &str) -> Result<(), String> {
+pub fn set_server_directory(id: u32, dir: &str) -> Result<(), String> {
     update_server_attribute("directory", dir, id)
 }
 
-pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), String> {
+pub fn set_loader(id: u32, loader: u8, loader_version: &str) -> Result<(), String> {
     let conn = create_connection().map_err(|e| format!("Failed to connect to database: {}", e))?;
     let mut statement = conn
         .prepare("UPDATE servers SET loader = ?, loader_version = ? WHERE id = ?")
@@ -124,7 +147,7 @@ pub fn set_loader(id: i32, loader: i8, loader_version: &str) -> Result<(), Strin
     Ok(())
 }
 
-pub fn delete_server(id: i32) -> Result<(), String> {
+pub fn delete_server(id: u32) -> Result<(), String> {
     let conn = create_connection().map_err(|e| format!("Failed to connect to database: {}", e))?;
     let mut statement = conn
         .prepare("DELETE FROM servers WHERE id = ?")
@@ -140,30 +163,36 @@ fn get_server_from_statement(statement: &Statement) -> Result<Server, String> {
     Ok(Server {
         id: statement
             .read::<i64, _>("id")
-            .map_err(|e| format!("Failed to read 'id': {}", e))? as i32,
+            .map_err(|e| format!("Failed to read 'id': {}", e))? as u32,
         name: statement
             .read::<String, _>("name")
             .map_err(|e| format!("Failed to read 'name': {}", e))?,
         instance: statement
             .read::<Option<i64>, _>("instance")
             .map_err(|e| format!("Failed to read 'instance': {}", e))?
-            .map(|v| v as i32),
+            .map(|v| v as u32),
         owner: statement
             .read::<i64, _>("owner")
-            .map_err(|e| format!("Failed to read 'owner': {}", e))? as i32,
+            .map_err(|e| format!("Failed to read 'owner': {}", e))? as u32,
+        members: statement
+            .read::<String, _>("members")
+            .map_err(|e| format!("Failed to read 'members': {}", e))?
+            .split(',')
+            .filter_map(|s| s.parse::<u32>().ok())
+            .collect(),
         size: statement
             .read::<i64, _>("size")
-            .map_err(|e| format!("Failed to read 'size': {}", e))?,
+            .map_err(|e| format!("Failed to read 'size': {}", e))? as u64,
         auto_start: statement
             .read::<i64, _>("auto_start")
             .map_err(|e| format!("Failed to read 'auto_start': {}", e))?
             == 1,
         min_ram: statement
             .read::<i64, _>("min_ram")
-            .map_err(|e| format!("Failed to read 'min_ram': {}", e))?,
+            .map_err(|e| format!("Failed to read 'min_ram': {}", e))? as u64,
         max_ram: statement
             .read::<i64, _>("max_ram")
-            .map_err(|e| format!("Failed to read 'max_ram': {}", e))?,
+            .map_err(|e| format!("Failed to read 'max_ram': {}", e))? as u64,
         executable: statement
             .read::<Option<String>, _>("executable")
             .map_err(|e| format!("Failed to read 'executable': {}", e))?,
@@ -178,7 +207,7 @@ fn get_server_from_statement(statement: &Statement) -> Result<Server, String> {
             .map_err(|e| format!("Failed to read 'minecraft_version': {}", e))?,
         loader: statement
             .read::<i64, _>("loader")
-            .map_err(|e| format!("Failed to read 'loader': {}", e))? as i8,
+            .map_err(|e| format!("Failed to read 'loader': {}", e))? as u8,
         loader_version: statement
             .read::<Option<String>, _>("loader_version")
             .map_err(|e| format!("Failed to read 'loader_version': {}", e))?,
@@ -201,7 +230,7 @@ fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
     })
 }
 
-fn update_server_attribute(attr: &str, value: &str, id: i32) -> Result<(), String> {
+fn update_server_attribute(attr: &str, value: &str, id: u32) -> Result<(), String> {
     let conn = create_connection().map_err(|e| format!("Failed to connect to database: {}", e))?;
     let query = format!("UPDATE servers SET {} = ? WHERE id = ?", attr);
     let mut statement = conn
