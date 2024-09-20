@@ -124,7 +124,10 @@ pub fn get_users_list() -> Result<PublicUsersList, String> {
         }
         users.push(user);
     }
-    Ok(PublicUsersList { users, count })
+    Ok(PublicUsersList {
+        users,
+        count: count as u32,
+    })
 }
 
 pub fn get_user_by_id(id: u32) -> Result<Option<PublicUser>, String> {
@@ -165,8 +168,8 @@ pub fn get_user_by_id(id: u32) -> Result<Option<PublicUser>, String> {
 
 fn user_from_statement(stmt: &mut sqlite::Statement) -> Result<PublicUser, String> {
     Ok(PublicUser {
-        id: match stmt.read(0) {
-            Ok(id) => id,
+        id: match stmt.read::<i64, _>(0) {
+            Ok(id) => id as u32,
             Err(e) => return Err(format!("Failed to read user id: {}", e)),
         },
         username: match stmt.read(1) {
