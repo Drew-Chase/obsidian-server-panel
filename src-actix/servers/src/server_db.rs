@@ -1,9 +1,10 @@
+//use crypto::hashids::{decode, encode};
 use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
 use sqlite::{State, Statement};
 use std::path::Path;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Server {
     pub id: u32,
     pub name: String,
@@ -23,6 +24,57 @@ pub struct Server {
     pub directory: Option<String>,
     pub created_at: String,
     pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HashedServer {
+    pub id: String,
+    pub name: String,
+    pub instance: Option<u32>,
+    pub owner: String,
+    pub members: Vec<String>,
+    pub size: u64,
+    pub auto_start: bool,
+    pub min_ram: u64,
+    pub max_ram: u64,
+    pub executable: Option<String>,
+    pub minecraft_arguments: Option<String>,
+    pub java_arguments: Option<String>,
+    pub minecraft_version: Option<String>,
+    pub loader: u8,
+    pub loader_version: Option<String>,
+    pub directory: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+impl HashedServer {
+    pub fn from_server(server: Server) -> Self {
+        HashedServer {
+            id: encode(&[server.id as u64]),
+            name: server.name,
+            instance: server.instance,
+            owner: encode(&[server.owner as u64]),
+            members: server
+                .members
+                .iter()
+                .map(|m| encode(&[*m as u64]))
+                .collect(),
+            size: server.size,
+            auto_start: server.auto_start,
+            min_ram: server.min_ram,
+            max_ram: server.max_ram,
+            executable: server.executable,
+            minecraft_arguments: server.minecraft_arguments,
+            java_arguments: server.java_arguments,
+            minecraft_version: server.minecraft_version,
+            loader: server.loader,
+            loader_version: server.loader_version,
+            directory: server.directory,
+            created_at: server.created_at,
+            updated_at: server.updated_at,
+        }
+    }
 }
 
 pub fn initialize() {
@@ -175,8 +227,9 @@ fn get_server_from_statement(statement: &Statement) -> Result<Server, String> {
             .read::<i64, _>("owner")
             .map_err(|e| format!("Failed to read 'owner': {}", e))? as u32,
         members: statement
-            .read::<String, _>("members")
+            .read::<Option<String>, _>("members")
             .map_err(|e| format!("Failed to read 'members': {}", e))?
+            .unwrap_or_else(|| "".to_string())
             .split(',')
             .filter_map(|s| s.parse::<u32>().ok())
             .collect(),
