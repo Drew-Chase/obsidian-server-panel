@@ -1,5 +1,6 @@
 use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
+use std::path::Path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Server {
@@ -56,6 +57,10 @@ pub fn initialize() {
     ) {
         Ok(_) => info!("Successfully created or verified the servers table."),
         Err(e) => error!("Failed to create servers table: {}", e),
+    }
+    if !Path::new("servers").exists() {
+        info!("Creating servers directory");
+        std::fs::create_dir("servers").expect("Failed to create servers directory");
     }
 }
 
