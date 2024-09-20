@@ -97,8 +97,8 @@ pub fn get_user_by_username(username: &str, sanitized: bool) -> Result<User, Str
     }
 
     Ok(User {
-        id: match stmt.read(0) {
-            Ok(id) => id,
+        id: match stmt.read::<i64, _>(0) {
+            Ok(id) => id as u32,
             Err(_) => return Err("Failed to read user id".to_string()),
         },
         username: match stmt.read(1) {
