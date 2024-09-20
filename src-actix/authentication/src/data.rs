@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
-    pub id: i64,
+    pub id: u32,
     pub username: String,
     pub password: String,
     pub admin: bool,
@@ -25,7 +25,7 @@ pub struct UserRegistration {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserResponse {
-    pub id: i64,
+    pub id: u32,
     pub username: String,
     pub admin: bool,
     pub created_at: String,
@@ -42,7 +42,7 @@ pub struct Token {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublicUser {
-    pub id: i64,
+    pub id: u32,
     pub username: String,
     pub admin: bool,
     pub created_at: String,
@@ -52,5 +52,5 @@ pub struct PublicUser {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PublicUsersList {
     pub users: Vec<PublicUser>,
-    pub count: i64,
+    pub count: u32,
 }
