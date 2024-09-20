@@ -81,7 +81,8 @@ async fn main() -> std::io::Result<()> {
                         web::scope("server")
                             .service(server_endpoint::get_servers)
                             .service(server_endpoint::get_server_by_id)
-                            .service(server_endpoint::create_server),
+                            .service(server_endpoint::create_server)
+                            .service(server_endpoint::get_server_properties),
                     ),
             )
             // Serve static files from the wwwroot directory
