@@ -1,6 +1,7 @@
 import {execSync} from "node:child_process";
 import {copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import archiver from "archiver";
+import process from "node:process";
 
 const outputDirectory = "dist";
 let version = "0.0.0";
@@ -15,12 +16,16 @@ export function buildFrontend() {
 export function buildBackend() {
     console.log("Building backend...");
     execSync("cargo build --release", {stdio: "inherit"});
-    copyFileSync("target/release/obsidian-server-panel.exe", `${outputDirectory}/obsidian-server-panel.exe`);
+    const os = process.platform;
+    if (os === "win32")
+        copyFileSync("target/release/obsidian-server-panel.exe", `${outputDirectory}/obsidian-server-panel.exe`);
+    else
+        copyFileSync("target/release/obsidian-server-panel", `${outputDirectory}/obsidian-server-panel`);
 }
 
 export function cleanup() {
     console.log("Cleaning up...");
-    if(!existsSync(outputDirectory))return;
+    if (!existsSync(outputDirectory)) return;
     rmSync(outputDirectory, {recursive: true});
     mkdirSync(outputDirectory, {recursive: true});
 }
