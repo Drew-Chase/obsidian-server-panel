@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server::create_server_directory;
 use servers::properties::Properties;
-use servers::server_db::{HashedServer, Server};
+use servers::server_db::{BasicHashedServer, HashedServer, Server};
 use servers::{physical_server, server_db};
 use std::path::Path;
 
@@ -21,9 +21,9 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
             }
         };
 
-        let servers: Vec<HashedServer> = servers
+        let servers: Vec<BasicHashedServer> = servers
             .iter()
-            .map(|s| HashedServer::from_server(s.clone()))
+            .map(|s| BasicHashedServer::from_server(s.clone()))
             .collect();
 
         return HttpResponse::Ok().json(servers);
