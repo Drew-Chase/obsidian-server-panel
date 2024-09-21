@@ -9,12 +9,12 @@ mod system_stats_endpoint;
 
 use actix_files::Files;
 use actix_files::NamedFile;
+use actix_web::dev::WebService;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, middleware, web, App, HttpResponse, HttpServer, Responder};
+use log::{error, info};
 use serde_json::json;
 use std::sync::Mutex;
-
-use log::{error, info};
 use sysinfo::System;
 
 // Function to serve the index.html file
@@ -88,13 +88,25 @@ async fn main() -> std::io::Result<()> {
                             .service(
                                 web::scope("{id}")
                                     .service(
-                                        web::scope("properties").service(
-                                            server_properties_endpoint::get_server_properties,
-                                        ),
+                                        web::scope("properties")
+                                            .service(
+                                                server_properties_endpoint::get_server_properties,
+                                            )
+                                            .service(
+                                                server_properties_endpoint::set_server_property,
+                                            ),
                                     )
                                     .service(
                                         web::scope("settings")
-                                            .service(server_settings_endpoint::get_server_settings),
+                                            .service(server_settings_endpoint::get_server_settings)
+                                            .service(server_settings_endpoint::set_java_arguments)
+                                            .service(
+                                                server_settings_endpoint::set_minecraft_arguments,
+                                            )
+                                            .service(server_settings_endpoint::set_memory_max)
+                                            .service(server_settings_endpoint::set_memory_min)
+                                            .service(server_settings_endpoint::set_executable)
+                                            .service(server_settings_endpoint::set_name),
                                     )
                                     .service(server_endpoint::get_server_by_id),
                             )
