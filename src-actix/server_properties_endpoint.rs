@@ -40,7 +40,7 @@ pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> i
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
-#[post("/{key}")]
+#[post("/{key}/")]
 pub async fn set_server_property(
     path: web::Path<(String, String)>,
     body: String,
