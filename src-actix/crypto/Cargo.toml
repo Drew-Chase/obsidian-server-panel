@@ -4,6 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-hash-ids = "0.2.1"
 rand = { version = "0.9.0-alpha.2", features = [] }
 log = "0.4.22"
