@@ -32,7 +32,7 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[get("/{id}")]
+#[get("/")]
 pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number: u32 = match decode(id.as_str()) {
@@ -123,40 +123,6 @@ pub async fn create_server(
         }
 
         return HttpResponse::Ok().json(HashedServer::from_server(server));
-    }
-
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
-}
-
-#[get("/{id}/properties")]
-pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> impl Responder {
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number: u32 = match decode(id.as_str()) {
-            Ok(id_number) => id_number[0] as u32,
-            Err(e) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
-        };
-        let server = match server_db::get_server_by_id(id_number) {
-            Some(s) => s,
-            None => {
-                let msg = format!("Server with id: {} not found", id_number);
-                error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
-            }
-        };
-        if server.owner == user.id {
-            let properties: Properties = match Properties::new(&Path::join(
-                Path::new(server.directory.unwrap().as_str()),
-                Path::new("server.properties"),
-            )) {
-                Ok(p) => p,
-                Err(e) => {
-                    error!("{}", e);
-                    return HttpResponse::BadRequest().json(json!({"error":e}));
-                }
-            };
-
-            return HttpResponse::Ok().json(properties.items);
-        }
     }
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
