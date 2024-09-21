@@ -3,6 +3,8 @@ mod authentication_endpoint;
 mod java_endpoint;
 mod minecraft_endpoint;
 mod server_endpoint;
+mod server_properties_endpoint;
+mod server_settings_endpoint;
 mod system_stats_endpoint;
 
 use actix_files::Files;
@@ -67,7 +69,11 @@ async fn main() -> std::io::Result<()> {
                             .service(authentication_endpoint::get_users),
                     )
                     .service(
-                        web::scope("minecraft").service(minecraft_endpoint::get_minecraft_versions),
+                        web::scope("minecraft")
+                            .service(minecraft_endpoint::get_minecraft_versions)
+                            .service(minecraft_endpoint::get_latest_release)
+                            .service(minecraft_endpoint::get_latest_snapshot)
+                            .service(minecraft_endpoint::get_version_by_id),
                     )
                     .service(web::scope("java").service(java_endpoint::get_java_versions))
                     .service(
@@ -79,10 +85,21 @@ async fn main() -> std::io::Result<()> {
                     )
                     .service(
                         web::scope("server")
+                            .service(
+                                web::scope("{id}")
+                                    .service(
+                                        web::scope("properties").service(
+                                            server_properties_endpoint::get_server_properties,
+                                        ),
+                                    )
+                                    .service(
+                                        web::scope("settings")
+                                            .service(server_settings_endpoint::get_server_settings),
+                                    )
+                                    .service(server_endpoint::get_server_by_id),
+                            )
                             .service(server_endpoint::get_servers)
-                            .service(server_endpoint::get_server_by_id)
-                            .service(server_endpoint::create_server)
-                            .service(server_endpoint::get_server_properties),
+                            .service(server_endpoint::create_server),
                     ),
             )
             // Serve static files from the wwwroot directory
