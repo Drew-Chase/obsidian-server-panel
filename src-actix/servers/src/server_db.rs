@@ -48,6 +48,29 @@ pub struct HashedServer {
     pub updated_at: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BasicHashedServer {
+    pub id: String,
+    pub name: String,
+    pub owner: String,
+    pub members: Vec<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ServerSettings {
+    pub name: String,
+    pub min_ram: u64,
+    pub max_ram: u64,
+    pub minecraft_arguments: Option<String>,
+    pub java_arguments: Option<String>,
+    pub minecraft_version: Option<String>,
+    pub loader: u8,
+    pub loader_version: Option<String>,
+    pub executable: Option<String>,
+}
+
 impl HashedServer {
     pub fn from_server(server: Server) -> Self {
         HashedServer {
@@ -73,6 +96,49 @@ impl HashedServer {
             directory: server.directory,
             created_at: server.created_at,
             updated_at: server.updated_at,
+        }
+    }
+}
+
+impl BasicHashedServer {
+    pub fn from_server(server: Server) -> Self {
+        BasicHashedServer {
+            id: encode(&[server.id as u64]),
+            name: server.name,
+            owner: encode(&[server.owner as u64]),
+            members: server
+                .members
+                .iter()
+                .map(|m| encode(&[*m as u64]))
+                .collect(),
+            created_at: server.created_at,
+            updated_at: server.updated_at,
+        }
+    }
+    pub fn from_hashed_server(server: HashedServer) -> Self {
+        BasicHashedServer {
+            id: server.id,
+            name: server.name,
+            owner: server.owner,
+            members: server.members,
+            created_at: server.created_at,
+            updated_at: server.updated_at,
+        }
+    }
+}
+
+impl ServerSettings {
+    pub fn from_server(server: Server) -> Self {
+        ServerSettings {
+            name: server.name,
+            min_ram: server.min_ram,
+            max_ram: server.max_ram,
+            minecraft_arguments: server.minecraft_arguments,
+            java_arguments: server.java_arguments,
+            minecraft_version: server.minecraft_version,
+            loader: server.loader,
+            loader_version: server.loader_version,
+            executable: server.executable,
         }
     }
 }
@@ -187,6 +253,20 @@ pub fn get_owned_server_by_id(id: u32, owner: u32) -> Option<Server> {
 pub fn set_java_arguments(id: u32, java_arguments: &str) -> Result<(), String> {
     update_server_attribute("java_arguments", java_arguments, id)
 }
+pub fn set_minecraft_arguments(id: u32, minecraft_arguments: &str) -> Result<(), String> {
+    update_server_attribute("minecraft_arguments", minecraft_arguments, id)
+}
+
+pub fn set_memory_min(id: u32, min_ram: u64) -> Result<(), String> {
+    update_server_attribute("min_ram", &min_ram.to_string(), id)
+}
+
+pub fn set_memory_max(id: u32, max_ram: u64) -> Result<(), String> {
+    update_server_attribute("max_ram", &max_ram.to_string(), id)
+}
+pub fn set_server_executable(id: u32, executable: &str) -> Result<(), String> {
+    update_server_attribute("executable", executable, id)
+}
 
 pub fn set_minecraft_version(id: u32, minecraft_version: &str) -> Result<(), String> {
     update_server_attribute("minecraft_version", minecraft_version, id)
@@ -194,6 +274,10 @@ pub fn set_minecraft_version(id: u32, minecraft_version: &str) -> Result<(), Str
 
 pub fn set_server_directory(id: u32, dir: &str) -> Result<(), String> {
     update_server_attribute("directory", dir, id)
+}
+
+pub fn set_server_name(id: u32, name: &str) -> Result<(), String> {
+    update_server_attribute("name", name, id)
 }
 
 pub fn set_loader(id: u32, loader: u8, loader_version: &str) -> Result<(), String> {
