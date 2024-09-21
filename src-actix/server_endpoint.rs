@@ -35,10 +35,11 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
 #[get("/{id}")]
 pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(id.as_str()).first() {
-            Some(i) => *i as u32,
-            None => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        let id_number: u32 = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0] as u32,
+            Err(e) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
         };
+
         let server = match server_db::get_server_by_id(id_number) {
             Some(s) => s,
             None => {
@@ -130,9 +131,9 @@ pub async fn create_server(
 #[get("/{id}/properties")]
 pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(id.as_str()).first() {
-            Some(i) => *i as u32,
-            None => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        let id_number: u32 = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0] as u32,
+            Err(e) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
         };
         let server = match server_db::get_server_by_id(id_number) {
             Some(s) => s,
