@@ -173,6 +173,17 @@ pub fn get_servers_by_owner(owner: u32) -> Result<Vec<Server>, String> {
     Ok(servers)
 }
 
+pub fn get_owned_server_by_id(id: u32, owner: u32) -> Option<Server> {
+    let conn = create_connection().ok()?;
+    let mut statement = conn
+        .prepare("SELECT * FROM servers WHERE id = ? AND owner = ? LIMIT 1")
+        .ok()?;
+    statement.bind((1, id as i64)).ok()?;
+    statement.bind((2, owner as i64)).ok()?;
+    statement.next().ok()?;
+    get_server_from_statement(&statement).ok()
+}
+
 pub fn set_java_arguments(id: u32, java_arguments: &str) -> Result<(), String> {
     update_server_attribute("java_arguments", java_arguments, id)
 }
