@@ -3,30 +3,46 @@ info:
   title: openapi
   version: 1.0.0
 paths:
-  /api/auth/login:
-    post:
-      summary: Login
-      operationId: Login
+  /api/java/versions:
+    get:
+      summary: Get Java Versions
+      operationId: Get Java Versions
       description: ''
       tags:
         - ''
       responses:
         '200':
           description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/login'
-  /api/auth/login/token:
-    post:
-      summary: Login with Token
-      operationId: Login with Token
+  /api/minecraft/latest-release:
+    get:
+      summary: Get Minecraft Latest Release
+      operationId: Get Minecraft Latest Release
       description: ''
       tags:
         - ''
       responses:
         '200':
           description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/login_with_token'
+  /api/minecraft/latest-snapshot:
+    get:
+      summary: Get Minecraft Latest Snapshot
+      operationId: Get Minecraft Latest Snapshot
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions:
+    get:
+      summary: Get Minecraft Versions
+      operationId: Get Minecraft Versions
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
   /api/auth/register:
     post:
       summary: Create user
@@ -49,16 +65,30 @@ paths:
       responses:
         '200':
           description: ''
-  /api/auth/register/validate-access-token:
+  /api/auth/login/token:
     post:
-      summary: Validate access token
-      operationId: Validate access token
+      summary: Login with Token
+      operationId: Login with Token
       description: ''
       tags:
         - ''
       responses:
         '200':
           description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login_with_token'
+  /api/auth/login:
+    post:
+      summary: Login
+      operationId: Login
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login'
   /api/auth/exists:
     get:
       summary: Check if access token exists
@@ -75,16 +105,6 @@ paths:
           description: ''
           required: false
           example: ''
-  /api/auth/register/access-tokens:
-    get:
-      summary: Get all access tokens
-      operationId: Get all access tokens
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
   /api/auth/register/generate-access-token:
     post:
       summary: Generate registration access token
@@ -95,7 +115,37 @@ paths:
       responses:
         '200':
           description: ''
-  /api/system:
+  /api/auth/register/access-tokens:
+    get:
+      summary: Get all access tokens
+      operationId: Get all access tokens
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/register/validate-access-token:
+    post:
+      summary: Validate access token
+      operationId: Validate access token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system/storage:
+    get:
+      summary: Get storage information
+      operationId: Get storage information
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system/:
     get:
       summary: Get system information
       operationId: Get system information
@@ -115,16 +165,6 @@ paths:
       responses:
         '200':
           description: ''
-  /api/system/storage:
-    get:
-      summary: Get storage information
-      operationId: Get storage information
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
   /api/server/:
     post:
       summary: Create a new server
@@ -135,24 +175,240 @@ paths:
       responses:
         '200':
           description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JDhvajJ5TWYxcEZvcGlBZGFQWjgvbnVaTzhaMmZ5aWdBeEtFdFdXRUMvVXFoTFZvZHNtYk0yIiwidXNlcm5hbWUiOiJhZG1pbiJ9
       requestBody:
         $ref: '#/components/requestBodies/create_a_new_server'
+    get:
+      summary: Get servers list
+      operationId: Get servers list
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/y7dALql02apYGBkN/:
+    get:
+      summary: Get server by Id
+      operationId: Get server by Id
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/y7dALql02apYGBkN/properties/:
+    get:
+      summary: Get Properties
+      operationId: Get Properties
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/y7dALql02apYGBkN/properties/max-players:
+    post:
+      summary: Set Property
+      operationId: Set Property
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/:
+    get:
+      summary: Get Settings
+      operationId: Get Settings
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/y7dALql02apYGBkN/settings/memory/max/:
+    post:
+      summary: Set Memory Max
+      operationId: Set Memory Max
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/memory/min/:
+    post:
+      summary: Set Memory Min
+      operationId: Set Memory Min
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/args/minecraft/:
+    post:
+      summary: Set Minecraft Arguments
+      operationId: Set Minecraft Arguments
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/args/java/:
+    post:
+      summary: Set Java Arguments
+      operationId: Set Java Arguments
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/executable/:
+    post:
+      summary: Set Executable
+      operationId: Set Executable
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/y7dALql02apYGBkN/settings/server-name/:
+    post:
+      summary: Set Server Name
+      operationId: Set Server Name
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
 servers:
-  - url: http://localhost:1420
+  - url: http://127.0.0.1:1420
 components:
   schemas:
-    login:
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-    login_with_token:
-      type: object
-      properties:
-        token:
-          type: string
     create_user:
       type: object
       properties:
@@ -162,33 +418,45 @@ components:
           type: string
         email:
           type: string
+    login_with_token:
+      type: object
+      properties:
+        token:
+          type: string
+    login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
     create_a_new_server:
       type: object
       properties:
         name:
           type: string
         port:
-          type: string
+          type: number
         difficulty:
           type: string
         gamemode:
           type: string
         hardcore:
-          type: string
+          type: boolean
         max_players:
-          type: string
+          type: number
         minecraft_version:
           type: string
         loader:
-          type: string
+          type: number
         loader_version:
           type: string
   requestBodies:
-    login:
+    create_user:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/login'
+            $ref: '#/components/schemas/create_user'
       description: ''
       required: true
     login_with_token:
@@ -198,11 +466,11 @@ components:
             $ref: '#/components/schemas/login_with_token'
       description: ''
       required: true
-    create_user:
+    login:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/create_user'
+            $ref: '#/components/schemas/login'
       description: ''
       required: true
     create_a_new_server:
