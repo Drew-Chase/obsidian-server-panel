@@ -1,6 +1,7 @@
 use actix_web::{get, HttpResponse, Responder};
 use serde_json::json;
-use std::env::current_exe;
+use std::env::{current_dir, current_exe};
+use std::ops::Index;
 use std::sync::Mutex;
 use sysinfo::{Disks, System};
 #[get("/")]
@@ -48,18 +49,22 @@ pub async fn get_storage_info() -> impl Responder {
     let disks_list = Disks::new_with_refreshed_list();
     let mut disks = vec![];
     let mut current_drive: String = "".to_string();
+    let mut current_drive_mount_point: String = "".to_string();
+    let mut contiguous_characters = 0;
     for disk in disks_list.iter() {
-        let is_current_drive = current_exe()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .starts_with(disk.mount_point());
-        if is_current_drive {
+        let match_chars = common_prefix_length(
+            current_dir().unwrap().to_str().unwrap(),
+            disk.mount_point().to_str().unwrap(),
+        );
+        contiguous_characters = if match_chars > contiguous_characters {
             current_drive = disk.name().to_str().unwrap().to_string();
-        }
+            current_drive_mount_point = disk.mount_point().to_str().unwrap().to_string();
+            match_chars
+        } else {
+            contiguous_characters
+        };
         disks.push(json!({
 			"name": disk.name().to_str().unwrap(),
-			"current_drive": is_current_drive,
 			"file_system": disk.file_system().to_str().unwrap(),
 			"mount_point": disk.mount_point().to_str().unwrap(),
 			"total_space": disk.total_space(),
@@ -70,7 +75,17 @@ pub async fn get_storage_info() -> impl Responder {
     }
 
     HttpResponse::Ok().json(json!({
-        "current_drive": current_drive,
+        "current_drive": {
+            "name": current_drive,
+            "mount_point": current_drive_mount_point
+        },
         "disks": disks
     }))
+}
+
+fn common_prefix_length(s1: &str, s2: &str) -> usize {
+    s1.chars()
+        .zip(s2.chars())
+        .take_while(|(c1, c2)| c1 == c2)
+        .count()
 }
