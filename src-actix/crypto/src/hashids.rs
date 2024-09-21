@@ -12,7 +12,7 @@ use log::debug;
 /// A vector of `u64` integers that were encoded in the given hash string.
 pub fn decode(hash: &str) -> Result<Vec<u64>, String> {
     let hash_ids = hashids();
-    let decode = match hash_ids.decode(hash){
+    let decode = match hash_ids.decode(hash) {
         Ok(d) => d,
         Err(e) => return Err(format!("{}", e)),
     };
@@ -42,7 +42,6 @@ fn hashids() -> HashIds {
         .with_min_length(16)
         .finish()
 }
-
 
 use std::collections::VecDeque;
 
@@ -86,7 +85,10 @@ pub struct HashIdsBuilder {
 impl HashIdsBuilder {
     /// Creates a new `HashIdsBuilder` instance with default values.
     pub fn new() -> Self {
-        Self { salt: vec![], min_length: 0 }
+        Self {
+            salt: vec![],
+            min_length: 0,
+        }
     }
 }
 
@@ -114,12 +116,20 @@ impl HashIdsBuilderWithCustomAlphabet {
     ///
     /// Can fail if the custom alphabet won't work
     pub fn finish(self) -> Result<HashIds, Error> {
-        let Self { inner: HashIdsBuilder { salt, min_length }, mut alphabet } = self;
+        let Self {
+            inner: HashIdsBuilder { salt, min_length },
+            mut alphabet,
+        } = self;
 
-        let separators =
-            DEFAULT_SEPARATORS.chars().filter(|x| alphabet.contains(x)).collect::<Vec<_>>();
+        let separators = DEFAULT_SEPARATORS
+            .chars()
+            .filter(|x| alphabet.contains(x))
+            .collect::<Vec<_>>();
 
-        alphabet = alphabet.drain(..).filter(|x| !separators.contains(x)).collect();
+        alphabet = alphabet
+            .drain(..)
+            .filter(|x| !separators.contains(x))
+            .collect();
 
         alphabet = alphabet
             .clone()
@@ -137,11 +147,23 @@ impl HashIdsBuilderWithCustomAlphabet {
             return Err(Error::ContainsSpace);
         }
 
-        if alphabet.len() != alphabet.iter().collect::<std::collections::HashSet<_>>().len() {
+        if alphabet.len()
+            != alphabet
+                .iter()
+                .collect::<std::collections::HashSet<_>>()
+                .len()
+        {
             return Err(Error::AlphabetNotUnique);
         }
 
-        Ok(HashIds { salt, min_length, alphabet, separators, guards: Vec::new() }.finish())
+        Ok(HashIds {
+            salt,
+            min_length,
+            alphabet,
+            separators,
+            guards: Vec::new(),
+        }
+        .finish())
     }
 }
 
@@ -160,7 +182,10 @@ impl HashIdsBuilder {
 
     /// Set the custom alphabet to use for encoding
     pub fn with_alphabet(self, alphabet: &str) -> HashIdsBuilderWithCustomAlphabet {
-        HashIdsBuilderWithCustomAlphabet { inner: self, alphabet: alphabet.chars().collect() }
+        HashIdsBuilderWithCustomAlphabet {
+            inner: self,
+            alphabet: alphabet.chars().collect(),
+        }
     }
 
     /// Convert the builder to the finished `HashIds`
@@ -176,7 +201,7 @@ impl HashIdsBuilder {
             separators: DEFAULT_SEPARATORS.chars().collect(),
             guards: Vec::new(),
         }
-            .finish()
+        .finish()
     }
 }
 
@@ -301,8 +326,10 @@ impl HashIds {
 
         let mut alphabet = self.alphabet.clone();
 
-        let vals_hash =
-            vals.iter().enumerate().fold(0, |acc, (i, x)| acc + ((*x as usize) % (i + 100)));
+        let vals_hash = vals
+            .iter()
+            .enumerate()
+            .fold(0, |acc, (i, x)| acc + ((*x as usize) % (i + 100)));
 
         let lottery = self.alphabet[vals_hash % self.alphabet.len()];
         let mut encoded = vec![lottery];
@@ -371,8 +398,11 @@ impl HashIds {
 
         let mut parts = Self::split(hash_str.chars(), &self.guards);
 
-        let mut hash_str =
-            if parts.len() >= 2 && parts.len() <= 3 { parts.remove(1) } else { parts.remove(0) };
+        let mut hash_str = if parts.len() >= 2 && parts.len() <= 3 {
+            parts.remove(1)
+        } else {
+            parts.remove(0)
+        };
 
         let lottery = hash_str.get(0).ok_or(Error::MissingLotteryChar)?.clone();
         hash_str.remove(0);
