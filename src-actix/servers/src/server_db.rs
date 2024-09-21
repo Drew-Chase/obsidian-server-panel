@@ -1,4 +1,4 @@
-//use crypto::hashids::{decode, encode};
+use crypto::hashids::{decode, encode};
 use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
 use sqlite::{State, Statement};
