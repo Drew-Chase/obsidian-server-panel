@@ -7,7 +7,10 @@ use std::path::{Path, PathBuf};
 pub fn clean_file_path_string(name: &str) -> String {
     let clean = name
         .trim()
-        .replace(|c: char| c.is_whitespace() || (!c.is_alphanumeric() && c != '_'), "_")
+        .replace(
+            |c: char| c.is_whitespace() || (!c.is_alphanumeric() && c != '_'),
+            "_",
+        )
         .to_lowercase();
     debug!("'{}' -> '{}'", name, clean);
     clean
