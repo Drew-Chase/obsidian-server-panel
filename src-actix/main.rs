@@ -1,5 +1,6 @@
 mod auth_middleware;
 mod authentication_endpoint;
+mod file_system_endpoint;
 mod java_endpoint;
 mod minecraft_endpoint;
 mod server_endpoint;
@@ -107,6 +108,10 @@ async fn main() -> std::io::Result<()> {
                                             .service(server_settings_endpoint::set_memory_min)
                                             .service(server_settings_endpoint::set_executable)
                                             .service(server_settings_endpoint::set_name),
+                                    )
+                                    .service(
+                                        web::scope("files")
+                                            .service(file_system_endpoint::get_server_files),
                                     )
                                     .service(server_endpoint::get_server_by_id),
                             )
