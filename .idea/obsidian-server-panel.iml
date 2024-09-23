@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-actix/servers/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/testing/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/crypto/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/backups/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/crypto/target" />
