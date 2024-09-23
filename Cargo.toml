@@ -10,8 +10,9 @@ path = "src-actix/main.rs"
 [dependencies]
 authentication = { path = "src-actix/authentication" }
 minecraft = { path = "src-actix/minecraft" }
-servers = {path="src-actix/servers"}
-crypto = {path="src-actix/crypto"}
+servers = { path = "src-actix/servers" }
+crypto = { path = "src-actix/crypto" }
+backups = { path = "src-actix/backups" }
 actix-web = { version = "4.9.0" }
 actix-ws = "0.3.0"
 actix-multipart = "0.7.2"
