@@ -1,5 +1,5 @@
 use log::{error, info};
-use sqlite::State;
+use sqlite::{State, Statement};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
@@ -19,6 +19,80 @@ pub struct BackupItem {
 }
 
 impl BackupItem {
+	pub fn get_list_of_backups() -> Vec<Self>
+	{
+		let mut result: Vec<Self> = vec![];
+		let conn = match create_connection() {
+			Ok(c) => c,
+			Err(_) => {
+				return result;
+			}
+		};
+		let mut stmt = match conn.prepare("select * from `backups`") {
+			Ok(s) => s,
+			Err(e) => {
+				error!("Unable to prepare select statement for the `get_list_of_backups` function of the backups class: {}", e);
+				return result;
+			}
+		};
+
+		while let State::Row = stmt
+			.next()
+			.map_err(|e|
+				{
+					error!("Unable to get next row from the database: {}", e);
+					return State::Done;
+				})
+			.unwrap()
+		{
+			if let Some(item) = Self::from_statement(&stmt) {
+				result.push(item);
+			}
+		}
+
+		result
+	}
+	pub fn get_list_of_backups_from_server(server_id: u32) -> Vec<Self>
+	{
+		let mut result: Vec<Self> = vec![];
+		let conn = match create_connection() {
+			Ok(c) => c,
+			Err(_) => {
+				return result;
+			}
+		};
+		let mut stmt = match conn.prepare("select * from `backups` where server = ?") {
+			Ok(s) => s,
+			Err(e) => {
+				error!("Unable to prepare select statement for the `get_list_of_backups` function of the backups class: {}", e);
+				return result;
+			}
+		};
+
+		match stmt.bind((1, server_id as i64)) {
+			Ok(_) => {},
+			Err(e) => {
+				error!("Unable to bind '{}' -> `server_id` in the `get_list_of_backups_from_server` function of the backups class: {}", server_id, e);
+				return result;
+			}
+		}
+
+		while let State::Row = stmt
+			.next()
+			.map_err(|e|
+				{
+					error!("Unable to get next row from the database: {}", e);
+					return State::Done;
+				})
+			.unwrap()
+		{
+			if let Some(item) = Self::from_statement(&stmt) {
+				result.push(item);
+			}
+		}
+
+		result
+	}
 	pub fn from_id(id: u32) -> Option<Self> {
 		let conn = match create_connection() {
 			Ok(c) => c,
@@ -26,7 +100,7 @@ impl BackupItem {
 				return None;
 			}
 		};
-		let mut stmt = match conn.prepare("select * from `backups` where 'id' = ?") {
+		let mut stmt = match conn.prepare("select * from `backups` where 'id' = ? LIMIT 1") {
 			Ok(s) => s,
 			Err(e) => {
 				error!("Unable to prepare select statement for the `from_id` function of the backups class: {}", e);
@@ -40,16 +114,19 @@ impl BackupItem {
 				return None;
 			}
 		}
-		let result = match stmt.next() {
-			Ok(r) => r,
+		match stmt.next() {
+			Ok(_) => {},
 			Err(e) => {
 				error!("Failed to get result of select query in the `from_id` function of the backups class: {}", e);
 				return None;
 			}
 		};
 
-		if result == State::Done { return None; }
+		Self::from_statement(&stmt)
+	}
 
+	fn from_statement(stmt: &Statement) -> Option<Self>
+	{
 		Some(
 			BackupItem {
 				id: stmt.read::<i64, _>("id").map_err(|e| {
