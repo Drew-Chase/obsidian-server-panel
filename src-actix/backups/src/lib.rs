@@ -29,7 +29,7 @@ impl BackupItem {
 		let mut stmt = match conn.prepare("select * from `backups` where 'id' = ?") {
 			Ok(s) => s,
 			Err(e) => {
-				error!("Unable to prepare select statement for the `from_id` function of the backups class.");
+				error!("Unable to prepare select statement for the `from_id` function of the backups class: {}", e);
 				return None;
 			}
 		};
