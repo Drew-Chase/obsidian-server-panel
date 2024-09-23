@@ -8,7 +8,7 @@ use crate::management::create_user;
 use log::{error, info, warn};
 use sqlite::Connection;
 
-pub fn init_auth() -> Result<(), String> {
+pub fn initialize() -> Result<(), String> {
     info!("Initializing authentication database!");
     match create_db_connection() {
         Ok(conn) => {
