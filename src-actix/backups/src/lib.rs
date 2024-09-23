@@ -40,10 +40,61 @@ impl BackupItem {
 				return None;
 			}
 		}
-		let _ = stmt.next();
+		let result = match stmt.next() {
+			Ok(r) => r,
+			Err(e) => {
+				error!("Failed to get result of select query in the `from_id` function of the backups class: {}", e);
+				return None;
+			}
+		};
 
+		if result == State::Done { return None; }
 
-		None
+		Some(
+			BackupItem {
+				id: stmt.read::<i64, _>("id").map_err(|e| {
+					error!("Unable to parse the column `id` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()? as u32,
+				path: Path::new(&(stmt.read::<String, _>("path").map_err(|e| {
+					error!("Unable to parse the column `id` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()?)).to_path_buf(),
+
+				name: stmt.read::<String, _>("name").map_err(|e| {
+					error!("Unable to parse the column `name` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()?,
+				r#type: match stmt.read::<String, _>("type").map_err(|e| {
+					error!("Unable to parse the column `type` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()?.as_str() {
+					"AUTO" => BackupItemType::AUTO,
+					"MANUAL" => BackupItemType::MANUAL,
+					_ => {
+						error!("Unknown type value in the `from_id` function");
+						return None::<Self>;
+					}
+				},
+				timestamp: SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(
+					stmt.read::<String, _>("timestamp").map_err(|e| {
+						error!("Unable to parse the column `timestamp` from the backups table in the `from_id` function: {}", e);
+						return None::<Self>;
+					}).ok()?.parse::<u64>().map_err(|e| {
+						error!("Unable to convert timestamp string to u64 in the `from_id` function: {}", e);
+						return None::<Self>;
+					}).ok()?
+				),
+				size: stmt.read::<i64, _>("size").map_err(|e| {
+					error!("Unable to parse the column `size` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()? as u64,
+				server: stmt.read::<i64, _>("server").map_err(|e| {
+					error!("Unable to parse the column `server` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()? as u32,
+			}
+		)
 	}
 }
 
