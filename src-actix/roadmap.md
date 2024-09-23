@@ -73,6 +73,7 @@ This is used as more of a todo list for the project. It is not a strict roadmap,
 - [ ] Add endpoint for deleting java versions
 
 ## Users
+
 - [x] Add endpoint for logging in using username and password.
 - [x] Add endpoint for logging in using token.
 - [x] Add endpoint for creating a user.
