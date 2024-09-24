@@ -13,23 +13,23 @@ use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time::SystemTime;
+use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::{uuid, Uuid};
 
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub enum BackupCreationMethod {
 	AUTO,
 	MANUAL,
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub enum BackupType {
 	Full,
 	Incremental,
 }
 
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct BackupItem {
-	id: u32,
-	name: String,
 	path: PathBuf,
 	r#type: BackupType,
 	method: BackupCreationMethod,
@@ -48,7 +48,7 @@ impl BackupItem {
 	) -> Result<BackupItem, String> {
 		let output_file = Path::join(&*get_backups_directory(), Path::new(&Uuid::new_v4().as_simple().to_string()));
 
-		let mut archive = match SevenZWriter::create(output_file) {
+		let mut archive = match SevenZWriter::create(&output_file) {
 			Ok(a) => a,
 			Err(e) => {
 				error!("Unable to create backup archive: {}", e);
@@ -65,7 +65,7 @@ impl BackupItem {
 				Ok(_) => {},
 				Err(e) => {
 					let msg = format!("Unable to archive directory for backup: {}", e);
-					error!(msg);
+					error!("{}", msg);
 					return Err(msg);
 				}
 			}
@@ -103,18 +103,103 @@ impl BackupItem {
 				Ok(_) => {},
 				Err(e) => {
 					let msg = format!("Unable to archive directory for backup: {}", e);
-					error!(msg);
+					error!("{}", msg);
 					return Err(msg);
 				}
 			}
 		}
 
-		Err("".to_string())
+		if let Err(e) = archive.finish() {
+			let msg = format!("Failed to flush archive data to file: {}", e);
+			error!("{}", msg);
+			return Err(msg);
+		}
+
+		let conn = match create_connection() {
+			Ok(c) => c,
+			Err(e) => {
+				let msg = format!("Unable to create connection: {}", e);
+				error!("{}", msg);
+				return Err(msg);
+			}
+		};
+
+		let mut stmt = match conn.prepare("INSERT INTO backups (path, type, method, timestamp, size, server) VALUES (?, ?, ?, ?, ?, ?)") {
+			Ok(c) => { c },
+			Err(e) => {
+				let msg = format!("Failed to prepare backups insert statement: {}", e);
+				error!("{}", msg);
+				return Err(msg);
+			}
+		};
+
+		let metadata = match output_file.metadata() {
+			Ok(m) => m,
+			Err(e) => {
+				let msg = format!("Failed to get metadata from backup archive: {}", e);
+				error!("{}", msg);
+				return Err(msg);
+			}
+		};
+
+
+		let item_type: i64 = r#type.clone() as i64;
+		let item_method: i64 = method.clone() as i64;
+		let item_timestamp: i64 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+
+		let item = BackupItem {
+			path: output_file.clone(),
+			server: server_id,
+			method,
+			r#type,
+			size: metadata.len(),
+			timestamp: SystemTime::now(),
+		};
+
+		stmt.bind((1, output_file.to_str().unwrap())).map_err(|e| {
+			format!("Failed to bind {} -> path: {}", output_file.display(), e)
+		})?;
+		stmt.bind((2, item_type)).map_err(|e| {
+			format!("Failed to bind {:?} -> type: {}", item.r#type, e)
+		})?;
+		stmt.bind((3, item_method)).map_err(|e| {
+			format!("Failed to bind {:?} -> method: {}", item.method, e)
+		})?;
+		stmt.bind((4, item_timestamp)).map_err(|e| {
+			format!("Failed to bind {:?} -> timestamp: {}", item.timestamp, e)
+		})?;
+		stmt.bind((5, item.size as i64)).map_err(|e| {
+			format!("Failed to bind {} -> size: {}", item.size, e)
+		})?;
+		stmt.bind((6, item.server as i64)).map_err(|e| {
+			format!("Failed to bind {} -> server: {}", item.server, e)
+		})?;
+
+		if let Err(e) = stmt.next() {
+			let msg = format!("Failed to complete statement execution: {}", e);
+			error!("{}", msg);
+			return Err(msg);
+		}
+
+		Ok(item)
 	}
 
 
 	pub fn create_world_edit_backup(server_dir: PathBuf, world_directory: PathBuf)
-	{}
+	{
+		let output_file = Path::join(server_dir.as_path(), Path::new("backups"));
+		let mut archive = match SevenZWriter::create(output_file) {
+			Ok(a) => a,
+			Err(e) => {
+				error!("Unable to create backup archive: {}", e);
+				return;
+			}
+		};
+
+		if let Err(e) = archive.push_source_path(&world_directory, |e| { true }) {
+			error!("Unable to archive '{}' directory: {}", world_directory.display(), e)
+		}
+	}
 
 	pub fn delete_backup(id: u32) {
 		if let Some(backup) = Self::from_id(id) {
@@ -254,19 +339,10 @@ impl BackupItem {
 	fn from_statement(stmt: &Statement) -> Option<Self> {
 		Some(
 			BackupItem {
-				id: stmt.read::<i64, _>("id").map_err(|e| {
-					error!("Unable to parse the column `id` from the backups table in the `from_id` function: {}", e);
-					return None::<Self>;
-				}).ok()? as u32,
 				path: Path::new(&(stmt.read::<String, _>("path").map_err(|e| {
 					error!("Unable to parse the column `id` from the backups table in the `from_id` function: {}", e);
 					return None::<Self>;
 				}).ok()?)).to_path_buf(),
-
-				name: stmt.read::<String, _>("name").map_err(|e| {
-					error!("Unable to parse the column `name` from the backups table in the `from_id` function: {}", e);
-					return None::<Self>;
-				}).ok()?,
 				method: match stmt.read::<i64, _>("method").map_err(|e| {
 					error!("Unable to parse the column `type` from the backups table in the `from_id` function: {}", e);
 					return None::<Self>;
