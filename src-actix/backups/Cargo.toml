@@ -14,3 +14,5 @@ serde_derive = "1.0.210"
 sha2 = { version = "0.10.8" }
 uuid = { version = "1.10.0", features = ["v4"] }
 rayon = "1.10.0"
+chrono = "0.4.38"
+
