@@ -1,14 +1,20 @@
+use crate::hashed_file::HashedFile;
 use crate::{create_connection, get_backups_directory};
 use log::{error, info};
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
+use sevenz_rust::{lzma, Archive, SevenZWriter};
 use sha2::{Digest, Sha256};
 use sqlite::{State, Statement};
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
+use uuid::{uuid, Uuid};
 
 pub enum BackupCreationMethod {
 	AUTO,
@@ -36,17 +42,69 @@ impl BackupItem {
 	pub fn create_backup(
 		server_id: u32,
 		server_directory: PathBuf,
-		compression_level: u8,
 		method: BackupCreationMethod,
+		compression_level: u8,
 		r#type: BackupType,
 	) -> Result<BackupItem, String> {
-		let output_file = Path::join(&*get_backups_directory(), Path::new(""));
+		let output_file = Path::join(&*get_backups_directory(), Path::new(&Uuid::new_v4().as_simple().to_string()));
+
+		let mut archive = match SevenZWriter::create(output_file) {
+			Ok(a) => a,
+			Err(e) => {
+				error!("Unable to create backup archive: {}", e);
+				return Err(format!("Unable to create backup archive: {}", e));
+			}
+		};
+
+		archive.set_content_methods(vec![
+			lzma::LZMA2Options::with_preset(compression_level as u32).into(),
+		]);
 
 		if r#type == BackupType::Full {
-			match sevenz_rust::compress_to_path(server_directory, output_file) {
-				Ok(_) => {}
+			match archive.push_source_path(&server_directory, |e| { true }) {
+				Ok(_) => {},
 				Err(e) => {
-					error!("Unable to archive server directory")
+					let msg = format!("Unable to archive directory for backup: {}", e);
+					error!(msg);
+					return Err(msg);
+				}
+			}
+		} else if r#type == BackupType::Incremental {
+			let mut changed_files: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+			let all_files = match get_all_files_in_directory(&server_directory) {
+				Ok(s) => s,
+				Err(e) => {
+					error!("Unable to get files for backup: {}", e);
+					return Err(format!("Unable to get files for backup: {}", e));
+				}
+			};
+			all_files.par_iter().for_each(|entry: &PathBuf| {
+				let mut arr = match changed_files.lock() {
+					Ok(s) => s,
+					Err(e) => {
+						error!("Unable to lock changed files array: {}", e);
+						return;
+					}
+				};
+				if let Some(file) = HashedFile::get(entry.as_path()) { // Attempts to retrieve the hashed file from the database.
+					if file.clone().has_file_been_changed() {
+						HashedFile::cache_file_hash(entry);
+						arr.push(entry.to_str().unwrap().to_string());
+					}
+				} else {
+					// Files has not been previously backed up.
+					HashedFile::cache_file_hash(entry);
+					arr.push(entry.to_str().unwrap().to_string());
+				}
+			});
+
+
+			match archive.push_source_path(server_directory, |e| { all_files.contains(&e.to_path_buf()) }) {
+				Ok(_) => {},
+				Err(e) => {
+					let msg = format!("Unable to archive directory for backup: {}", e);
+					error!(msg);
+					return Err(msg);
 				}
 			}
 		}
@@ -54,10 +112,9 @@ impl BackupItem {
 		Err("".to_string())
 	}
 
-	pub fn create_world_edit_backup(world_directory: PathBuf)
-	{
-		
-	}
+
+	pub fn create_world_edit_backup(server_dir: PathBuf, world_directory: PathBuf)
+	{}
 
 	pub fn delete_backup(id: u32) {
 		if let Some(backup) = Self::from_id(id) {
@@ -252,4 +309,35 @@ impl BackupItem {
 			}
 		)
 	}
+}
+
+fn get_all_files_in_directory<P: AsRef<Path>>(path: P) -> Result<Vec<PathBuf>, Box<dyn Error>> {
+	let mut result: Vec<PathBuf> = vec![];
+	let entries = match std::fs::read_dir(&path) {
+		Ok(entries) => entries,
+		Err(e) => return Err(Box::new(e)), // Propagate the error upwards
+	};
+
+	for entry in entries {
+		let entry = match entry {
+			Ok(entry) => entry,
+			Err(e) => {
+				error!("Error reading directory entry in {}: {}", path.as_ref().display(), e);
+				continue; // Continue to next entry instead of propagation
+			}
+		};
+		let path = entry.path();
+		if entry.metadata()?.is_dir() {
+			match get_all_files_in_directory(&path) {
+				Ok(mut items) => result.append(&mut items),
+				Err(e) => {
+					error!("Error reading directory {}: {}", path.display(), e);
+					// Consider whether to return the error or continue
+				},
+			}
+		} else {
+			result.push(path);
+		}
+	}
+	Ok(result)
 }
