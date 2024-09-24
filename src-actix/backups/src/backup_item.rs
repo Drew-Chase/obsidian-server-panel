@@ -1,5 +1,6 @@
 use crate::hashed_file::HashedFile;
 use crate::{create_connection, get_backups_directory};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{error, info};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -124,7 +125,7 @@ impl BackupItem {
 			}
 		};
 
-		let mut stmt = match conn.prepare("INSERT INTO backups (path, type, method, timestamp, size, server) VALUES (?, ?, ?, ?, ?, ?)") {
+		let mut stmt = match conn.prepare("INSERT INTO backups (path, type, method, size, server) VALUES (?, ?, ?, ?, ?)") {
 			Ok(c) => { c },
 			Err(e) => {
 				let msg = format!("Failed to prepare backups insert statement: {}", e);
@@ -145,7 +146,6 @@ impl BackupItem {
 
 		let item_type: i64 = r#type.clone() as i64;
 		let item_method: i64 = method.clone() as i64;
-		let item_timestamp: i64 = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
 		let item = BackupItem {
 			path: output_file.clone(),
@@ -165,13 +165,10 @@ impl BackupItem {
 		stmt.bind((3, item_method)).map_err(|e| {
 			format!("Failed to bind {:?} -> method: {}", item.method, e)
 		})?;
-		stmt.bind((4, item_timestamp)).map_err(|e| {
-			format!("Failed to bind {:?} -> timestamp: {}", item.timestamp, e)
-		})?;
-		stmt.bind((5, item.size as i64)).map_err(|e| {
+		stmt.bind((4, item.size as i64)).map_err(|e| {
 			format!("Failed to bind {} -> size: {}", item.size, e)
 		})?;
-		stmt.bind((6, item.server as i64)).map_err(|e| {
+		stmt.bind((5, item.server as i64)).map_err(|e| {
 			format!("Failed to bind {} -> server: {}", item.server, e)
 		})?;
 
@@ -199,6 +196,10 @@ impl BackupItem {
 		if let Err(e) = archive.push_source_path(&world_directory, |e| { true }) {
 			error!("Unable to archive '{}' directory: {}", world_directory.display(), e)
 		}
+	}
+
+	pub fn trim(server_id: u32, items_to_keep: u32) {
+		let backups = Self::get_list_of_backups_from_server(server_id);
 	}
 
 	pub fn delete_backup(id: u32) {
@@ -273,7 +274,7 @@ impl BackupItem {
 				return result;
 			}
 		};
-		let mut stmt = match conn.prepare("select * from `backups` where server = ?") {
+		let mut stmt = match conn.prepare("select * from `backups` where server = ? order by timestamp") {
 			Ok(s) => s,
 			Err(e) => {
 				error!("Unable to prepare select statement for the `get_list_of_backups` function of the backups class: {}", e);
@@ -365,15 +366,13 @@ impl BackupItem {
 						return None::<Self>;
 					}
 				},
-				timestamp: SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(
-					stmt.read::<String, _>("timestamp").map_err(|e| {
+				timestamp: SystemTime::from(DateTime::<Utc>::from_naive_utc_and_offset(NaiveDateTime::parse_from_str(
+					&stmt.read::<String, _>("timestamp").map_err(|e| {
 						error!("Unable to parse the column `timestamp` from the backups table in the `from_id` function: {}", e);
 						return None::<Self>;
-					}).ok()?.parse::<u64>().map_err(|e| {
-						error!("Unable to convert timestamp string to u64 in the `from_id` function: {}", e);
-						return None::<Self>;
-					}).ok()?
-				),
+					}).ok()?,
+					"%Y-%m-%d %H:%M:%S"
+				).ok()?, Utc)),
 				size: stmt.read::<i64, _>("size").map_err(|e| {
 					error!("Unable to parse the column `size` from the backups table in the `from_id` function: {}", e);
 					return None::<Self>;
