@@ -1,4 +1,5 @@
 use log::error;
+use serde_derive::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sqlite::Statement;
 use std::error::Error;
@@ -7,6 +8,7 @@ use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HashedFile {
 	pub name: String,
 	pub path: PathBuf,
