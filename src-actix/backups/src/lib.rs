@@ -22,16 +22,16 @@ pub fn initialize() {
 		    path      TEXT             NOT NULL PRIMARY KEY UNIQUE,
 		    type      TINYINT          NOT NULL,
 		    method    TINYINT          NOT NULL,
-		    timestamp UNSIGNED BIG INT NOT NULL,
+		    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
 		    size      UNSIGNED BIG INT NOT NULL,
 		    server    INTEGER          NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS file_hash_table
 		(
-		    path      TEXT    NOT NULL UNIQUE,
-		    hash      TEXT    NOT NULL,
-		    timestamp TEXT    NOT NULL,
+		    path      TEXT NOT NULL UNIQUE,
+		    hash      TEXT NOT NULL,
+		    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 		);
 	",
 	) {
