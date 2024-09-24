@@ -17,23 +17,21 @@ pub fn initialize() {
 	let conn = create_connection().expect("Failed to connect to database");
 	if let Err(e) = conn.execute(
 		"
-		CREATE TABLE IF NOT EXISTS backups (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT NOT NULL,
-			path TEXT NOT NULL,
-			type INTEGER NOT NULL,
-			method INTEGER NOT NULL,
-			timestamp TEXT NOT NULL,
-			size INTEGER NOT NULL,
-			server INTEGER NOT NULL
+		CREATE TABLE IF NOT EXISTS backups
+		(
+		    path      TEXT             NOT NULL PRIMARY KEY UNIQUE,
+		    type      TINYINT          NOT NULL,
+		    method    TINYINT          NOT NULL,
+		    timestamp UNSIGNED BIG INT NOT NULL,
+		    size      UNSIGNED BIG INT NOT NULL,
+		    server    INTEGER          NOT NULL
 		);
 
-		CREATE TABLE IF NOT EXISTS file_hash_table (
-			path TEXT NOT NULL UNIQUE,
-			name TEXT NOT NULL,
-			hash TEXT NOT NULL,
-			timestamp TEXT NOT NULL,
-			size INTEGER NOT NULL,
+		CREATE TABLE IF NOT EXISTS file_hash_table
+		(
+		    path      TEXT    NOT NULL UNIQUE,
+		    hash      TEXT    NOT NULL,
+		    timestamp TEXT    NOT NULL,
 		);
 	",
 	) {
