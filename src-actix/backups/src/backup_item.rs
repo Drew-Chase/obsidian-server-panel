@@ -1,21 +1,16 @@
 use crate::hashed_file::HashedFile;
 use crate::{create_connection, get_backups_directory};
 use chrono::{DateTime, NaiveDateTime, Utc};
-use log::{error, info};
+use log::error;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use sevenz_rust::{lzma, Archive, SevenZWriter};
-use sha2::{Digest, Sha256};
+use serde_derive::{Deserialize, Serialize};
+use sevenz_rust::{lzma, SevenZWriter};
 use sqlite::{State, Statement};
-use std::collections::HashMap;
-use std::env;
 use std::error::Error;
-use std::fs::File;
-use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::time::{SystemTime, UNIX_EPOCH};
-use uuid::{uuid, Uuid};
+use std::time::SystemTime;
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub enum BackupCreationMethod {
@@ -31,6 +26,7 @@ pub enum BackupType {
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct BackupItem {
+	id: u32,
 	path: PathBuf,
 	r#type: BackupType,
 	method: BackupCreationMethod,
@@ -62,7 +58,7 @@ impl BackupItem {
 		]);
 
 		if r#type == BackupType::Full {
-			match archive.push_source_path(&server_directory, |e| { true }) {
+			match archive.push_source_path(&server_directory, |_| { true }) {
 				Ok(_) => {},
 				Err(e) => {
 					let msg = format!("Unable to archive directory for backup: {}", e);
@@ -71,7 +67,7 @@ impl BackupItem {
 				}
 			}
 		} else if r#type == BackupType::Incremental {
-			let mut changed_files: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
+			let changed_files: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(vec![]));
 			let all_files = match get_all_files_in_directory(&server_directory) {
 				Ok(s) => s,
 				Err(e) => {
@@ -134,6 +130,8 @@ impl BackupItem {
 			}
 		};
 
+		stmt.next().map_err(|e| { format!("Unable to insert backup into database: {}", e) })?;
+
 		let metadata = match output_file.metadata() {
 			Ok(m) => m,
 			Err(e) => {
@@ -147,7 +145,26 @@ impl BackupItem {
 		let item_type: i64 = r#type.clone() as i64;
 		let item_method: i64 = method.clone() as i64;
 
+		let mut stmt = match conn.prepare("select seq from sqlite_sequence where name = 'backups' limit 1") {
+			Ok(c) => { c },
+			Err(e) => {
+				let msg = format!("Failed to prepare sqlite_sequence selection: {}", e);
+				error!("{}", msg);
+				return Err(msg);
+			}
+		};
+
+		if let Err(e) = stmt.next() {
+			let msg = format!("Failed to execute sql command: {}", e);
+			error!("{}", msg);
+			return Err(msg);
+		}
+
+		let inserted_id = stmt.read::<i64, _>("seq").map_err(|e| { format!("Failed to execute sql command: {}", e) })?;
+
+
 		let item = BackupItem {
+			id: inserted_id as u32,
 			path: output_file.clone(),
 			server: server_id,
 			method,
@@ -193,13 +210,17 @@ impl BackupItem {
 			}
 		};
 
-		if let Err(e) = archive.push_source_path(&world_directory, |e| { true }) {
+		if let Err(e) = archive.push_source_path(&world_directory, |_| { true }) {
 			error!("Unable to archive '{}' directory: {}", world_directory.display(), e)
 		}
 	}
 
 	pub fn trim(server_id: u32, items_to_keep: u32) {
 		let backups = Self::get_list_of_backups_from_server(server_id);
+		if backups.len() <= items_to_keep as usize { return; }
+		for i in backups.len()..items_to_keep as usize {
+			Self::delete_backup(backups.get(i).unwrap().id);
+		}
 	}
 
 	pub fn delete_backup(id: u32) {
@@ -340,12 +361,16 @@ impl BackupItem {
 	fn from_statement(stmt: &Statement) -> Option<Self> {
 		Some(
 			BackupItem {
-				path: Path::new(&(stmt.read::<String, _>("path").map_err(|e| {
+				id: stmt.read::<i64, _>("id").map_err(|e| {
 					error!("Unable to parse the column `id` from the backups table in the `from_id` function: {}", e);
+					return None::<Self>;
+				}).ok()? as u32,
+				path: Path::new(&(stmt.read::<String, _>("path").map_err(|e| {
+					error!("Unable to parse the column `path` from the backups table in the `from_id` function: {}", e);
 					return None::<Self>;
 				}).ok()?)).to_path_buf(),
 				method: match stmt.read::<i64, _>("method").map_err(|e| {
-					error!("Unable to parse the column `type` from the backups table in the `from_id` function: {}", e);
+					error!("Unable to parse the column `method` from the backups table in the `from_id` function: {}", e);
 					return None::<Self>;
 				}).ok()? {
 					0 => BackupCreationMethod::AUTO,
