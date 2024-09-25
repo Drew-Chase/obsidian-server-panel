@@ -30,7 +30,6 @@ pub async fn create_manual_backup(id: web::Path<String>, req: HttpRequest) -> im
 			Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
 		};
 
-
 		let server = match server_db::get_owned_server_by_id(id_number, user.id) {
 			Some(s) => s,
 			None => {
