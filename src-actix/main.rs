@@ -7,6 +7,7 @@ mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
+mod backups_endpoint;
 
 use actix_files::Files;
 use actix_files::NamedFile;
@@ -113,7 +114,11 @@ async fn main() -> std::io::Result<()> {
 										web::scope("files")
 											.service(file_system_endpoint::get_server_files),
 									)
-									.service(server_endpoint::get_server_by_id),
+									.service(server_endpoint::get_server_by_id)
+									.service(
+										web::scope("backups")
+											.service(backups_endpoint::get_backups)
+									)
 							)
 							.service(server_endpoint::get_servers)
 							.service(server_endpoint::create_server),
