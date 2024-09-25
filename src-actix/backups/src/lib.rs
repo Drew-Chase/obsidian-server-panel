@@ -2,37 +2,30 @@ pub mod backup_item;
 pub mod hashed_file;
 
 use log::{error, info};
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
-use sqlite::{State, Statement};
 use std::env;
-use std::error::Error;
-use std::fs::File;
-use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 
 pub fn initialize() {
 	info!("Initializing backups database");
 	let conn = create_connection().expect("Failed to connect to database");
 	if let Err(e) = conn.execute(
 		"
-		CREATE TABLE IF NOT EXISTS backups
-		(
-		    path      TEXT             NOT NULL PRIMARY KEY UNIQUE,
-		    type      TINYINT          NOT NULL,
-		    method    TINYINT          NOT NULL,
-		    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-		    size      UNSIGNED BIG INT NOT NULL,
-		    server    INTEGER          NOT NULL
-		);
-
-		CREATE TABLE IF NOT EXISTS file_hash_table
-		(
-		    path      TEXT NOT NULL UNIQUE,
-		    hash      TEXT NOT NULL,
-		    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-		);
+				CREATE TABLE IF NOT EXISTS backups
+				(
+				    id        INTEGER          NOT NULL PRIMARY KEY AUTOINCREMENT,
+				    path      TEXT             NOT NULL UNIQUE,
+				    type      TINYINT          NOT NULL,
+				    method    TINYINT          NOT NULL,
+				    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+				    size      UNSIGNED BIG INT NOT NULL,
+				    server    INTEGER          NOT NULL
+				);
+				CREATE TABLE IF NOT EXISTS file_hash_table
+				(
+				    path      TEXT NOT NULL UNIQUE PRIMARY KEY,
+				    hash      TEXT NOT NULL,
+				    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+				);
 	",
 	) {
 		error!("Failed to create backups table: {}", e);
