@@ -98,6 +98,18 @@ pub async fn create_server(
 			}
 		}
 
+		if let Err(e) = server_db::set_minecraft_version(server.id, &body.minecraft_version) {
+			error!("{}", e);
+			return HttpResponse::BadRequest().json(json!({"error":e}));
+		}
+		if let Some(loader_version) = &body.loader_version {
+			if let Err(e) = server_db::set_loader(server.id, *&body.loader, loader_version.as_str()) {
+				error!("{}", e);
+				return HttpResponse::BadRequest().json(json!({"error":e}));
+			}
+		}
+
+
 		let mut properties: Properties =
 			match Properties::new(&Path::join(&*dir, Path::new("server.properties"))) {
 				Ok(p) => p,
