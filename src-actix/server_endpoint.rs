@@ -40,7 +40,7 @@ pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl R
 			Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
 		};
 
-		let server = match server_db::get_server_by_id(id_number) {
+		let server = match server_db::get_owned_server_by_id(id_number, user.id) {
 			Some(s) => s,
 			None => {
 				let msg = format!("Server with id: {} not found", id_number);
@@ -48,9 +48,7 @@ pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl R
 				return HttpResponse::BadRequest().json(json!({"error":msg}));
 			}
 		};
-		if server.owner == user.id {
-			return HttpResponse::Ok().json(HashedServer::from_server(server));
-		}
+		return HttpResponse::Ok().json(HashedServer::from_server(server));
 	}
 
 	HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
