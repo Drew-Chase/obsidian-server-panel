@@ -15,4 +15,5 @@ sha2 = { version = "0.10.8" }
 uuid = { version = "1.10.0", features = ["v4"] }
 rayon = "1.10.0"
 chrono = "0.4.38"
+crypto = { path = "../crypto" }
 
