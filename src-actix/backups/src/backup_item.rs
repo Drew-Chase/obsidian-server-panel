@@ -1,6 +1,7 @@
 use crate::hashed_file::HashedFile;
 use crate::{create_connection, get_backups_directory};
 use chrono::{DateTime, NaiveDateTime, Utc};
+use crypto::hashids::encode;
 use log::error;
 use rayon::prelude::*;
 use serde_derive::{Deserialize, Serialize};
@@ -27,6 +28,17 @@ pub enum BackupType {
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct BackupItem {
 	id: u32,
+	path: PathBuf,
+	r#type: BackupType,
+	method: BackupCreationMethod,
+	timestamp: SystemTime,
+	size: u64,
+	server: u32,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HashedBackupItem {
+	id: String,
 	path: PathBuf,
 	r#type: BackupType,
 	method: BackupCreationMethod,
@@ -408,6 +420,23 @@ impl BackupItem {
 				}).ok()? as u32,
 			}
 		)
+	}
+
+	pub fn hash(&self) -> HashedBackupItem {
+		HashedBackupItem::from_backup_item(self.clone())
+	}
+}
+impl HashedBackupItem {
+	pub fn from_backup_item(item: BackupItem) -> Self {
+		HashedBackupItem {
+			id: encode(&[item.id as u64]),
+			path: item.path,
+			method: item.method,
+			r#type: item.r#type,
+			timestamp: item.timestamp,
+			size: item.size,
+			server: item.server,
+		}
 	}
 }
 
