@@ -3,8 +3,6 @@ use crate::server_db::{get_server_by_id, Server};
 use log::{debug, error, info};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::error::Error;
-use std::fmt::format;
 use std::fs::create_dir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;

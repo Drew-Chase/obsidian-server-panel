@@ -5,7 +5,7 @@ pub mod validation;
 
 use crate::data::{User, UserRegistration};
 use crate::management::create_user;
-use log::{error, info, warn};
+use log::{info, warn};
 use sqlite::Connection;
 
 pub fn initialize() -> Result<(), String> {

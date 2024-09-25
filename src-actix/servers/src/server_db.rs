@@ -1,5 +1,5 @@
-use crypto::hashids::{decode, encode};
-use log::{debug, error, info};
+use crypto::hashids::encode;
+use log::{error, info};
 use serde_derive::{Deserialize, Serialize};
 use sqlite::{State, Statement};
 use std::path::Path;

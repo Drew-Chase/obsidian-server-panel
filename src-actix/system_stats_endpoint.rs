@@ -1,7 +1,6 @@
 use actix_web::{get, HttpResponse, Responder};
 use serde_json::json;
-use std::env::{current_dir, current_exe};
-use std::ops::Index;
+use std::env::current_dir;
 use std::sync::Mutex;
 use sysinfo::{Disks, System};
 #[get("/")]

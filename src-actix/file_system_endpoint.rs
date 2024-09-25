@@ -14,7 +14,7 @@ pub async fn get_server_files(
 	if let Some(user) = req.extensions().get::<User>() {
 		let id_number = match decode(&id) {
 			Ok(id) => id,
-			Err(e) => {
+			Err(_) => {
 				error!("Invalid id: {}", id);
 				return HttpResponse::BadRequest()
 					.json(json!({"error": format!("Invalid id: {}", id)}));

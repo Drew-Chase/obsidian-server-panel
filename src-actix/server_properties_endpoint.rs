@@ -12,7 +12,7 @@ pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> i
 	if let Some(user) = req.extensions().get::<User>() {
 		let id_number: u32 = match decode(id.as_str()) {
 			Ok(id_number) => id_number[0] as u32,
-			Err(e) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+			Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
 		};
 		let server = match server_db::get_server_by_id(id_number) {
 			Some(s) => s,
@@ -50,7 +50,7 @@ pub async fn set_server_property(
 		let (id, key) = path.into_inner();
 		let id_number: u32 = match decode(id.as_str()) {
 			Ok(id_number) => id_number[0] as u32,
-			Err(e) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+			Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
 		};
 		let server = match server_db::get_owned_server_by_id(id_number, user.id) {
 			Some(s) => s,

@@ -10,7 +10,6 @@ mod system_stats_endpoint;
 
 use actix_files::Files;
 use actix_files::NamedFile;
-use actix_web::dev::WebService;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, middleware, web, App, HttpResponse, HttpServer, Responder};
 use log::{error, info};
