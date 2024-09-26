@@ -108,7 +108,7 @@ impl BackupItem {
 			all_files.par_iter().for_each(|entry| {
 				let relative_path = entry.strip_prefix(&server_directory).unwrap();
 				if let Some(hashed_file) = HashedFile::get(entry) {
-					if (hashed_file.has_file_been_changed()) {
+					if hashed_file.has_file_been_changed() {
 						changed_files.lock().unwrap().push(relative_path.to_str().unwrap().to_string());
 					}
 				} else {
@@ -116,10 +116,10 @@ impl BackupItem {
 				}
 			});
 
-			for entry in changed_files.lock().unwrap().deref_mut() {
+			for entry in &*changed_files.lock().unwrap().deref_mut() {
 				zip.start_file_from_path(entry, options)
 				   .map_err(|e| format!("Failed to start file from path: {}", e))?;
-				let mut file = match File::open(&Path::join(&server_directory, entry)) {
+				let mut file = match File::open(&Path::join(&server_directory, &entry)) {
 					Ok(f) => f,
 					Err(e) => {
 						error!("Failed to open file: {}", e);
