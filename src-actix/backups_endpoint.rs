@@ -40,7 +40,7 @@ pub async fn create_manual_backup(id: web::Path<String>, req: HttpRequest) -> im
 		};
 
 		if let Some(server_directory) = server.directory {
-			let item = match BackupItem::create_backup(id_number, Path::new(&server_directory).to_path_buf(), BackupCreationMethod::MANUAL, BackupType::Full) {
+			let item = match BackupItem::create_backup(id_number, Path::new(&server_directory).to_path_buf(), BackupCreationMethod::MANUAL, BackupType::Incremental) {
 				Ok(b) => b.hash(),
 				Err(e) => {
 					let msg = format!("Failed to create backup: {}", e);
