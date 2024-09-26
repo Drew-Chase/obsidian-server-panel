@@ -1,16 +1,12 @@
-use std::{env};
-use std::process::Command;
+use npm_rs::{NodeEnv, NpmEnv};
 
 fn main() {
 	// Run `npm run build frontend`
-	let status = Command::new("npm")
-		.arg("run")
-		.arg("build frontend")
-		.current_dir(env::current_dir().unwrap())
-		.status()
-		.expect("Failed to execute npm 'build frontend'");
-
-	if !status.success() {
-		panic!("npm 'build frontend' failed!");
-	}
+	NpmEnv::default()
+		.with_node_env(&NodeEnv::Production)
+		.init_env()
+		.install(None)
+		.run("build frontend")
+		.exec()
+		.expect("Failed to execute npm run 'build frontend'");
 }
