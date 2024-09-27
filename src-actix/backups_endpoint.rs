@@ -15,7 +15,7 @@ pub async fn get_backups(id: web::Path<String>, req: HttpRequest) -> impl Respon
 			Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
 		};
 
-		return HttpResponse::Ok().json(json!(BackupItem::get_list_of_backups_from_server(id_number).iter().map(|e| { e.hash() }).collect::<Vec<HashedBackupItem>>()));
+		return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number).iter().map(|e| { e.hash() }).collect::<Vec<HashedBackupItem>>()));
 	}
 
 	HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
