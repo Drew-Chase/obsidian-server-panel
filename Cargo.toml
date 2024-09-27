@@ -1,3 +1,4 @@
+members = ["src-actix/archive_utility", "src-actix/authentication", "src-actix/minecraft", "src-actix/servers", "src-actix/crypto", "src-actix/backups", "."]
 [package]
 name = "obsidian-server-panel"
 version = "0.0.0"
@@ -14,6 +15,7 @@ minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
 crypto = { path = "src-actix/crypto" }
 backups = { path = "src-actix/backups" }
+archive_utility = { path = "src-actix/archive_utility" }
 actix-web = { version = "4.9.0" }
 actix-ws = "0.3.0"
 actix-multipart = "0.7.2"
