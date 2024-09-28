@@ -1,4 +1,4 @@
-use crate::create_connection;
+use crate::{create_connection, file_hash_db};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use log::error;
 use serde_derive::{Deserialize, Serialize};
@@ -18,157 +18,63 @@ pub struct HashedFile {
     pub timestamp: SystemTime,
 }
 impl HashedFile {
-    pub fn get(path: &Path) -> Option<Self> {
-        let conn = match create_connection() {
-            Ok(c) => c,
-            Err(_) => {
-                return None;
-            }
-        };
-        let mut stmt = match conn.prepare("select * from file_hash_table where path = ? LIMIT 1") {
-            Ok(s) => s,
-            Err(e) => {
-                error!("Failed to prepare statement: {}", e);
-                return None;
-            }
-        };
-
-        match stmt.bind((1, path.to_str()?)) {
-            Ok(_) => {}
-            Err(e) => {
-                error!("Unable to bind '{:?}'-> path: {}", path, e);
-                return None;
-            }
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Box<dyn Error>> {
+        let path = path.as_ref().to_path_buf();
+        if !path.exists() {
+            return Err("File does not exist".into());
+        }
+        if !path.is_file() {
+            return Err("Path is not a file".into());
+        }
+        if let Some(file) = file_hash_db::get(&path) {
+            return Ok(file);
         }
 
-        match stmt.next() {
-            Ok(_) => {}
-            Err(e) => {
-                error!("Failed to execute select on file_hash_table: {}", e);
-                return None;
-            }
-        }
-
-        Self::from_statement(&stmt)
-    }
-
-    pub fn has_file_been_changed(self) -> bool {
-        self.hash
-            != match Self::hash_file(self.path.as_path()) {
-                Ok(h) => h,
-                Err(e) => {
-                    error!("Unable to hash file {:?}: {}", self.path, e);
-                    return false;
-                }
-            }
-    }
-
-    pub fn cache_file_hash(path: &Path) -> Option<Vec<u8>> {
-        let hash = match Self::hash_file(&path) {
-            Ok(hash) => hash,
-            Err(e) => {
-                error!("Failed to hash file '{:?}': {}", path, e);
-                return None;
-            }
-        };
-
-        let conn = match create_connection() {
-            Ok(c) => c,
-            Err(_) => {
-                return None;
-            }
-        };
-
-        let mut stmt = match conn.prepare("INSERT INTO file_hash_table ( path, hash) VALUES (?, ?)")
-        {
-            Ok(s) => s,
-            Err(e) => {
-                error!("Failed to prepare statement: {}", e);
-                return None;
-            }
-        };
-
-        match stmt.bind((1, path.to_str())) {
-            Ok(_) => {}
-            Err(e) => {
-                error!("Failed to bind path variable: {}", e);
-                return None;
-            }
-        }
-
-        match stmt.bind((2, Self::hash_to_string(&hash).as_str())) {
-            Ok(_) => {}
-            Err(e) => {
-                error!("Failed to bind hash variable: {}", e);
-                return None;
-            }
-        }
-        match stmt.next() {
-            Ok(_) => {}
-            Err(e) => {
-                error!("Failed to execute insert on file_hash_table: {}", e);
-                return None;
-            }
-        };
-
-        Some(hash)
-    }
-
-    fn from_statement(stmt: &Statement) -> Option<Self> {
-        Some(
-			HashedFile {
-				path: Path::new(&(stmt.read::<String, _>("path").map_err(|_| {
-//					error!("Unable to parse the column `path` from the file_hash_table in the `from_id` function: {}", e);
-                    None::<Self>
-				}).ok()?)).to_path_buf(),
-				hash: stmt.read::<String, _>("hash").map_err(|e| {
-					error!("Unable to parse the column `hash` from the file_hash_table in the `from_id` function: {}", e);
-                    None::<Self>
-				}).ok()?.into_bytes(),
-                timestamp: SystemTime::from(DateTime::<Utc>::from_naive_utc_and_offset(NaiveDateTime::parse_from_str(
-                    &stmt.read::<String, _>("timestamp").map_err(|e| {
-                        error!("Unable to parse the column `timestamp` from the file_hash_table table in the `from_id` function: {}", e);
-                        None::<Self>
-                    }).ok()?,
-                    "%Y-%m-%d %H:%M:%S"
-                ).ok()?, Utc)),
-			}
-		)
-    }
-
-    pub(crate) fn hash_file(path: &Path) -> Result<Vec<u8>, Box<dyn Error>> {
-        match File::open(path) {
-            Ok(file) => {
-                let mut reader = BufReader::new(file);
-                let mut hasher = Sha256::new();
-                let mut buffer = [0; 4096];
-
-                loop {
-                    match reader.read(&mut buffer) {
-                        Ok(n) => {
-                            if n == 0 {
-                                break;
-                            }
-                            hasher.update(&buffer[..n]);
-                        }
-                        Err(e) => {
-                            error!("Error reading file '{:?}': {}", path, e);
-                            return Err(Box::new(e));
-                        }
-                    }
-                }
-                Ok(hasher.finalize().to_vec())
-            }
-            Err(e) => {
-                error!("Failed to open file '{:?}': {}", path, e);
-                Err(Box::new(e))
-            }
-        }
-    }
-    fn hash_to_string(hash: &[u8]) -> String {
-        hash.iter().fold(String::new(), |mut acc, byte| {
-            write!(acc, "{:02x}", byte).unwrap();
-            acc
+        let hash = hash_file(&path)?;
+        let timestamp = SystemTime::now();
+        Ok(Self {
+            path,
+            hash,
+            timestamp,
         })
     }
+    pub fn changed(&self) -> Result<bool, Box<dyn Error>> {
+        if let Some(file) = file_hash_db::get(&self.path) {
+            let updated_hash = hash_file(&self.path)?;
+            Ok(file.hash != updated_hash)
+        } else {
+            Ok(true)
+        }
+    }
+    
+    pub fn cache(&self) -> Result<(), Box<dyn Error>> {
+        if file_hash_db::exists(&self.path)? {
+            file_hash_db::update(&self.path, &hash_to_string(&self.hash))?;
+        } else {
+            file_hash_db::insert(&self.path, &hash_to_string(&self.hash))?;
+        }
+        Ok(())
+    }
+    
+}
+
+fn hash_file(path: impl AsRef<Path>) -> Result<Vec<u8>, Box<dyn Error>> {
+    let file = File::open(path.as_ref())?;
+    let mut reader = BufReader::new(file);
+    let mut hasher = Sha256::new();
+    let mut buffer = [0; 1024];
+    loop {
+        let bytes_read = reader.read(&mut buffer)?;
+        if bytes_read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..bytes_read]);
+    }
+    Ok(hasher.finalize().to_vec())
+}
+fn hash_to_string(hash: &[u8]) -> String {
+    hash.iter().fold(String::new(), |mut acc, byte| {
+        write!(acc, "{:02x}", byte).unwrap();
+        acc
+    })
 }
