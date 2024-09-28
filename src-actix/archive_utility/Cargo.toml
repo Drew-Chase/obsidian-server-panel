@@ -9,3 +9,4 @@ edition = "2021"
 walkdir = "2.5.0"
 zip = { version = "2.2.0" }
 log = "0.4.22"
+rayon = "1.10.0"
