@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+archive_utility = { path = "../archive_utility" }
 log = "0.4.22"
 sqlite = "0.36.1"
 serde = { version = "1.0.210", features = ["derive"] }
@@ -17,5 +18,3 @@ chrono = "0.4.38"
 crypto = { path = "../crypto" }
 walkdir = "2.5.0"
 zip = { version = "2.2.0" }
-
-
