@@ -1,54 +1,65 @@
-pub mod backup_item;
-pub mod hashed_file;
 mod backup_db;
-mod hashed_backup_item;
+pub mod backup_item;
+mod file_hash_db;
+pub mod hashed_backup_item;
+pub mod hashed_file;
+mod lazy_hashed_file;
 
+use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{error, info};
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 
+/// Initializes the backups database and the file hash database.
 pub fn initialize() {
-	info!("Initializing backups database");
-	let conn = create_connection().expect("Failed to connect to database");
-	if let Err(e) = conn.execute(
-		"
-				CREATE TABLE IF NOT EXISTS backups
-				(
-				    id        INTEGER          NOT NULL PRIMARY KEY AUTOINCREMENT,
-				    path      TEXT             NOT NULL UNIQUE,
-				    type      TINYINT          NOT NULL,
-				    method    TINYINT          NOT NULL,
-				    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-				    size      UNSIGNED BIG INT NOT NULL,
-				    server    INTEGER          NOT NULL
-				);
-				CREATE TABLE IF NOT EXISTS file_hash_table
-				(
-				    path      TEXT NOT NULL UNIQUE PRIMARY KEY,
-				    hash      TEXT NOT NULL,
-				    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-				);
-	",
-	) {
-		error!("Failed to create backups table: {}", e);
-	} else {
-		info!("Successfully created or verified the backups table.");
-	}
-	let backups_dir = get_backups_directory();
-	if !backups_dir.exists() {
-		std::fs::create_dir_all(backups_dir).expect("Unable to create backup directory.");
-	}
+    info!("Initializing backups database");
+    backup_db::initialize();
+    file_hash_db::initialize();
 }
 
+/// Creates a connection to the "servers.db" SQLite database.
+///
+/// # Returns
+///
+/// A `Result` which is:
+/// - `Ok` containing the SQLite connection upon success.
+/// - `Err` containing a SQLite error if the connection could not be established.
 fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
-	sqlite::Connection::open("servers.db").map_err(|e| {
-		error!(
+    sqlite::Connection::open("servers.db").map_err(|e| {
+        error!(
             "Failed to open servers database connection for backups: {}",
             e
         );
-		e
-	})
+        e
+    })
 }
 
+/// Returns the path to the backups directory.
+///
+/// # Returns
+///
+/// A `PathBuf` representing the backups directory path.
 pub fn get_backups_directory() -> PathBuf {
-	Path::new("backups").to_path_buf()
+    Path::new("backups").to_path_buf()
+}
+
+/// Converts a string representation of a date and time to a `SystemTime`.
+///
+/// The string should be in the format "%Y-%m-%d %H:%M:%S".
+///
+/// # Arguments
+///
+/// * `time` - A string that holds the date and time.
+///
+/// # Returns
+///
+/// * `Some(SystemTime)` if the conversion is successful.
+/// * `None` if the conversion fails.
+pub fn system_time_from_string(time: impl AsRef<str>) -> Option<SystemTime> {
+    NaiveDateTime::parse_from_str(time.as_ref(), "%Y-%m-%d %H:%M:%S")
+        .ok()
+        .map(|naive_dt| {
+            let dt = DateTime::<Utc>::from_naive_utc_and_offset(naive_dt, Utc);
+            SystemTime::from(dt)
+        })
 }
