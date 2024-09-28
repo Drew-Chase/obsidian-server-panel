@@ -1,4 +1,4 @@
-use crate::hashed_file::{HashedFile, LazyHashedFile};
+use crate::hashed_file::HashedFile;
 use log::error;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -47,14 +47,4 @@ impl LazyHashedFile {
             }
         }
     }
-}
-
-fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
-    sqlite::Connection::open("servers.db").map_err(|e| {
-        error!(
-            "Failed to open servers database connection for backups: {}",
-            e
-        );
-        e
-    })
 }
