@@ -22,10 +22,7 @@ pub(crate) fn initialize() {
         info!("Successfully created or verified the backups table.");
     }
 }
-pub(crate) fn insert(
-    path: impl AsRef<Path>,
-    hash: impl AsRef<str>,
-) -> Result<(), sqlite::Error> {
+pub(crate) fn insert(path: impl AsRef<Path>, hash: impl AsRef<str>) -> Result<(), sqlite::Error> {
     info!(
         "Inserting a new hashed file: {:?} ({})",
         path.as_ref(),
@@ -53,7 +50,7 @@ pub(crate) fn update(path: impl AsRef<Path>, hash: impl AsRef<str>) -> Result<()
     stmt.next()?;
     Ok(())
 }
-
+#[allow(dead_code)]
 pub(crate) fn delete(path: impl AsRef<Path>) -> Result<(), sqlite::Error> {
     let conn = create_connection()?;
     let mut stmt = conn.prepare("DELETE FROM file_hash_table WHERE path = ?")?;
@@ -63,7 +60,7 @@ pub(crate) fn delete(path: impl AsRef<Path>) -> Result<(), sqlite::Error> {
 }
 pub(crate) fn exists(path: impl AsRef<Path>) -> Result<bool, sqlite::Error> {
     let conn = create_connection()?;
-    let mut stmt = conn.prepare("SELECT COUNT(*) FROM file_hash_table WHERE path = ? LIMIT 1")?;
+    let mut stmt = conn.prepare("SELECT * FROM file_hash_table WHERE path = ? LIMIT 1")?;
     stmt.bind((1, path.as_ref().to_str()))?;
     Ok(State::Row == stmt.next()?) // If there is a row, the file exists
 }
@@ -76,7 +73,7 @@ pub(crate) fn get(path: impl AsRef<Path>) -> Option<HashedFile> {
     if let State::Row = stmt.next().ok()? {
         Some(HashedFile {
             path: PathBuf::from(&stmt.read::<String, _>("path").ok()?),
-            hash: stmt.read::<String, _>("hash").ok()?.into_bytes(),
+            hash: stmt.read::<String, _>("hash").ok()?,
             timestamp: system_time_from_string(stmt.read::<String, _>("timestamp").ok()?)?,
         })
     } else {
