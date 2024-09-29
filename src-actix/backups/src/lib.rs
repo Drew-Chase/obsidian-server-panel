@@ -63,3 +63,16 @@ pub fn system_time_from_string(time: impl AsRef<str>) -> Option<SystemTime> {
             SystemTime::from(dt)
         })
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_system_time_from_string() {
+        let time = "2021-01-01 12:00:00";
+        let expected = SystemTime::UNIX_EPOCH + std::time::Duration::new(1609488000, 0);
+        assert_eq!(system_time_from_string(time), Some(expected));
+    }
+}
