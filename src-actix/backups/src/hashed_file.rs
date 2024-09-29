@@ -1,9 +1,6 @@
-use crate::{create_connection, file_hash_db};
-use chrono::{DateTime, NaiveDateTime, Utc};
-use log::error;
+use crate::file_hash_db;
 use serde_derive::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use sqlite::Statement;
 use std::error::Error;
 use std::fmt::Write;
 use std::fs::File;
@@ -14,7 +11,7 @@ use std::time::SystemTime;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HashedFile {
     pub path: PathBuf,
-    pub hash: Vec<u8>,
+    pub hash: String,
     pub timestamp: SystemTime,
 }
 impl HashedFile {
@@ -34,28 +31,29 @@ impl HashedFile {
         let timestamp = SystemTime::now();
         Ok(Self {
             path,
-            hash,
+            hash: hash_to_string(&hash),
             timestamp,
         })
     }
     pub fn changed(&self) -> Result<bool, Box<dyn Error>> {
         if let Some(file) = file_hash_db::get(&self.path) {
-            let updated_hash = hash_file(&self.path)?;
-            Ok(file.hash != updated_hash)
+            let updated_hash = hash_to_string(&hash_file(&self.path)?);
+            let current_hash = &*file.hash;
+            let changed = updated_hash != current_hash;
+            Ok(changed)
         } else {
             Ok(true)
         }
     }
-    
+
     pub fn cache(&self) -> Result<(), Box<dyn Error>> {
         if file_hash_db::exists(&self.path)? {
-            file_hash_db::update(&self.path, &hash_to_string(&self.hash))?;
+            file_hash_db::update(&self.path, &self.hash)?;
         } else {
-            file_hash_db::insert(&self.path, &hash_to_string(&self.hash))?;
+            file_hash_db::insert(&self.path, &self.hash)?;
         }
         Ok(())
     }
-    
 }
 
 fn hash_file(path: impl AsRef<Path>) -> Result<Vec<u8>, Box<dyn Error>> {
