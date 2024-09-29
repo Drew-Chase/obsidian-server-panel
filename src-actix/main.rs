@@ -8,7 +8,6 @@ mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
-
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, get, middleware, web, App, HttpResponse, HttpServer, Responder};
