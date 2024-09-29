@@ -18,7 +18,7 @@ pub async fn get_backups(id: web::Path<String>, req: HttpRequest) -> impl Respon
 
         return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number)
             .iter()
-            .map(|e| { e.hash() })
+            .map(|e| { e.clone().hash() })
             .collect::<Vec<HashedBackupItem>>()));
     }
 
@@ -45,7 +45,7 @@ pub async fn create_manual_backup(id: web::Path<String>, req: HttpRequest) -> im
         if let Some(server_directory) = server.directory {
             let item = match BackupItem::create_backup(
                 id_number,
-                Path::new(&server_directory).to_path_buf(),
+                Path::new(&server_directory),
                 BackupCreationMethod::MANUAL,
                 BackupType::Incremental,
             ) {
