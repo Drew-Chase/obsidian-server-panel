@@ -1,7 +1,7 @@
+use rayon::prelude::*;
 use std::fs::File;
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::Path;
-use rayon::prelude::*;
 use walkdir::WalkDir;
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipWriter};
@@ -88,21 +88,24 @@ pub fn archive_directory(
         .collect();
 
     // Process files in parallel.
-    let file_entries: Result<Vec<_>, ArchiveError> = all_entries.par_iter().map(|entry| {
-        let path = entry.path();
-        let relative_path = path.strip_prefix(directory)?.to_string_lossy().to_string();
+    let file_entries: Result<Vec<_>, ArchiveError> = all_entries
+        .par_iter()
+        .map(|entry| {
+            let path = entry.path();
+            let relative_path = path.strip_prefix(directory)?.to_string_lossy().to_string();
 
-        // Read file contents.
-        let mut buffer = Vec::new();
-        let input_file = File::open(path)?;
-        let mut reader = BufReader::new(input_file);
-        reader.read_to_end(&mut buffer)?;
+            // Read file contents.
+            let mut buffer = Vec::new();
+            let input_file = File::open(path)?;
+            let mut reader = BufReader::new(input_file);
+            reader.read_to_end(&mut buffer)?;
 
-        Ok(FileEntry {
-            relative_path,
-            buffer,
+            Ok(FileEntry {
+                relative_path,
+                buffer,
+            })
         })
-    }).collect();
+        .collect();
 
     // Collect all file entries from parallel processing.
     let file_entries = file_entries?;
@@ -122,15 +125,4 @@ pub fn archive_directory(
     // Finish writing to the zip file.
     zip.finish()?;
     Ok(())
-}
-
-fn test(){
-    let directory = Path::new("/path/to/directory");
-    let output_file = Path::new("/path/to/output.zip");
-
-    archive_directory(directory, output_file, &|path| {
-        // Exclude files with .tmp extension
-        !path.ends_with(".tmp")
-    }).unwrap();
-
 }
