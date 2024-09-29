@@ -1,10 +1,8 @@
 use crate::backup_item::{BackupCreationMethod, BackupItem, BackupType};
 use crate::{create_connection, get_backups_directory, system_time_from_string};
-use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{debug, error, info};
 use sqlite::{State, Statement};
 use std::path::Path;
-use std::time::SystemTime;
 
 /// Initializes the backups table in the database and ensures the backup directory exists.
 ///
@@ -71,7 +69,7 @@ pub fn insert(item: BackupItem) -> Option<BackupItem> {
     ];
 
     for (pos, val) in binds.iter() {
-        if stmt.bind(((*pos, *val))).is_err() {
+        if stmt.bind((*pos, *val)).is_err() {
             error!("Unable to bind value to the statement at position {}", pos);
             return None;
         }
