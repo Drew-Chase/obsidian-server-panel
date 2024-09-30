@@ -22,7 +22,9 @@ pub enum BackupCreationMethod {
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Copy)]
 pub enum BackupType {
+	#[serde(rename = "full")]
 	Full,
+	#[serde(rename = "incremental")]
 	Incremental,
 }
 
