@@ -1,13 +1,17 @@
 meta {
-  name: Create Manual Backup
+  name: Create Full Manual Backup
   type: http
-  seq: 2
+  seq: 3
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/9W631n2DoZKObrg7/backups/create
+  url: http://127.0.0.1:1420/api/server/:id/backups/create/full
   body: none
   auth: none
+}
+
+params:path {
+  id: gYnxpl9aBABWrZ7N
 }
 
 headers {
