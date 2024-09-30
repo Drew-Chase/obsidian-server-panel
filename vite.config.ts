@@ -18,6 +18,6 @@ export default defineConfig({
         }
     },
     build: {
-        outDir: "dist/wwwroot",
+        outDir: "target/wwwroot",
     }
 });
