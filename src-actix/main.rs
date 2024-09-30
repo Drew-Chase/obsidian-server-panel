@@ -129,7 +129,7 @@ async fn main() -> std::io::Result<()> {
 }
 
 // Include the wwwroot directory from the OUT_DIR
-static WWWROOT: Dir = include_dir!("dist/wwwroot");
+static WWWROOT: Dir = include_dir!("target/wwwroot");
 
 // Function to serve the index.html file
 async fn index() -> Result<impl Responder, actix_web::Error> {
