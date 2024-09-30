@@ -18,7 +18,7 @@
 		"publish": "node scripts/publish.js",
 		"package": "node scripts/package.js",
 		"run": "node scripts/run.js",
-		"watch api": "cargo watch -x \"run --bin obsidian-server-panel\" -C dist -N --why -w ../src-actix/",
+		"watch api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../src-actix/",
 		"watch frontend": "vite build --watch"
 	},
 	"dependencies": {
