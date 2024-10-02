@@ -5,6 +5,7 @@ pub mod hashed_backup_item;
 pub mod hashed_file;
 mod lazy_hashed_file;
 mod backup_schedules;
+mod backup_schedule_db;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{error, info};
