@@ -1,0 +1,15 @@
+meta {
+  name: Get Java from Minecraft
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:1420/api/minecraft/:version/java
+  body: none
+  auth: none
+}
+
+params:path {
+  version: 1.17
+}
