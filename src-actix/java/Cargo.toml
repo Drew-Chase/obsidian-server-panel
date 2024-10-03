@@ -1,0 +1,11 @@
+[package]
+name = "java"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = "1.0.210"
+serde_json = "1.0.64"
+serde_derive = "1.0.210"
+log = "0.4.22"
+reqwest = "0.12.8"
