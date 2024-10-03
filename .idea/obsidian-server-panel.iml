@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-actix/crypto/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/backups/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/archive_utility/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/java/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/crypto/target" />
@@ -17,6 +18,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src-actix/backups/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/minecraft/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/servers/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src-actix/java/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
