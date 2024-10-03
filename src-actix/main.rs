@@ -67,9 +67,17 @@ async fn main() -> std::io::Result<()> {
                             .service(minecraft_endpoint::get_minecraft_versions)
                             .service(minecraft_endpoint::get_latest_release)
                             .service(minecraft_endpoint::get_latest_snapshot)
-                            .service(minecraft_endpoint::get_version_by_id),
+                            .service(minecraft_endpoint::get_version_by_id)
+                            .service(minecraft_endpoint::get_releases)
+                            .service(minecraft_endpoint::get_snapshots)
+                            .service(minecraft_endpoint::get_java_version_by_minecraft_version),
                     )
-                    .service(web::scope("java").service(java_endpoint::get_java_versions))
+                    .service(
+                        web::scope("java")
+                            .service(java_endpoint::get_java_versions)
+                            .service(java_endpoint::get_os_version)
+                            .service(java_endpoint::get_runtime_version),
+                    )
                     .service(
                         web::scope("system")
                             .service(system_stats_endpoint::get_system_info)
