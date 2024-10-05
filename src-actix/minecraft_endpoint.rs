@@ -67,7 +67,7 @@ pub async fn get_version_by_id(version: actix_web::web::Path<String>) -> impl Re
 }
 #[get("/{version}/java")]
 pub async fn get_java_version_by_minecraft_version(version: Path<String>) -> impl Responder {
-    match minecraft_version::get_version_runtime(&version).await {
+    match minecraft_version::get_version_runtime(&version.as_str()).await {
         Ok(version) => HttpResponse::Ok().json(version),
         Err(e) => HttpResponse::BadRequest().json(json!({"error": format!("{}", e)})),
     }
