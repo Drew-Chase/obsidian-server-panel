@@ -1,11 +1,11 @@
 mod backup_db;
 pub mod backup_item;
+mod backup_schedule_db;
+mod backup_schedules;
 mod file_hash_db;
 pub mod hashed_backup_item;
 pub mod hashed_file;
 mod lazy_hashed_file;
-mod backup_schedules;
-mod backup_schedule_db;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
 use log::{error, info};
@@ -14,26 +14,9 @@ use std::time::SystemTime;
 
 /// Initializes the backups database and the file hash database.
 pub fn initialize() {
-	info!("Initializing backups database");
-	backup_db::initialize();
-	file_hash_db::initialize();
-}
-
-/// Creates a connection to the "servers.db" SQLite database.
-///
-/// # Returns
-///
-/// A `Result` which is:
-/// - `Ok` containing the SQLite connection upon success.
-/// - `Err` containing a SQLite error if the connection could not be established.
-fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
-	sqlite::Connection::open("servers.db").map_err(|e| {
-		error!(
-            "Failed to open servers database connection for backups: {}",
-            e
-        );
-		e
-	})
+    info!("Initializing backups database");
+    backup_db::initialize();
+    file_hash_db::initialize();
 }
 
 /// Returns the path to the backups directory.
@@ -42,7 +25,7 @@ fn create_connection() -> Result<sqlite::Connection, sqlite::Error> {
 ///
 /// A `PathBuf` representing the backups directory path.
 pub fn get_backups_directory() -> PathBuf {
-	Path::new("backups").to_path_buf()
+    Path::new("backups").to_path_buf()
 }
 
 /// Converts a string representation of a date and time to a `SystemTime`.
@@ -69,12 +52,12 @@ pub fn get_backups_directory() -> PathBuf {
 /// assert_eq!(system_time_from_string(time), Some(expected));
 /// ```
 pub fn system_time_from_string(time: impl AsRef<str>) -> Option<SystemTime> {
-	NaiveDateTime::parse_from_str(time.as_ref(), "%Y-%m-%d %H:%M:%S")
-		.ok()
-		.map(|naive_dt| {
-			let dt = DateTime::<Utc>::from_naive_utc_and_offset(naive_dt, Utc);
-			SystemTime::from(dt)
-		})
+    NaiveDateTime::parse_from_str(time.as_ref(), "%Y-%m-%d %H:%M:%S")
+        .ok()
+        .map(|naive_dt| {
+            let dt = DateTime::<Utc>::from_naive_utc_and_offset(naive_dt, Utc);
+            SystemTime::from(dt)
+        })
 }
 
 /// Converts a `SystemTime` to a string representation.
@@ -100,19 +83,18 @@ pub fn system_time_from_string(time: impl AsRef<str>) -> Option<SystemTime> {
 /// assert_eq!(formatted, "2021-01-01 12:00:00");
 /// ```
 pub fn system_time_to_string(time: SystemTime) -> String {
-	let dt = DateTime::<Utc>::from(time);
-	dt.format("%Y-%m-%d %H:%M:%S").to_string()
+    let dt = DateTime::<Utc>::from(time);
+    dt.format("%Y-%m-%d %H:%M:%S").to_string()
 }
-
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+    use super::*;
 
-	#[test]
-	fn test_system_time_from_string() {
-		let time = "2021-01-01 12:00:00";
-		let expected = SystemTime::UNIX_EPOCH + std::time::Duration::new(1609488000, 0);
-		assert_eq!(system_time_from_string(time), Some(expected));
-	}
+    #[test]
+    fn test_system_time_from_string() {
+        let time = "2021-01-01 12:00:00";
+        let expected = SystemTime::UNIX_EPOCH + std::time::Duration::new(1609488000, 0);
+        assert_eq!(system_time_from_string(time), Some(expected));
+    }
 }
