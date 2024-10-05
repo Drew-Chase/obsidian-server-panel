@@ -1,4 +1,4 @@
-members = ["src-actix/archive_utility", "src-actix/authentication", "src-actix/minecraft", "src-actix/servers", "src-actix/crypto", "src-actix/backups", "src-actix/java", "."]
+members = ["src-actix/archive_utility", "src-actix/authentication", "src-actix/minecraft", "src-actix/servers", "src-actix/crypto", "src-actix/backups", "src-actix/java", "src-actix/configuration", "src-actix/database", "."]
 [package]
 name = "obsidian-server-panel"
 version = "0.0.0"
@@ -11,10 +11,12 @@ path = "src-actix/main.rs"
 
 [dependencies]
 authentication = { path = "src-actix/authentication" }
+configuration = { path = "src-actix/configuration" }
 minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
 crypto = { path = "src-actix/crypto" }
 backups = { path = "src-actix/backups" }
+database = { path = "src-actix/database" }
 java = { path = "src-actix/java" }
 archive_utility = { path = "src-actix/archive_utility" }
 actix-web = { version = "4.9.0" }
@@ -29,6 +31,7 @@ log = "0.4.14"
 urlencoding = "2.1.3"
 sysinfo = "0.31.4"
 include_dir = "0.7.4"
+easy-upnp = "0.2.0"
 
 [build-dependencies]
 cargo-watch = "8.5.2"
