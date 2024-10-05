@@ -1,5 +1,6 @@
 use crate::backup_item::{BackupCreationMethod, BackupItem, BackupType};
-use crate::{create_connection, get_backups_directory, system_time_from_string};
+use crate::{get_backups_directory, system_time_from_string};
+use database::create_appdb_connection;
 use log::{debug, error, info};
 use sqlite::{State, Statement};
 use std::path::Path;
@@ -18,7 +19,7 @@ use std::path::Path;
 /// - Create the backup directory.
 pub(crate) fn initialize() {
     debug!("Initializing backups table");
-    let conn = create_connection().expect("Failed to connect to database");
+    let conn = create_appdb_connection().expect("Failed to connect to database");
     if let Err(e) = conn.execute(
         "
 				CREATE TABLE IF NOT EXISTS backups
@@ -54,7 +55,7 @@ pub(crate) fn initialize() {
 /// An `Option<BackupItem>` containing the inserted `BackupItem` with the new ID if successful, otherwise `None`.
 pub fn insert(item: BackupItem) -> Option<BackupItem> {
     info!("Inserting a new backup item: {:?}", item);
-    let conn = create_connection().ok()?;
+    let conn = create_appdb_connection().ok()?;
 
     let mut stmt = conn
         .prepare("INSERT INTO backups (path, method, type, size, server) VALUES (?, ?, ?, ?, ?)")
@@ -88,7 +89,7 @@ pub fn insert(item: BackupItem) -> Option<BackupItem> {
 /// * `id` - The ID of the backup item to be deleted.
 pub fn delete(id: u32) {
     info!("Deleting backup item with ID: {}", id);
-    let conn = match create_connection() {
+    let conn = match create_appdb_connection() {
         Ok(conn) => conn,
         Err(e) => {
             error!("Failed to create a connection to the database: {}", e);
@@ -130,7 +131,7 @@ pub fn delete(id: u32) {
 /// An `Option<BackupItem>` containing the `BackupItem` if found, otherwise `None`.
 pub fn get(id: u32) -> Option<BackupItem> {
     info!("Retrieving backup item with ID: {}", id);
-    let conn = create_connection().ok()?;
+    let conn = create_appdb_connection().ok()?;
 
     let mut stmt = conn
         .prepare("SELECT * FROM backups WHERE id = ? LIMIT 1")
@@ -152,7 +153,7 @@ pub fn get(id: u32) -> Option<BackupItem> {
 /// A `Vec<BackupItem>` containing all the `BackupItem`s.
 pub fn list() -> Vec<BackupItem> {
     info!("Retrieving list of all backup items.");
-    let conn = match create_connection() {
+    let conn = match create_appdb_connection() {
         Ok(conn) => conn,
         Err(_) => {
             error!("Failed to create a connection to the database.");
@@ -200,7 +201,7 @@ pub fn list_by_server(server_id: u32) -> Vec<BackupItem> {
         "Retrieving list of backup items for server with ID: {}",
         server_id
     );
-    let conn = match create_connection() {
+    let conn = match create_appdb_connection() {
         Ok(conn) => conn,
         Err(e) => {
             error!("Failed to create a connection: {}", e);
