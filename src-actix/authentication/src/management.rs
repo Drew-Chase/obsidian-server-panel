@@ -1,7 +1,7 @@
 use crate::access_tokens::use_access_token;
 use crate::data::{PublicUser, PublicUsersList, UserLogin, UserRegistration, UserResponse};
 use crate::validation::{generate_token, validate_token};
-use crate::{create_db_connection, get_user_by_username};
+use crate::{create_appdb_connection, get_user_by_username};
 
 pub fn create_user(user: UserRegistration, is_admin: bool) -> Result<(), String> {
 	if !is_admin {
@@ -11,7 +11,7 @@ pub fn create_user(user: UserRegistration, is_admin: bool) -> Result<(), String>
 		}
 	}
 
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => return Err(format!("Failed to create DB connection: {}", e)),
 	};
@@ -97,7 +97,7 @@ pub fn login_with_token(token: &str, client_secret: &str) -> Result<UserResponse
 	})
 }
 pub fn get_users_list() -> Result<PublicUsersList, String> {
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => return Err(format!("Failed to create DB connection: {}", e)),
 	};
@@ -131,7 +131,7 @@ pub fn get_users_list() -> Result<PublicUsersList, String> {
 }
 
 pub fn get_user_by_id(id: u32) -> Result<Option<PublicUser>, String> {
-	let connection = match create_db_connection() {
+	let connection = match create_appdb_connection() {
 		Ok(connection) => connection,
 		Err(e) => {
 			return Err(format!("Failed to create DB connection: {}", e));
