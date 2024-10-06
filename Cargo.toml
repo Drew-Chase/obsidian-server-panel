@@ -1,4 +1,17 @@
-members = ["src-actix/archive_utility", "src-actix/authentication", "src-actix/minecraft", "src-actix/servers", "src-actix/crypto", "src-actix/backups", "src-actix/java", "src-actix/configuration", "src-actix/database", "."]
+members = [
+    "src-actix/archive_utility",
+    "src-actix/authentication",
+    "src-actix/minecraft",
+    "src-actix/servers",
+    "src-actix/crypto",
+    "src-actix/backups",
+    "src-actix/java",
+    "src-actix/configuration",
+    "src-actix/database",
+    "src-actix/scheduler",
+    "."
+]
+
 [package]
 name = "obsidian-server-panel"
 version = "0.0.0"
@@ -12,6 +25,7 @@ path = "src-actix/main.rs"
 [dependencies]
 authentication = { path = "src-actix/authentication" }
 configuration = { path = "src-actix/configuration" }
+scheduler = { path = "src-actix/scheduler" }
 minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
 crypto = { path = "src-actix/crypto" }
