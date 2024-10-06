@@ -61,7 +61,7 @@ pub struct OSVersions {
     pub windows_x86: JavaVersions,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum RuntimeVersion {
     #[serde(rename = "alpha")]
     Alpha,
@@ -77,7 +77,7 @@ pub enum RuntimeVersion {
     Legacy,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub enum OS {
     #[serde(rename = "linux")]
     Linux,
