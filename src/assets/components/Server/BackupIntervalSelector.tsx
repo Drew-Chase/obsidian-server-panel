@@ -6,7 +6,7 @@ import {useState} from "react";
 export default function BackupIntervalSelector()
 {
     const [backupInterval, setBackupInterval] = useState("never");
-    const [customDuration, setCustomDuration] = useState<Duration>({days: 0, hours: 0, minutes: 15, cron: "15 * * * *"});
+    const [customDuration, setCustomDuration] = useState<Duration>({days: 0, hours: 0, minutes: 15});
     const [customDurationError, setCustomDurationError] = useState("");
     const [customDurationTimeMessage, setCustomDurationTimeMessage] = useState("");
 

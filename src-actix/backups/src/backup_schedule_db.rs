@@ -1,13 +1,13 @@
 use crate::backup_item::BackupType;
 use crate::backup_schedules::BackupSchedule;
-use crate::create_connection;
 use log::{debug, error, info};
 use sqlite::State;
 use std::error::Error;
+use database::create_appdb_connection;
 
 pub fn initialize() {
 	debug!("Initializing backup schedule table");
-	let conn = create_connection().expect("Failed to connect to database");
+	let conn = create_appdb_connection().expect("Failed to connect to database");
 	if let Err(e) = conn.execute(
 		"
 					CREATE TABLE IF NOT EXISTS scheduled_backups
@@ -28,7 +28,7 @@ pub fn initialize() {
 }
 
 pub fn insert(server: u32, backup_type: BackupType, interval: i64, exec_if_empty: bool, exec_if_offline: bool) -> Result<(), Box<dyn Error>> {
-	let conn = create_connection()?;
+	let conn = create_appdb_connection()?;
 	let mut stmt = conn.prepare("INSERT INTO scheduled_backups (server, type, interval, exec_if_empty, exec_if_offline) VALUES (?, ?, ?, ?, ?)")?;
 	let backup_type = match backup_type {
 		BackupType::Full => 0,
@@ -45,7 +45,7 @@ pub fn insert(server: u32, backup_type: BackupType, interval: i64, exec_if_empty
 }
 
 pub fn get(id: u32) -> Result<Option<BackupSchedule>, Box<dyn Error>> {
-	let conn = create_connection()?;
+	let conn = create_appdb_connection()?;
 	let mut stmt = conn.prepare("SELECT * FROM scheduled_backups WHERE id = ?")?;
 	stmt.bind((1, id as i64))?;
 	if State::Row == stmt.next()? {
@@ -69,7 +69,7 @@ pub fn list() -> Result<Vec<BackupSchedule>, Box<dyn Error>>
 {
 	let mut schedules = Vec::new();
 
-	let conn = create_connection()?;
+	let conn = create_appdb_connection()?;
 	let mut stmt = conn.prepare("SELECT * FROM scheduled_backups")?;
 	while State::Row == stmt.next()? {
 		let id: u32 = stmt.read::<i64, _>("id")? as u32;
@@ -90,7 +90,7 @@ pub fn list() -> Result<Vec<BackupSchedule>, Box<dyn Error>>
 }
 
 pub fn update(id: u32, server: u32, backup_type: u8, interval: i64, exec_if_empty: bool, exec_if_offline: bool) -> Result<(), Box<dyn Error>> {
-	let conn = create_connection()?;
+	let conn = create_appdb_connection()?;
 	let mut stmt = conn.prepare("UPDATE scheduled_backups SET server = ?, type = ?, interval = ?, exec_if_empty = ?, exec_if_offline = ? WHERE id = ?")?;
 	stmt.bind((1, server as i64))?;
 	stmt.bind((2, backup_type as i64))?;
@@ -104,7 +104,7 @@ pub fn update(id: u32, server: u32, backup_type: u8, interval: i64, exec_if_empt
 }
 
 pub fn delete(id: u32) -> Result<(), Box<dyn Error>> {
-	let conn = create_connection()?;
+	let conn = create_appdb_connection()?;
 	let mut stmt = conn.prepare("DELETE FROM scheduled_backups WHERE id = ?")?;
 	stmt.bind((1, id as i64))?;
 	stmt.next()?;

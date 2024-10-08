@@ -1,4 +1,4 @@
-use crate::create_db_connection;
+use crate::create_appdb_connection;
 use rand::Rng;
 use serde::Serialize;
 
@@ -34,7 +34,7 @@ pub fn generate_unique_registration_access_token(message: &str) -> Result<String
 
 	let sec = format!("{}@{}", message, sec);
 
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => {
 			return Err(format!(
@@ -62,7 +62,7 @@ pub fn generate_unique_registration_access_token(message: &str) -> Result<String
 }
 
 pub fn does_token_exist(token: &str) -> Result<bool, String> {
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => {
 			return Err(format!(
@@ -94,7 +94,7 @@ pub fn does_token_exist(token: &str) -> Result<bool, String> {
 }
 
 pub fn get_all_access_tokens() -> Result<Vec<AccessToken>, String> {
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => {
 			return Err(format!(
@@ -133,7 +133,7 @@ pub fn get_all_access_tokens() -> Result<Vec<AccessToken>, String> {
 }
 
 pub fn use_access_token(token: &str) -> Result<(), String> {
-	let conn = match create_db_connection() {
+	let conn = match create_appdb_connection() {
 		Ok(conn) => conn,
 		Err(e) => {
 			return Err(format!(

@@ -27,7 +27,6 @@ export interface Duration
     days: number;
     hours: number;
     minutes: number;
-    cron: string;
 }
 
 export default function DurationInput(props: DurationInputProps)
@@ -35,7 +34,6 @@ export default function DurationInput(props: DurationInputProps)
     const [minutes, setMinutes] = useState<string>(props.value?.minutes.toString() || "00");
     const [hours, setHours] = useState<string>(props.value?.hours.toString() || "00");
     const [days, setDays] = useState<string>(props.value?.days.toString() || "00");
-    const [cron, setCron] = useState<string>(props.value?.cron || "");
     const id = `duration-input-${Math.random().toString(36).replace(/[^a-z]+/g, "")}`;
     useEffect(() =>
     {
@@ -45,8 +43,8 @@ export default function DurationInput(props: DurationInputProps)
             $(e.currentTarget).trigger("select");
         });
     }, []);
-    
-    
+
+
     return (
         <div id={id} className={"flex flex-col rounded-lg bg-neutral-700 overflow-hidden p-2 shrink-0"}>
             <p className={"text-sm opacity-90 font-light mb-1 ml-1"}>{props.label || ""}</p>
@@ -140,19 +138,4 @@ export default function DurationInput(props: DurationInputProps)
             </p>
         </div>
     );
-}
-
-/**
- * Converts a given Duration object into a corresponding Cron expression.
- *
- * @param {Duration} duration - The duration object containing days, hours, and minutes.
- * @return {string} A string representing the Cron expression.
- */
-function convertDurationToCron(duration: Duration): string
-{
-    const days = duration.days >= 0 ? `${duration.days}` : "0";
-    const hours = duration.hours >= 0 && duration.hours <= 23 ? `${duration.hours}` : "0";
-    const minutes = duration.minutes >= 0 && duration.minutes <= 59 ? `${duration.minutes}` : "0";
-
-    return `${minutes} ${hours} */${days} * *`;
 }

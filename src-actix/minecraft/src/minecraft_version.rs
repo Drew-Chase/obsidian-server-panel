@@ -1,6 +1,7 @@
 use crate::version_asset_data::{JavaVersion, VersionAssetData};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LatestMinecraftVersions {
@@ -67,9 +68,7 @@ pub enum VersionType {
     OldAlpha,
 }
 
-pub async fn get_version_runtime(
-    version: impl AsRef<String>,
-) -> Result<JavaVersion, Box<dyn Error>> {
+pub async fn get_version_runtime(version: impl AsRef<str>) -> Result<JavaVersion, Box<dyn Error>> {
     let data = get_version_asset_data(version).await?;
     Ok(data.java_version.ok_or("Java version not found")?)
 }
@@ -187,7 +186,7 @@ pub async fn get_version_by_id(
 }
 
 pub async fn get_version_asset_data(
-    version: impl AsRef<String>,
+    version: impl AsRef<str>,
 ) -> Result<VersionAssetData, Box<dyn Error>> {
     let version = version.as_ref();
     let url = "https://launchermeta.mojang.com/mc/game/version_manifest.json".to_string();
@@ -204,6 +203,26 @@ pub async fn get_version_asset_data(
     let text = asset_response.text().await?;
     let asset_response: VersionAssetData = serde_json::from_str(&text)?;
     Ok(asset_response)
+}
+
+pub async fn download_server_jar(
+    version: impl AsRef<str>,
+    directory: impl AsRef<Path>,
+) -> Result<PathBuf, Box<dyn Error>> {
+    let version = version.as_ref();
+    let data = get_version_asset_data(version).await?;
+    let url = data
+        .downloads
+        .unwrap()
+        .server
+        .unwrap()
+        .url
+        .ok_or("Server URL not found")?;
+    let response = reqwest::get(url).await?;
+    let bytes = response.bytes().await?;
+    let path = directory.as_ref().join("server.jar");
+    std::fs::write(&path, bytes)?;
+    Ok(path)
 }
 
 impl MinecraftVersionResponse {

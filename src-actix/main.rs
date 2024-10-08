@@ -11,8 +11,10 @@ mod system_stats_endpoint;
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, get, middleware, web, App, HttpResponse, HttpServer, Responder};
+use easy_upnp::PortMappingProtocol::TCP;
+use easy_upnp::{add_ports, UpnpConfig};
 use include_dir::{include_dir, Dir};
-use log::{error, info};
+use log::{error, info, trace};
 use serde_json::json;
 use std::sync::Mutex;
 use sysinfo::System;
@@ -31,8 +33,28 @@ async fn main() -> std::io::Result<()> {
     servers::server_db::initialize();
     backups::initialize();
 
-    let sys = web::Data::new(Mutex::new(System::new_all()));
+    // This will open the webui port on the router using upnp
+    // Spawn a thread to refresh the upnp port every 5 minutes
+    std::thread::spawn(move || {
+        let duration = 60 * 5; // 5 minutes
+        loop {
+            for item in add_ports([UpnpConfig {
+                address: None,
+                port,
+                comment: "Obsidian Minecraft Server Manager".to_string(),
+                protocol: TCP,
+                duration,
+            }]) {
+                match item {
+                    Ok(_) => trace!("Webui port upnp refreshed!"),
+                    Err(e) => error!("Failed to forward port: {}", e),
+                }
+            }
+            std::thread::sleep(std::time::Duration::from_secs(duration as u64));
+        }
+    });
 
+    let sys = web::Data::new(Mutex::new(System::new_all()));
     let server = HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
@@ -72,12 +94,7 @@ async fn main() -> std::io::Result<()> {
                             .service(minecraft_endpoint::get_snapshots)
                             .service(minecraft_endpoint::get_java_version_by_minecraft_version),
                     )
-                    .service(
-                        web::scope("java")
-                            .service(java_endpoint::get_java_versions)
-                            .service(java_endpoint::get_os_version)
-                            .service(java_endpoint::get_runtime_version),
-                    )
+                    .service(web::scope("java").service(java_endpoint::get_java_versions))
                     .service(
                         web::scope("system")
                             .service(system_stats_endpoint::get_system_info)
