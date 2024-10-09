@@ -32,11 +32,15 @@ impl ScheduleManager {
         &mut self,
         duration: Duration,
         reoccurring: bool,
+        execute_immediately: bool,
         action: fn(&Schedule),
     ) -> u64 {
         let id = self.next_id;
         self.next_id += 1;
         let schedule = Schedule::new(id, duration, reoccurring, action);
+        if execute_immediately {
+            (schedule.action)(&schedule);
+        }
 
         self.schedules.push(schedule);
         id
@@ -56,16 +60,33 @@ impl ScheduleManager {
 
 // Macro definitions
 #[macro_export]
+/// Adds a new schedule to the `ScheduleManager`.
+///
+/// # Arguments
+///
+/// * `$duration` - The duration of the schedule.
+/// * `$reoccurring` - Whether the schedule is reoccurring.
+/// * `$execute_immediately` - If the action should be executed immediately.
+/// * `$action` - The action to be executed when the schedule ticks.
+///
+/// # Returns
+///
+/// The ID of the newly added schedule.
 macro_rules! add_schedule {
-    ($duration:expr, $reoccurring:expr, $action:expr) => {
+    ($duration:expr, $reoccurring:expr, $execute_immediately:expr, $action:expr) => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
             .lock()
             .unwrap()
-            .add_schedule($duration, $reoccurring, $action)
+            .add_schedule($duration, $reoccurring, $execute_immediately, $action)
     };
 }
 
 #[macro_export]
+/// Removes schedules from the `ScheduleManager` that satisfy the given filter.
+///
+/// # Arguments
+///
+/// * `$filter` - A function that returns `true` for schedules that should be removed.
 macro_rules! remove_schedule {
     ($filter:expr) => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
@@ -76,6 +97,7 @@ macro_rules! remove_schedule {
 }
 
 #[macro_export]
+/// Starts the ticking process for schedules in the `ScheduleManager`.
 macro_rules! start_ticking_schedules {
     () => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
@@ -99,6 +121,7 @@ macro_rules! start_ticking_schedules {
 }
 
 #[macro_export]
+/// Stops the ticking process for schedules in the `ScheduleManager`.
 macro_rules! stop_ticking_schedules {
     () => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON

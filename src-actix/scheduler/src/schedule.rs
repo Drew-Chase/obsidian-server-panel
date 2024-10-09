@@ -7,7 +7,7 @@ pub struct Schedule {
     pub active: bool,
     reoccurring: bool,
     end_time: SystemTime,
-    action: fn(&Self),
+    pub(crate) action: fn(&Self),
 }
 
 impl Schedule {
