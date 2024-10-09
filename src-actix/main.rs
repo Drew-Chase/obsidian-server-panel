@@ -20,6 +20,7 @@ use scheduler::{
 };
 use serde_json::json;
 use std::sync::Mutex;
+use std::time::SystemTime;
 use sysinfo::System;
 
 #[actix_web::main]
@@ -27,8 +28,14 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "trace");
     env_logger::init();
 
-    add_schedule!(duration::Duration::from_days(1), true, |schedule| {
-        info!("Ticking schedule: {:?} - {:?}", schedule.id, schedule.get_end_time());
+    add_schedule!(duration::Duration::from_days(1), true, true, |schedule| {
+        let end_time: SystemTime = schedule.get_end_time();
+let datetime: chrono::DateTime<chrono::Local> = end_time.into();
+info!(
+    "Ticking schedule: {:?} - {}",
+    schedule.id,
+    datetime.format("%m-%d-%Y %H:%M:%S")
+);
     });
 
     start_ticking_schedules!();
