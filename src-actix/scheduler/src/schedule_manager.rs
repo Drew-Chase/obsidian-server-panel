@@ -1,10 +1,21 @@
 use crate::duration::Duration;
 use crate::schedule::Schedule;
-use std::ops::{Add, AddAssign, Sub};
+use lazy_static::lazy_static;
+use std::sync::Mutex;
 
+lazy_static! {
+	pub static ref SCHEDULE_MANAGER_SINGLETON: Mutex<ScheduleManager> = Mutex::new(ScheduleManager::new());
+}
 pub struct ScheduleManager {
 	schedules: Vec<Schedule>,
 	next_id: u64,
+	pub ticking: bool,
+}
+
+impl Default for ScheduleManager {
+	fn default() -> Self {
+		Self::new()
+	}
 }
 
 impl ScheduleManager {
@@ -12,6 +23,7 @@ impl ScheduleManager {
 		ScheduleManager {
 			schedules: Vec::new(),
 			next_id: 0,
+			ticking: false,
 		}
 	}
 
@@ -35,26 +47,40 @@ impl ScheduleManager {
 	}
 }
 
-impl Add for ScheduleManager {
-	type Output = ScheduleManager;
 
-	fn add(&mut self, other: Schedule) -> &ScheduleManager {
-		self.schedules.push(other);
-		self
-	}
+// Macro definitions
+#[macro_export]
+macro_rules! add_schedule {
+    ($duration:expr, $reoccurring:expr, $action:expr) => {
+        SCHEDULE_MANAGER_SINGLETON.lock().unwrap().add_schedule($duration, $reoccurring, $action)
+    };
 }
 
-impl Sub for ScheduleManager {
-	type Output = ScheduleManager;
-
-	fn sub(&mut self, other: Schedule) -> &ScheduleManager {
-		self.schedules.retain(|schedule| schedule.id != other.id);
-		self
-	}
+#[macro_export]
+macro_rules! remove_schedule {
+	($id:expr) => {
+		SCHEDULE_MANAGER_SINGLETON.lock().unwrap().remove_schedule($id)
+	};
 }
 
-impl AddAssign<Schedule> for ScheduleManager {
-	fn add_assign(&mut self, other: Schedule) {
-		self.schedules.push(other);
-	}
+#[macro_export]
+macro_rules! start_ticking_schedules {
+	() => {
+		SCHEDULE_MANAGER_SINGLETON.lock().unwrap().ticking=true;
+		std::thread::spawn(move || {
+			loop {
+				if SCHEDULE_MANAGER_SINGLETON.lock().unwrap().ticking {
+					SCHEDULE_MANAGER_SINGLETON.lock().unwrap().tick();
+					std::thread::sleep(std::time::Duration::from_secs(1));
+				}
+			}
+		});
+	};
+}
+
+#[macro_export]
+macro_rules! stop_ticking_schedules {
+	() => {
+		SCHEDULE_MANAGER_SINGLETON.lock().unwrap().ticking=false;
+	};
 }
