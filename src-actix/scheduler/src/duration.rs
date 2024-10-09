@@ -20,6 +20,53 @@ impl Duration {
 			days: 0,
 		}
 	}
+
+	pub fn from_seconds(seconds: u64) -> Self {
+		let days = seconds / 86400;
+		let hours = (seconds % 86400) / 3600;
+		let minutes = (seconds % 3600) / 60;
+		let seconds = seconds % 60;
+		Duration {
+			seconds,
+			minutes,
+			hours,
+			days,
+		}
+	}
+
+
+	pub fn from_minutes(minutes: u64) -> Self {
+		let days = minutes / 1440;
+		let hours = (minutes % 1440) / 60;
+		let minutes = minutes % 60;
+		Duration {
+			seconds: 0,
+			minutes,
+			hours,
+			days,
+		}
+	}
+
+	pub fn from_hours(hours: u64) -> Self {
+		let days = hours / 24;
+		let hours = hours % 24;
+		Duration {
+			seconds: 0,
+			minutes: 0,
+			hours,
+			days,
+		}
+	}
+
+	pub fn from_days(days: u64) -> Self {
+		Duration {
+			seconds: 0,
+			minutes: 0,
+			hours: 0,
+			days,
+		}
+	}
+
 	pub fn set_seconds(&mut self, seconds: u64) {
 		self.seconds = seconds;
 	}
@@ -140,7 +187,7 @@ impl Display for Duration {
 
 pub trait SystemTimeTrait {
 	fn from_system_time(system_time: SystemTime) -> Self;
-	fn to_system_time(&self) -> SystemTime;
+	fn add_duration_to_now(&self) -> SystemTime;
 }
 
 impl SystemTimeTrait for Duration {
@@ -159,9 +206,13 @@ impl SystemTimeTrait for Duration {
 		}
 	}
 
-	fn to_system_time(&self) -> SystemTime {
-		let total_seconds =
-			self.seconds + self.minutes * 60 + self.hours * 3600 + self.days * 86400;
-		SystemTime::now() + StdDuration::from_secs(total_seconds)
+	/// Converts `Duration` to a `SystemTime` by adding the duration to the current system time.
+	fn add_duration_to_now(&self) -> SystemTime {
+		let time = SystemTime::now();
+		let duration = StdDuration::new(
+			self.days * 86400 + self.hours * 3600 + self.minutes * 60 + self.seconds,
+			0,
+		);
+		time + duration
 	}
 }
