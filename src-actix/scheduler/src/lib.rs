@@ -1,4 +1,3 @@
 mod schedule;
-mod duration;
-mod schedule_manager;
-
+pub mod duration;
+pub mod schedule_manager;
