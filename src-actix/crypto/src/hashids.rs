@@ -12,13 +12,13 @@ use log::debug;
 ///
 /// A vector of `u64` integers that were encoded in the given hash string.
 pub fn decode(hash: &str) -> Result<Vec<u64>, String> {
-	let hash_ids = hashids();
-	let decode = match hash_ids.decode(hash) {
-		Ok(d) => d,
-		Err(e) => return Err(format!("{}", e)),
-	};
-	debug!("Decoding: {} -> {:?}", hash, decode);
-	Ok(decode)
+    let hash_ids = hashids();
+    let decode = match hash_ids.decode(hash) {
+        Ok(d) => d,
+        Err(e) => return Err(format!("{}", e)),
+    };
+    debug!("Decoding: {} -> {:?}", hash, decode);
+    Ok(decode)
 }
 
 /// Encodes a slice of `u64` integers into a hash string.
@@ -31,15 +31,15 @@ pub fn decode(hash: &str) -> Result<Vec<u64>, String> {
 ///
 /// A string that represents the encoded hash of the input data.
 pub fn encode(data: &[u64]) -> String {
-	let hash_ids = hashids();
-	let encode = hash_ids.encode(data);
-	debug!("Encoding: {:?} -> {}", data, encode);
-	encode
+    let hash_ids = hashids();
+    let encode = hash_ids.encode(data);
+    debug!("Encoding: {:?} -> {}", data, encode);
+    encode
 }
 
 fn hashids() -> HashIds {
-	HashIds::builder()
-		.with_salt(get_salt().as_str())
-		.with_min_length(16)
-		.finish()
+    HashIds::builder()
+        .with_salt(get_salt().as_str())
+        .with_min_length(16)
+        .finish()
 }

@@ -3,7 +3,7 @@ use serde_json::json;
 
 #[get("/java/versions")]
 pub async fn get_java_versions() -> impl Responder {
-	HttpResponse::BadRequest().json(json!({
-		"error": "Not implemented"
-	}))
+    HttpResponse::BadRequest().json(json!({
+        "error": "Not implemented"
+    }))
 }

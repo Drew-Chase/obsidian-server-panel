@@ -11,17 +11,13 @@ mod system_stats_endpoint;
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{error, get, middleware, web, App, HttpResponse, HttpServer, Responder};
-use easy_upnp::PortMappingProtocol::TCP;
-use easy_upnp::{add_ports, UpnpConfig};
 use include_dir::{include_dir, Dir};
-use log::{debug, error, info, trace};
-use scheduler::{
-    start_ticking_schedules, stop_ticking_schedules,
-};
+use log::{debug, error, info};
+use network_utility::{close_all_ports, open_port};
+use scheduler::{start_ticking_schedules, stop_ticking_schedules};
 use serde_json::json;
 use std::sync::Mutex;
 use sysinfo::System;
-use network_utility::{close_all_ports, open_port};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -140,7 +136,7 @@ async fn main() -> std::io::Result<()> {
     info!("Starting server at http://127.0.0.1:{port}...");
     let stop_result = server.await;
     debug!("Server stopped");
-    
+
     // Closes all open ports
     close_all_ports!();
 

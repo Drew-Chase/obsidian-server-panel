@@ -38,27 +38,22 @@ impl OpenPorts {
     }
     pub fn add_port(&mut self, port: u16, description: String) {
         let description_moved = description.clone();
-        let id = add_schedule!(
-            duration::Duration::from_minutes(5),
-            true,
-            true,
-            move |_| {
-                debug!("Refreshing UPNP port {}", port.clone());
+        let id = add_schedule!(duration::Duration::from_minutes(5), true, true, move |_| {
+            debug!("Refreshing UPNP port {}", port.clone());
 
-                for item in easy_upnp::add_ports([UpnpConfig {
-                    address: None,
-                    port,
-                    comment: description_moved.to_string(),
-                    protocol: TCP,
-                    duration: REFRESH_DURATION as u32,
-                }]) {
-                    match item {
-                        Ok(_) => trace!("port {} opened!", port),
-                        Err(e) => error!("Failed to forward port: {}", e),
-                    }
+            for item in easy_upnp::add_ports([UpnpConfig {
+                address: None,
+                port,
+                comment: description_moved.to_string(),
+                protocol: TCP,
+                duration: REFRESH_DURATION as u32,
+            }]) {
+                match item {
+                    Ok(_) => trace!("port {} opened!", port),
+                    Err(e) => error!("Failed to forward port: {}", e),
                 }
             }
-        );
+        });
 
         self.ports.push(OpenPort {
             id,

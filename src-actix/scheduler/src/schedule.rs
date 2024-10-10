@@ -12,8 +12,8 @@ pub struct Schedule {
 
 impl Schedule {
     pub fn new<F>(id: u64, duration: Duration, reoccurring: bool, action: F) -> Schedule
-                  where
-                      F: Fn(&Self) + 'static + Send + Sync,
+    where
+        F: Fn(&Self) + 'static + Send + Sync,
     {
         Schedule {
             id,

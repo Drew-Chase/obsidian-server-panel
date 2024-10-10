@@ -3,12 +3,12 @@ pub mod data;
 pub mod management;
 pub mod validation;
 
-use std::error::Error;
 use crate::data::{User, UserRegistration};
 use crate::management::create_user;
-use log::{info, warn};
 use database::create_appdb_connection;
+use log::{info, warn};
 use sqlite::Connection;
+use std::error::Error;
 
 pub fn initialize() -> Result<(), Box<dyn Error>> {
     info!("Initializing authentication database!");
@@ -40,7 +40,9 @@ pub fn initialize() -> Result<(), Box<dyn Error>> {
 							",
             ) {
                 Ok(_) => {}
-                Err(e) => return Err(format!("Failed to create `access-tokens` table: {}", e).into()),
+                Err(e) => {
+                    return Err(format!("Failed to create `access-tokens` table: {}", e).into())
+                }
             }
             match create_user(UserRegistration {
 				username: "admin".to_string(),

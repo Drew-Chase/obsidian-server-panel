@@ -1,6 +1,5 @@
 use log::error;
 
-
 /// Establishes a connection to the app's SQLite database.
 ///
 /// # Returns

@@ -26,17 +26,52 @@ impl JavaVersion {
             OS::WindowsX86 => data.windows_x86,
         };
 
-        Self::append_versions(&mut versions, current_os_versions.alpha, current_os, RuntimeVersion::Alpha);
-        Self::append_versions(&mut versions, current_os_versions.beta, current_os, RuntimeVersion::Beta);
-        Self::append_versions(&mut versions, current_os_versions.delta, current_os, RuntimeVersion::Delta);
-        Self::append_versions(&mut versions, current_os_versions.gamma, current_os, RuntimeVersion::Gamma);
-        Self::append_versions(&mut versions, current_os_versions.gamma_snapshot, current_os, RuntimeVersion::GammaSnapshot);
-        Self::append_versions(&mut versions, current_os_versions.legacy, current_os, RuntimeVersion::Legacy);
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.alpha,
+            current_os,
+            RuntimeVersion::Alpha,
+        );
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.beta,
+            current_os,
+            RuntimeVersion::Beta,
+        );
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.delta,
+            current_os,
+            RuntimeVersion::Delta,
+        );
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.gamma,
+            current_os,
+            RuntimeVersion::Gamma,
+        );
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.gamma_snapshot,
+            current_os,
+            RuntimeVersion::GammaSnapshot,
+        );
+        Self::append_versions(
+            &mut versions,
+            current_os_versions.legacy,
+            current_os,
+            RuntimeVersion::Legacy,
+        );
 
         Ok(versions)
     }
 
-    fn append_versions(versions: &mut Vec<Self>, version_data: Vec<JavaVersionData>, os: OS, runtime: RuntimeVersion) {
+    fn append_versions(
+        versions: &mut Vec<Self>,
+        version_data: Vec<JavaVersionData>,
+        os: OS,
+        runtime: RuntimeVersion,
+    ) {
         for version in version_data {
             versions.push(JavaVersion {
                 operating_system: os,
@@ -46,9 +81,8 @@ impl JavaVersion {
             });
         }
     }
-    
-    pub async fn from_runtime(runtime: impl AsRef<str>)->Result<Self, Box<dyn Error>>
-    {
+
+    pub async fn from_runtime(runtime: impl AsRef<str>) -> Result<Self, Box<dyn Error>> {
         let runtime = runtime.as_ref();
         let all_versions = Self::list().await?;
         for version in all_versions {
@@ -58,7 +92,7 @@ impl JavaVersion {
         }
         Err("Version not found".into())
     }
-    
+
     pub async fn install(&self) -> Result<(), Box<dyn Error>> {
         Ok(())
     }

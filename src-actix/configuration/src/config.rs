@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::path::Path;
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct config {
+pub struct Config {
     pub port: u16,
     pub port_forward_webui: bool,
     pub automatically_port_forward_servers: bool,
@@ -11,10 +11,10 @@ pub struct config {
     pub java_install_directory: String,
 }
 
-impl config {
-    pub fn from_file(file: impl AsRef<Path>) -> Result<config, Box<dyn std::error::Error>> {
+impl Config {
+    pub fn from_file(file: impl AsRef<Path>) -> Result<Config, Box<dyn std::error::Error>> {
         let contents = std::fs::read_to_string(file)?;
-        let config: config = serde_json::from_str(&contents)?;
+        let config: Config = serde_json::from_str(&contents)?;
         Ok(config)
     }
     pub fn to_file(&self, file: impl AsRef<Path>) -> Result<(), Box<dyn std::error::Error>> {
