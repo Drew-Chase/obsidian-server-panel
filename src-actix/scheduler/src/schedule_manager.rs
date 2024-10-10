@@ -58,7 +58,6 @@ impl ScheduleManager {
     }
 
     pub fn tick(&mut self) {
-        println!("Ticking schedules: {:?}", self.schedules.len());
         for schedule in self.schedules.iter_mut() {
             schedule.tick();
         }
