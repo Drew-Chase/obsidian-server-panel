@@ -15,6 +15,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-actix/networking/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/database/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/scheduler/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/network_utility/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/crypto/target" />
@@ -27,6 +28,7 @@
       <excludeFolder url="file://$MODULE_DIR$/src-actix/networking/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/database/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/scheduler/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src-actix/network_utility/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
