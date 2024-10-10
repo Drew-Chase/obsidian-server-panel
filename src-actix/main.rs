@@ -1,3 +1,4 @@
+use actix_web::dev::Service;
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -10,6 +11,7 @@ mod server_settings_endpoint;
 mod system_stats_endpoint;
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
+use actix_web::http::header;
 use actix_web::{error, get, middleware, web, App, HttpResponse, HttpServer, Responder};
 use include_dir::{include_dir, Dir};
 use log::{debug, error, info};
@@ -43,6 +45,19 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::Logger::default())
             .wrap(auth_middleware::AuthMiddleware)
+            .wrap_fn(|req, srv| {
+                let fut = srv.call(req);
+                async {
+                    let mut res = fut.await?;
+                    res.headers_mut()
+                        .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+                    res.headers_mut().insert(
+                        header::ACCESS_CONTROL_ALLOW_HEADERS,
+                        "content-type".parse().unwrap(),
+                    );
+                    Ok(res)
+                }
+            })
             .app_data(
                 web::JsonConfig::default()
                     .limit(4096)
