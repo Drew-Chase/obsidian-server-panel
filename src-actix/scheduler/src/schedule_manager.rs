@@ -7,6 +7,7 @@ lazy_static! {
     pub static ref SCHEDULE_MANAGER_SINGLETON: Mutex<ScheduleManager> =
         Mutex::new(ScheduleManager::new());
 }
+
 pub struct ScheduleManager {
     schedules: Vec<Schedule>,
     pub next_id: u64,
@@ -28,25 +29,31 @@ impl ScheduleManager {
         }
     }
 
-    pub fn add_schedule(
+    pub fn add_schedule<F>(
         &mut self,
         duration: Duration,
         reoccurring: bool,
         execute_immediately: bool,
-        action: fn(&Schedule),
-    ) -> u64 {
+        action: F,
+    ) -> u64
+    where
+        F: Fn(&Schedule) + 'static + Send + Sync,
+    {
         let id = self.next_id;
         self.next_id += 1;
         let schedule = Schedule::new(id, duration, reoccurring, action);
         if execute_immediately {
-            (schedule.action)(&schedule);
+            (&*schedule.action)(&schedule);
         }
 
         self.schedules.push(schedule);
         id
     }
 
-    pub fn remove_schedule(&mut self, filter: fn(&Schedule) -> bool) {
+    pub fn remove_schedule<F>(&mut self, filter: F)
+    where
+        F: Fn(&Schedule) -> bool,
+    {
         self.schedules.retain(|schedule| !filter(schedule));
     }
 
@@ -58,20 +65,19 @@ impl ScheduleManager {
     }
 }
 
-// Macro definitions
-#[macro_export]
-/// Adds a new schedule to the `ScheduleManager`.
+/// Adds a new schedule to the `SCHEDULE_MANAGER_SINGLETON`.
 ///
 /// # Arguments
 ///
 /// * `$duration` - The duration of the schedule.
-/// * `$reoccurring` - Whether the schedule is reoccurring.
-/// * `$execute_immediately` - If the action should be executed immediately.
-/// * `$action` - The action to be executed when the schedule ticks.
+/// * `$reoccurring` - Whether the schedule should recur.
+/// * `$execute_immediately` - Whether to execute the action immediately.
+/// * `$action` - The action to execute.
 ///
 /// # Returns
 ///
-/// The ID of the newly added schedule.
+/// A unique identifier for the added schedule.
+#[macro_export]
 macro_rules! add_schedule {
     ($duration:expr, $reoccurring:expr, $execute_immediately:expr, $action:expr) => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
@@ -81,12 +87,12 @@ macro_rules! add_schedule {
     };
 }
 
-#[macro_export]
-/// Removes schedules from the `ScheduleManager` that satisfy the given filter.
+/// Removes schedules from the `SCHEDULE_MANAGER_SINGLETON` that match the given filter.
 ///
 /// # Arguments
 ///
-/// * `$filter` - A function that returns `true` for schedules that should be removed.
+/// * `$filter` - A closure that returns `true` for schedules that should be removed.
+#[macro_export]
 macro_rules! remove_schedule {
     ($filter:expr) => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
@@ -96,8 +102,8 @@ macro_rules! remove_schedule {
     };
 }
 
+/// Starts ticking the schedules in the `SCHEDULE_MANAGER_SINGLETON`.
 #[macro_export]
-/// Starts the ticking process for schedules in the `ScheduleManager`.
 macro_rules! start_ticking_schedules {
     () => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
@@ -120,8 +126,8 @@ macro_rules! start_ticking_schedules {
     };
 }
 
+/// Stops ticking the schedules in the `SCHEDULE_MANAGER_SINGLETON`.
 #[macro_export]
-/// Stops the ticking process for schedules in the `ScheduleManager`.
 macro_rules! stop_ticking_schedules {
     () => {
         $crate::schedule_manager::SCHEDULE_MANAGER_SINGLETON
