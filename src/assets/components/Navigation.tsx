@@ -7,6 +7,7 @@ import UserIcon from "../images/User.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
+import {useAuth} from "../providers/AuthProvider.tsx";
 
 export default function Navigation()
 {
@@ -18,6 +19,15 @@ export default function Navigation()
 
     const sections = ["server", "discover", "users", "files", "settings", "profile"];
     const section = sections.find((s) => pathname.startsWith(`/app/${s}`)) || "";
+
+    const {auth, isLoggedIn} = useAuth();
+
+    if (!isLoggedIn && pathname.startsWith("/app"))
+    {
+        console.log("Redirecting to login page...");
+        navigate("/");
+        return null;
+    }
 
     return (
         <Navbar
@@ -95,7 +105,7 @@ export default function Navigation()
                         <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
                         <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"settings/profile"} startContent={<User name={"Drew Chase"} description={"Administrator"}/>} indicator={indicator}>
+                    <AccordionItem key={"settings/profile"} startContent={<User name={auth.getUserProfile().username} description={"Administrator"}/>} indicator={indicator}>
                         <NavbarItem key={"profile"} onClick={() => navigate("/app/settings/profile/")} isActive={pathname === "/app/settings/profile/"}>Profile Settings</NavbarItem>
                         <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>Application Settings</NavbarItem>
                         <NavbarItem key={"logout"} onClick={() => navigate("/")}>Logout</NavbarItem>
