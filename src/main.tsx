@@ -24,7 +24,7 @@ import UserGroups from "./assets/pages/Users/UserGroups.tsx";
 import ApplicationSettings from "./assets/pages/Settings/ApplicationSettings.tsx";
 import ProfileSettings from "./assets/pages/Profile/ProfileSettings.tsx";
 import Register from "./assets/pages/Register.tsx";
-import {AuthProvider, useAuth} from "./assets/providers/AuthProvider.tsx";
+import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
 
 
 export const debug_mode = true;
@@ -48,11 +48,6 @@ ReactDOM.createRoot($("#root")[0]!).render(
 export function MainContentRenderer()
 {
     const navigate = useNavigate();
-    const {isLoggedIn} = useAuth();
-    if (!isLoggedIn)
-    {
-        navigate("/");
-    }
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
             <Navigation/>
