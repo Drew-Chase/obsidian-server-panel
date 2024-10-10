@@ -9,6 +9,7 @@ members = [
     "src-actix/configuration",
     "src-actix/database",
     "src-actix/scheduler",
+    "src-actix/network_utility",
     "."
 ]
 
@@ -26,6 +27,7 @@ path = "src-actix/main.rs"
 authentication = { path = "src-actix/authentication" }
 configuration = { path = "src-actix/configuration" }
 scheduler = { path = "src-actix/scheduler" }
+network_utility = { path = "src-actix/network_utility" }
 minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
 crypto = { path = "src-actix/crypto" }
