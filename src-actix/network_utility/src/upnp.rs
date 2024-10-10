@@ -37,17 +37,18 @@ impl OpenPorts {
         }
     }
     pub fn add_port(&mut self, port: u16, description: String) {
+        let description_moved = description.clone();
         let id = add_schedule!(
             duration::Duration::from_minutes(5),
             true,
             true,
-            |schedule| {
+            move |_| {
                 debug!("Refreshing UPNP port {}", port.clone());
 
                 for item in easy_upnp::add_ports([UpnpConfig {
                     address: None,
-                    port: port.clone(),
-                    comment: description,
+                    port,
+                    comment: description_moved.to_string(),
                     protocol: TCP,
                     duration: REFRESH_DURATION as u32,
                 }]) {
@@ -62,7 +63,7 @@ impl OpenPorts {
         self.ports.push(OpenPort {
             id,
             port,
-            description: description.clone(),
+            description,
         });
         if !self.is_renewal_thread_running {
             self.open_renewal_thread();
