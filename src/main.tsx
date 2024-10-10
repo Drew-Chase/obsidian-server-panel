@@ -24,12 +24,11 @@ import UserGroups from "./assets/pages/Users/UserGroups.tsx";
 import ApplicationSettings from "./assets/pages/Settings/ApplicationSettings.tsx";
 import ProfileSettings from "./assets/pages/Profile/ProfileSettings.tsx";
 import Register from "./assets/pages/Register.tsx";
+import {AuthProvider, useAuth} from "./assets/providers/AuthProvider.tsx";
 
 
 export const debug_mode = true;
-
-export const api_domain = "";
-// export const api_domain = "http://localhost:1420";
+export const api_domain = debug_mode ? "http://localhost:1420/api" : "/api";
 export const setTitle = (title: string) =>
 {
     document.title = `${title} - Obsidian Minecraft Server Panel`;
@@ -39,7 +38,9 @@ export const setTitle = (title: string) =>
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <MainContentRenderer/>
+            <AuthProvider>
+                <MainContentRenderer/>
+            </AuthProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
@@ -47,6 +48,11 @@ ReactDOM.createRoot($("#root")[0]!).render(
 export function MainContentRenderer()
 {
     const navigate = useNavigate();
+    const {isLoggedIn} = useAuth();
+    if (!isLoggedIn)
+    {
+        navigate("/");
+    }
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
             <Navigation/>
