@@ -7,18 +7,21 @@ pub struct Schedule {
     pub active: bool,
     reoccurring: bool,
     end_time: SystemTime,
-    pub(crate) action: fn(&Self),
+    pub(crate) action: Box<dyn Fn(&Self) + Send + Sync>,
 }
 
 impl Schedule {
-    pub fn new(id: u64, duration: Duration, reoccurring: bool, action: fn(&Self)) -> Schedule {
+    pub fn new<F>(id: u64, duration: Duration, reoccurring: bool, action: F) -> Schedule
+                  where
+                      F: Fn(&Self) + 'static + Send + Sync,
+    {
         Schedule {
             id,
             duration,
             active: true,
             reoccurring,
             end_time: duration.add_duration_to_now(),
-            action,
+            action: Box::new(action),
         }
     }
 
@@ -43,5 +46,21 @@ impl Schedule {
                 self.end_time = self.duration.add_duration_to_now();
             }
         }
+    }
+}
+
+impl PartialEq for Schedule {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+pub trait EqualsId {
+    fn equals_id(&self, id: u64) -> bool;
+}
+
+impl EqualsId for Schedule {
+    fn equals_id(&self, id: u64) -> bool {
+        self.id == id
     }
 }
