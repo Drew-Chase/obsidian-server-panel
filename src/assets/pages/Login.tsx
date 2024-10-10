@@ -2,10 +2,11 @@ import {Button, Card, CardBody, CardHeader, Input} from "@nextui-org/react";
 import {useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEnvelope, faEye, faEyeSlash, faKey} from "@fortawesome/free-solid-svg-icons";
-import Authentication from "../ts/Authentication.ts";
 import {useNavigate} from "react-router-dom";
-import {debug_mode, setTitle} from "../../main.tsx";
+import {setTitle} from "../../main.tsx";
 import ExtendedSwitch from "../components/Extends/ExtendedSwitch.tsx";
+import {useAuth} from "../providers/AuthProvider.tsx";
+import {ErrorResponse, LoginResponse} from "../ts/authentication.ts";
 
 export default function Login()
 {
@@ -21,7 +22,14 @@ export default function Login()
     const [usernameError, setUsernameError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [error, setError] = useState("");
+    const {auth, setIsLoggedIn, isLoggedIn} = useAuth();
     const navigate = useNavigate();
+
+    if (isLoggedIn)
+    {
+        navigate("/app/");
+    }
+
 
     const resetErrors = () =>
     {
@@ -41,22 +49,42 @@ export default function Login()
             return;
         }
         setIsLoggingIn(true);
-        if (debug_mode)
-        {
-            console.log("Logging in", {username, password, rememberMe});
-            navigate("/app/");
-            setIsLoggingIn(false);
-            return;
+        const expiration = rememberMe ? 60 * 60 * 24 * 365 * 1000 : -1; // 1000 years in the future, this is a hacky way to keep the user logged in
+        const response: LoginResponse | ErrorResponse = await auth.login(username, password, expiration);
 
-        }
-        const response = await Authentication.getInstance().login(username, password, rememberMe);
-        if (typeof response === "string")
+        console.log("Login response", response);
+        if ("token" in response) // If the response is a LoginResponse
         {
-            setUsernameError("Invalid username");
-            setPasswordError("Invalid password");
-            setError(response);
+            if ((response as LoginResponse).token)
+            {
+                setIsLoggedIn(true);
+                navigate("/app/");
+            } else
+            {
+                console.error("No token was provided in message!");
+                setError("No token was provided in message!");
+            }
+        } else
+        {
+            if ("error" in response)
+            {
+                let message = (response as ErrorResponse).error;
+                if (message.toLowerCase().includes("password"))
+                {
+                    setPasswordError(`Invalid Password`);
+                }
+                if (message.toLowerCase().includes("user"))
+                {
+                    setUsernameError("Invalid Username or Email");
+                    setPasswordError("Invalid Password");
+                }
+                console.error("Error message", message);
+                setError(message);
+            } else
+            {
+                setError("An unknown error occurred.");
+            }
         }
-        if (typeof response === "object" && response.token) navigate("/app/");
 
         setIsLoggingIn(false);
     };
