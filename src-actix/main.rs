@@ -16,33 +16,18 @@ use easy_upnp::{add_ports, UpnpConfig};
 use include_dir::{include_dir, Dir};
 use log::{debug, error, info, trace};
 use scheduler::{
-    add_schedule, duration, remove_schedule, start_ticking_schedules, stop_ticking_schedules,
+    start_ticking_schedules, stop_ticking_schedules,
 };
 use serde_json::json;
 use std::sync::Mutex;
-use std::time::SystemTime;
 use sysinfo::System;
+use network_utility::{close_all_ports, open_port};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "trace");
     env_logger::init();
-
-    add_schedule!(duration::Duration::from_days(1), true, true, |schedule| {
-        let end_time: SystemTime = schedule.get_end_time();
-let datetime: chrono::DateTime<chrono::Local> = end_time.into();
-info!(
-    "Ticking schedule: {:?} - {}",
-    schedule.id,
-    datetime.format("%m-%d-%Y %H:%M:%S")
-);
-    });
-
     start_ticking_schedules!();
-    loop {
-        std::thread::sleep(std::time::Duration::from_secs(1));
-    }
-
     let port = 1420; // Port to listen on
 
     match authentication::initialize() {
@@ -55,24 +40,7 @@ info!(
 
     // This will open the webui port on the router using upnp
     // Spawn a thread to refresh the upnp port every 5 minutes
-    std::thread::spawn(move || {
-        let duration = 60 * 5; // 5 minutes
-        loop {
-            for item in add_ports([UpnpConfig {
-                address: None,
-                port,
-                comment: "Obsidian Minecraft Server Manager".to_string(),
-                protocol: TCP,
-                duration,
-            }]) {
-                match item {
-                    Ok(_) => trace!("Webui port upnp refreshed!"),
-                    Err(e) => error!("Failed to forward port: {}", e),
-                }
-            }
-            std::thread::sleep(std::time::Duration::from_secs(duration as u64));
-        }
-    });
+    open_port!(port, "Obsidian Minecraft Server Manager");
 
     let sys = web::Data::new(Mutex::new(System::new_all()));
     let server = HttpServer::new(move || {
@@ -172,6 +140,9 @@ info!(
     info!("Starting server at http://127.0.0.1:{port}...");
     let stop_result = server.await;
     debug!("Server stopped");
+    
+    // Closes all open ports
+    close_all_ports!();
 
     // Stop all schedules
     // This is necessary to prevent the server from hanging on shutdown
