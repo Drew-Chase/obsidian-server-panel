@@ -27,7 +27,7 @@ export default function Login()
 
     if (isLoggedIn)
     {
-        navigate("/app/");
+        // navigate("/app/");
     }
 
 
