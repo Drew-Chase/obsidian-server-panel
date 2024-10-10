@@ -108,7 +108,7 @@ pub async fn create_server(
         }
         match minecraft::minecraft_version::download_server_jar(&body.minecraft_version, &dir).await
         {
-            Ok(path) => {
+            Ok(_) => {
                 if let Err(e) = server_db::set_server_executable(server.id, "server.jar") {
                     error!("{}", e);
                     return HttpResponse::BadRequest().json(json!({"error":e}));
@@ -122,7 +122,7 @@ pub async fn create_server(
         }
 
         let mut properties: Properties =
-            match Properties::new(&Path::join(&*dir, Path::new("server.properties"))) {
+            match Properties::new(&Path::join(&dir, Path::new("server.properties"))) {
                 Ok(p) => p,
                 Err(e) => {
                     error!("{}", e);
