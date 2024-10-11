@@ -242,6 +242,16 @@ pub fn get_servers_by_owner(owner: u32) -> Result<Vec<Server>, String> {
     Ok(servers)
 }
 
+pub fn get_servers() -> Vec<Server> {
+    let conn = create_appdb_connection().unwrap();
+    let mut statement = conn.prepare("SELECT * FROM servers").unwrap();
+    let mut servers = Vec::new();
+    while let State::Row = statement.next().unwrap() {
+        servers.push(get_server_from_statement(&statement).unwrap());
+    }
+    servers
+}
+
 pub fn get_owned_server_by_id(id: u32, owner: u32) -> Option<Server> {
     let conn = create_appdb_connection().ok()?;
     let mut statement = conn
