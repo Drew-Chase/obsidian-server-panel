@@ -8,6 +8,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useAuth} from "../providers/AuthProvider.tsx";
+import {useEffect} from "react";
 
 export default function Navigation()
 {
@@ -22,13 +23,20 @@ export default function Navigation()
 
     const {auth, isLoggedIn} = useAuth();
 
+
+    useEffect(() =>
+    {
+        if (!isLoggedIn && pathname.startsWith("/app"))
+        {
+            console.log("Redirecting to login page...");
+            navigate("/");
+        }
+    }, []);
+
     if (!isLoggedIn && pathname.startsWith("/app"))
     {
-        console.log("Redirecting to login page...");
-        navigate("/");
-        return null;
+        return (<></>);
     }
-
     return (
         <Navbar
             classNames={{
