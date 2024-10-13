@@ -1,13 +1,13 @@
 import {Button, ButtonProps, Calendar, CalendarProps, DateValue, Dropdown, DropdownItem, DropdownMenu, DropdownMenuProps, DropdownProps, DropdownTrigger} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
-import {fromDate, getLocalTimeZone, today} from "@internationalized/date";
+import {getLocalTimeZone} from "@internationalized/date";
 import {ReactElement, useState} from "react";
 
 
 interface CalendarDropdownProps
 {
-    value?: Date | DateValue;
+    value?: DateValue;
     onValueChange?: (date: DateValue) => void;
     showYear?: boolean;
     showMonth?: boolean;
@@ -25,8 +25,9 @@ export default function CalendarDropdown(props: CalendarDropdownProps)
     let mutableProps = {...props};
     if (mutableProps.showYear === undefined) mutableProps.showYear = true;
     if (mutableProps.showMonth === undefined) mutableProps.showMonth = true;
-    if (mutableProps.value instanceof Date) mutableProps.value = fromDate(mutableProps.value, getLocalTimeZone());
-    const [date, setDate] = useState<DateValue>(mutableProps.value || today(getLocalTimeZone()));
+    if (!mutableProps.value) return null;
+
+    const [date, setDate] = useState<DateValue>(mutableProps.value);
     return (
 
         <Dropdown
