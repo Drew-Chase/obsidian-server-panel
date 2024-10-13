@@ -106,19 +106,36 @@ pub async fn create_server(
                 return HttpResponse::BadRequest().json(json!({"error":e}));
             }
         }
-        match minecraft::minecraft_version::download_server_jar(&body.minecraft_version, &dir).await
-        {
-            Ok(_) => {
-                if let Err(e) = server_db::set_server_executable(server.id, "server.jar") {
-                    error!("{}", e);
-                    return HttpResponse::BadRequest().json(json!({"error":e}));
+        match body.loader {
+            0 => {
+                match minecraft::minecraft_version::download_server_jar(
+                    &body.minecraft_version,
+                    &dir,
+                )
+                .await
+                {
+                    Ok(_) => {
+                        if let Err(e) = server_db::set_server_executable(server.id, "server.jar") {
+                            error!("{}", e);
+                            return HttpResponse::BadRequest().json(json!({"error":e}));
+                        }
+                    }
+                    Err(e) => {
+                        error!("{}", e);
+                        return HttpResponse::BadRequest().json(
+                            json!({"error":format!("Failed to download the server jar: {}", e)}),
+                        );
+                    }
                 }
-            }
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error":format!("Failed to download the server jar: {}", e)}));
-            }
+            },
+            1=>todo!("Implement the Fabric loader"),
+            2=>todo!("Implement the Forge loader"),
+            3=>todo!("Implement the Spigot loader"),
+            4=>todo!("Implement the Paper loader"),
+            5=>todo!("Implement the BungeeCord loader"),
+            6=>todo!("Implement the Quilt loader"),
+            7=>todo!("Implement the Mohist loader"),
+            _ => (),
         }
 
         let mut properties: Properties =
@@ -149,4 +166,10 @@ pub async fn create_server(
     }
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+}
+
+
+#[get("/supported_loaders")]
+pub async fn get_supported_loaders()->impl Responder{
+    HttpResponse::Ok().json(servers::supported_loaders::SupportedLoaders::all())
 }
