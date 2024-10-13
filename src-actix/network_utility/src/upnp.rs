@@ -1,7 +1,7 @@
 use easy_upnp::PortMappingProtocol::TCP;
 use easy_upnp::UpnpConfig;
 use lazy_static::lazy_static;
-use log::{debug, error, trace};
+use log::{debug, error, info, trace};
 use scheduler::schedule::{EqualsId, Schedule};
 use scheduler::{add_schedule, duration, remove_schedule};
 use std::sync::Mutex;
@@ -66,6 +66,7 @@ impl OpenPorts {
     }
 
     pub fn clear_ports(&mut self) {
+        info!("Closing all ports");
         let ports = self.ports.clone();
         for port in ports.iter() {
             self.remove_port(port.port);
@@ -140,8 +141,7 @@ macro_rules! open_port {
 #[macro_export]
 macro_rules! close_all_ports {
     () => {{
-        let mut singleton = $crate::upnp::UPNP_SINGLETON.lock().unwrap();
-        singleton.clear_ports();
+       $crate::upnp::UPNP_SINGLETON.lock().unwrap().clear_ports();
     }};
 }
 
