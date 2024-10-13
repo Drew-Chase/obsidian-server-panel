@@ -19,7 +19,9 @@
 		"package": "node scripts/package.js",
 		"run": "node scripts/run.js",
 		"watch api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../../src-actix/",
-		"watch frontend": "vite build --watch"
+		"watch frontend": "vite build --watch",
+		"full-build": "npm run \"build frontend\" && npm run \"build api\"",
+		"full-build-and-run": "npm run \"full-build\" && npm run \"run api\""
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^6.6.0",
