@@ -1,4 +1,5 @@
 use actix_web::dev::Service;
+use std::path::PathBuf;
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -51,10 +52,8 @@ async fn main() -> std::io::Result<()> {
                     let mut res = fut.await?;
                     res.headers_mut()
                         .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-                    res.headers_mut().insert(
-                        header::ACCESS_CONTROL_ALLOW_HEADERS,
-                        "content-type".parse().unwrap(),
-                    );
+                    res.headers_mut()
+                        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
                     Ok(res)
                 }
             })
@@ -138,7 +137,8 @@ async fn main() -> std::io::Result<()> {
                                     ),
                             )
                             .service(server_endpoint::get_servers)
-                            .service(server_endpoint::create_server),
+                            .service(server_endpoint::create_server)
+                            .service(server_endpoint::get_supported_loaders),
                     ),
             )
             .service(web::scope("assets/{file}").service(assets))
@@ -152,15 +152,14 @@ async fn main() -> std::io::Result<()> {
     let stop_result = server.await;
     debug!("Server stopped");
 
-    // Closes all open ports
-    close_all_ports!();
-
     // Stop all schedules
     // This is necessary to prevent the server from hanging on shutdown
     // because the schedules are still running
     // This is probably not necessary in a production environment
     stop_ticking_schedules!();
 
+    // Closes all open ports
+    close_all_ports!();
     stop_result
 }
 
