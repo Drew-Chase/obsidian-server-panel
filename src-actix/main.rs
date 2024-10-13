@@ -1,5 +1,4 @@
 use actix_web::dev::Service;
-use std::path::PathBuf;
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;

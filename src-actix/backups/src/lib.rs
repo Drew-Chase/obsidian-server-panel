@@ -8,7 +8,7 @@ pub mod hashed_file;
 mod lazy_hashed_file;
 
 use chrono::{DateTime, NaiveDateTime, Utc};
-use log::{error, info};
+use log::info;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 

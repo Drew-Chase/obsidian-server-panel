@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct HashedFile {
