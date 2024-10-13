@@ -1,4 +1,3 @@
-import React from "react";
 import {BrowserRouter, Route, Routes, useNavigate} from "react-router-dom";
 import ReactDOM from "react-dom/client";
 import $ from "jquery";
@@ -27,7 +26,7 @@ import Register from "./assets/pages/Register.tsx";
 import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
 
 
-export const debug_mode = true;
+export const debug_mode = window.location.host === "127.0.0.1";
 export const api_domain = debug_mode ? "http://localhost:1420/api" : "/api";
 export const setTitle = (title: string) =>
 {
@@ -36,17 +35,19 @@ export const setTitle = (title: string) =>
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
-    <React.StrictMode>
-        <BrowserRouter>
-            <AuthProvider>
-                <MainContentRenderer/>
-            </AuthProvider>
-        </BrowserRouter>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <BrowserRouter>
+        <AuthProvider>
+            <MainContentRenderer/>
+        </AuthProvider>
+    </BrowserRouter>
+    // </React.StrictMode>
 );
 
 export function MainContentRenderer()
 {
+    console.log('hi');
+    alert("hi");
     const navigate = useNavigate();
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
