@@ -46,8 +46,6 @@ ReactDOM.createRoot($("#root")[0]!).render(
 
 export function MainContentRenderer()
 {
-    console.log('hi');
-    alert("hi");
     const navigate = useNavigate();
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
