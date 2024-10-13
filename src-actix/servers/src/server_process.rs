@@ -25,6 +25,7 @@ impl ServerProcess {
     }
 
     pub fn start_server(&mut self) -> Result<(), Box<dyn Error>> {
+//        self.server.executable
         todo!("Implement the start_server function")
     }
     pub fn stop_server(&mut self) -> Result<(), Box<dyn Error>> {
