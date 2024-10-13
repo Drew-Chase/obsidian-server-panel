@@ -4,8 +4,10 @@ import {Progress} from "@nextui-org/react";
 interface StatCardProps
 {
     title?: string;
-    value?: number | string;
+    value?: number;
+    valueDisplay?: string;
     maxValue?: number;
+    maxValueDisplay?: string;
     icon?: ReactElement;
 }
 
@@ -17,13 +19,13 @@ export default function StatCard(props: StatCardProps)
                 <span className={"text-primary"}>{props.icon}</span>
                 <p className={"text-tiny font-medium ml-2 mr-auto"}>{props.title}</p>
             </div>
-            <p className={"text-4xl font-semibold mb-4"}>{props.value}</p>
+            <p className={"text-4xl font-semibold mb-4"}>{props.valueDisplay}</p>
             {props.maxValue && (
                 <>
-                    <p className={"text-sm text-neutral-500 ml-auto"}>of {props.maxValue}</p>
+                    <p className={"text-sm text-neutral-500 ml-auto"}>of {props.maxValueDisplay}</p>
                     <Progress
                         size={"sm"}
-                        value={Number.parseInt(props.value?.toString().replace(/\D/g, "") ?? "0")}
+                        value={props.value}
                         maxValue={props.maxValue}
                     />
                 </>
