@@ -6,9 +6,20 @@ import InstancesList from "../../components/Dashboard/InstancesList.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
+import Conversions from "../../ts/Conversions.ts";
 
 export default function DashboardInstances()
 {
+    // @ts-ignore
+    const [cpuUsage, setCpuUsage] = useState(0);
+    // @ts-ignore
+    const [memoryUsage, setMemoryUsage] = useState(0);
+    // @ts-ignore
+    const [totalMemory, setTotalMemory] = useState(0);
+    // @ts-ignore
+    const [storageUsage, setStorageUsage] = useState(0);
+    // @ts-ignore
+    const [onlinePlayers, setOnlinePlayers] = useState(0);
     setTitle("Dashboard Instances");
     return (
         <div className={"flex flex-col gap-8"}>
@@ -18,25 +29,32 @@ export default function DashboardInstances()
             <div className={"flex flex-row w-full justify-between"}>
                 <StatCard
                     title={"CPU Usage"}
-                    value={`40%`}
+                    value={cpuUsage}
+                    valueDisplay={`${cpuUsage}%`}
                     maxValue={100}
+                    maxValueDisplay={"100%"}
                     icon={<CPU size={24}/>}
                 />
                 <StatCard
                     title={"Memory Usage"}
-                    value={`28 GB`}
-                    maxValue={64}
+                    value={memoryUsage}
+                    valueDisplay={`${Conversions.bytesToSize(memoryUsage)}`}
+                    maxValue={totalMemory}
+                    maxValueDisplay={Conversions.bytesToSize(totalMemory)}
                     icon={<RAM size={24}/>}
                 />
                 <StatCard
                     title={"Storage Usage"}
-                    value={`800 GB`}
+                    value={storageUsage}
+                    valueDisplay={`${Conversions.bytesToSize(storageUsage)}`}
                     maxValue={1000}
+                    maxValueDisplay={"1000 GB"}
                     icon={<Storage size={24}/>}
                 />
                 <StatCard
                     title={"Online Players"}
-                    value={`4 Players`}
+                    value={onlinePlayers}
+                    valueDisplay={`${onlinePlayers} Players`}
                     maxValue={20}
                     icon={<FontAwesomeIcon icon={faUser}/>}
                 />
