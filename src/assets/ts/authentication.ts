@@ -36,13 +36,10 @@ export interface RegistrationResponse
  */
 export default class Authentication
 {
-    isLoggedIn: boolean;
     token: string | null;
 
     constructor()
     {
-        this.isLoggedIn = false;
-
         try
         {
             this.token = document.cookie
@@ -71,10 +68,10 @@ export default class Authentication
      * @return {Promise<JSON>} - A Promise that resolves to a JSON object containing the login response data.
      * @throws {Error} - Throws an Error object if an error occurs during the login process.
      */
-    public async login(username: string, password: string, expiration: number = -1): Promise<LoginResponse|ErrorResponse>
+    public async login(username: string, password: string, expiration: number = -1): Promise<LoginResponse | ErrorResponse>
     {
 
-        let response: any, data: any;
+        let response: any, data: LoginResponse | ErrorResponse;
         try
         {
             response = await fetch(`${api_domain}/auth/login`, {
@@ -90,8 +87,7 @@ export default class Authentication
         {
             throw err;
         }
-
-        if (data.success && data.token)
+        if ("token" in data)
         {
             this.generateCookies(data.token, expiration);
             return data;
@@ -116,30 +112,33 @@ export default class Authentication
         {
             const response = await fetch(`${api_domain}/auth/login/token`, {
                 method: "POST",
-                body: JSON.stringify({token})
+                body: JSON.stringify({token}),
+                headers: {
+                    "Content-Type": "application/json"
+                }
             });
 
             const data = await response.json();
 
+            if ("error" in data)
+            {
+                throw new Error(JSON.stringify(data));
+            }
             if (response.ok)
             {
-                if (data.success)
+                if (data)
                 {
                     this.generateCookies(token, expiration);
                 }
             } else
             {
-                if (!data.message)
-                {
-                    data.message = "An unknown error occurred.";
-                }
                 throw new Error(JSON.stringify(data));
             }
 
             return data;
         } catch (error)
         {
-            console.error(error);
+            console.error("Unable to login with token:", error);
             throw error;
         }
     }
@@ -203,7 +202,6 @@ export default class Authentication
     public logout(): void
     {
         document.cookie = `token=; path=/; domain=.${window.location.hostname}; samesite=strict; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-        this.isLoggedIn = false;
     }
 
     /**
@@ -226,7 +224,6 @@ export default class Authentication
             document.cookie = `token=${token}; path=/; domain=.${window.location.hostname}; samesite=strict; expires=${expire.toUTCString()}`;
         }
         this.token = token;
-        this.isLoggedIn = true;
     }
 
     /**
@@ -237,7 +234,7 @@ export default class Authentication
      */
     public getUserProfile(): UserProfile
     {
-        if (!this.isLoggedIn || this.token === "" || this.token === undefined) throw new Error("User is not logged in");
+        if (!this.token) throw new Error("User is not logged in");
         return JSON.parse(atob(this.token!));
     }
 }
