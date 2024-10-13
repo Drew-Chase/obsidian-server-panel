@@ -13,7 +13,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
 {
     const [auth] = useState(() => new Authentication());
-    const [isLoggedIn, setIsLoggedIn] = useState(auth.isLoggedIn);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() =>
     {
