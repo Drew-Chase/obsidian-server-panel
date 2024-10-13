@@ -20,7 +20,6 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
         Err(_) => return HttpResponse::InternalServerError().finish(),
     };
 
-    //	let mut sys = System::new_all();
     sys.refresh_all(); // Refresh all system info
     let mut per_core_cpu_usage: Vec<f32> = vec![];
 
@@ -28,7 +27,6 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
         per_core_cpu_usage.push(cpu.cpu_usage());
     }
 
-    println!("CPU Usage: {}%", sys.global_cpu_usage());
     HttpResponse::Ok().json(json!({
         "cpu_usage": sys.global_cpu_usage(),
         "cores": per_core_cpu_usage,
