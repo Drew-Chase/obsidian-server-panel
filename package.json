@@ -9,7 +9,7 @@
 	"type": "module",
 	"scripts": {
 		"build api": "cargo build --release",
-		"run api": "cargo run --bin project_name",
+		"run api": "cargo run --bin obsidian-server-panel",
 		"dev": "vite",
 		"build frontend": "tsc && vite build",
 		"preview": "vite preview",
