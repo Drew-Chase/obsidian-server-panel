@@ -8,20 +8,11 @@
 	"repository": "",
 	"type": "module",
 	"scripts": {
-		"build api": "cargo build --release",
-		"run api": "cargo run --bin obsidian-server-panel",
-		"dev": "vite",
-		"build frontend": "tsc && vite build",
-		"preview": "vite preview",
-		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-		"build and preview": "npm run build && npm run preview",
-		"publish": "node scripts/publish.js",
-		"package": "node scripts/package.js",
-		"run": "node scripts/run.js",
-		"watch api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../../src-actix/",
-		"watch frontend": "vite build --watch",
-		"full-build": "npm run \"build frontend\" && npm run \"build api\"",
-		"full-build-and-run": "npm run \"full-build\" && npm run \"run api\""
+		"dev": "node scripts/dev.js",
+		"build-api": "cargo build --release",
+		"run-api": "cargo run --bin obsidian-server-panel",
+		"build-frontend": "tsc && vite build",
+		"watch-api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../../src-actix"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^6.6.0",
