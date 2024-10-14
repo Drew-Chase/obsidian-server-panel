@@ -11,13 +11,21 @@ export default defineConfig({
     },
     clearScreen: false,
     server: {
-        port: 1421,
+        host: true,
+        port: 3000,
         strictPort: true,
+        hmr: {
+            protocol: "ws",
+            host: "localhost",
+            port: 3000,
+            clientPort: 3000,
+            overlay: true
+        },
         watch: {
             ignored: ["**/src-*/**"]
         }
     },
     build: {
-        outDir: "target/wwwroot",
+        outDir: "target/wwwroot"
     }
 });
