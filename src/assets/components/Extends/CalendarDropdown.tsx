@@ -1,7 +1,6 @@
 import {Button, ButtonProps, Calendar, CalendarProps, DateValue, Dropdown, DropdownItem, DropdownMenu, DropdownMenuProps, DropdownProps, DropdownTrigger} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
-import {getLocalTimeZone} from "@internationalized/date";
 import {ReactElement, useState} from "react";
 
 
@@ -42,11 +41,11 @@ export default function CalendarDropdown(props: CalendarDropdownProps)
                         {...mutableProps.triggerProps}
                         endContent={<FontAwesomeIcon icon={faChevronDown}/>}
                     >
-                        <div className={"flex flex-row gap-1"}>
-                            <span>{mutableProps.showMonth && date.toDate(getLocalTimeZone()).toLocaleString("default", {month: "long"})}</span>
-                            <span>{mutableProps.showDay && date.toDate(getLocalTimeZone()).toLocaleString("default", {day: "2-digit"})},</span>
-                            <span>{mutableProps.showYear && date.toDate(getLocalTimeZone()).getFullYear()}</span>
-                        </div>
+                        {/*<div className={"flex flex-row gap-1"}>*/}
+                        {/*    <span>{mutableProps.showMonth && date.toDate(getLocalTimeZone()).toLocaleString("default", {month: "long"})}</span>*/}
+                        {/*    <span>{mutableProps.showDay && date.toDate(getLocalTimeZone()).toLocaleString("default", {day: "2-digit"})},</span>*/}
+                        {/*    <span>{mutableProps.showYear && date.toDate(getLocalTimeZone()).getFullYear()}</span>*/}
+                        {/*</div>*/}
                     </Button>
                 )}
             </DropdownTrigger>
