@@ -1,6 +1,5 @@
 import {Navbar, NavbarContent, NavbarItem} from "@nextui-org/navbar";
-import Logo from "../images/Logo.svg.tsx";
-import {Accordion, AccordionItem, cn, Input, User} from "@nextui-org/react";
+import {Accordion, AccordionItem, cn, Image, Input, User} from "@nextui-org/react";
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import Home from "../images/Home.svg.tsx";
 import UserIcon from "../images/User.svg.tsx";
@@ -9,6 +8,7 @@ import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useAuth} from "../providers/AuthProvider.tsx";
 import {useEffect} from "react";
+import Logo from "../images/logo.gif";
 
 export default function Navigation()
 {
@@ -58,12 +58,14 @@ export default function Navigation()
 
             <NavbarContent className={"flex flex-col items-start w-full h-auto gap-8"}>
                 <div className={"flex flex-row gap-2"}>
-                    <Logo/>
+                    <Image src={Logo} width={32} radius={"sm"}/>
                     <h1 className={"font-semibold text-[1.25rem]"}>Obsidian</h1>
                 </div>
                 <Input
                     label={"Search"}
                     placeholder={"Search for..."}
+                    variant={"underlined"}
+                    aria-label={"Search"}
                     startContent={<MagnifyGlass size={18}/>}
                     className={"w-full drop-shadow-lg"}
                     classNames={{
@@ -91,32 +93,36 @@ export default function Navigation()
                     selectionMode={"single"}
                     defaultExpandedKeys={[section]}
                 >
-                    <AccordionItem key={""} startContent={<Home/>} title={"Dashboard"} indicator={indicator}>
-                        <NavbarItem key={"overview"} onClick={() => navigate("/app/")} isActive={pathname === "/app/"}>Overview</NavbarItem>
-                        <NavbarItem key={"servers"} onClick={() => navigate("/app/servers/")} isActive={pathname === "/app/servers/"}>Servers</NavbarItem>
-                        <NavbarItem key={"instances"} onClick={() => navigate("/app/instances/")} isActive={pathname === "/app/instances/"}>Instances</NavbarItem>
-                        <NavbarItem key={"create-server"} onClick={() => navigate("/app/create-server/")} isActive={pathname === "/app/create-server/"}>Create Server</NavbarItem>
+                    <AccordionItem key={""} startContent={<Home/>} title={"Dashboard"} indicator={indicator} aria-label="Dashboard">
+                        <NavbarItem key={"overview"} onClick={() => navigate("/app/")} isActive={pathname === "/app/"} aria-label="Overview">Overview</NavbarItem>
+                        <NavbarItem key={"servers"} onClick={() => navigate("/app/servers/")} isActive={pathname === "/app/servers/"} aria-label="Servers">Servers</NavbarItem>
+                        <NavbarItem key={"instances"} onClick={() => navigate("/app/instances/")} isActive={pathname === "/app/instances/"} aria-label="Instances">Instances</NavbarItem>
+                        <NavbarItem key={"create-server"} onClick={() => navigate("/app/create-server/")} isActive={pathname === "/app/create-server/"} aria-label="Create Server">Create Server</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"server"} startContent={<FontAwesomeIcon icon={faFileLines}/>} title={"SMP Server"} indicator={indicator}>
-                        <NavbarItem key={"server-profile"} onClick={() => navigate("/app/server/")} isActive={pathname === "/app/server/"}>Details</NavbarItem>
-                        <NavbarItem key={"server-properties"} onClick={() => navigate("/app/server/properties/")} isActive={pathname === "/app/server/properties/"}>Properties</NavbarItem>
-                        <NavbarItem key={"server-mods"} onClick={() => navigate("/app/server/mods/")} isActive={pathname === "/app/server/mods/"}>Mods</NavbarItem>
-                        <NavbarItem key={"server-files"} onClick={() => navigate("/app/server/files/")} isActive={pathname === "/app/server/files/"}>Files</NavbarItem>
-                        <NavbarItem key={"server-backups"} onClick={() => navigate("/app/server/backups/")} isActive={pathname === "/app/server/backups/"}>Backups</NavbarItem>
-                        <NavbarItem key={"server-console"} onClick={() => navigate("/app/server/console/")} isActive={pathname === "/app/server/console/"}>Console</NavbarItem>
-                        <NavbarItem key={"server-players"} onClick={() => navigate("/app/server/players/")} isActive={pathname === "/app/server/players/"}>Players</NavbarItem>
+                    <AccordionItem key={"server"} startContent={<FontAwesomeIcon icon={faFileLines}/>} title={"SMP Server"} indicator={indicator} aria-label="SMP Server">
+                        <NavbarItem key={"server-profile"} onClick={() => navigate("/app/server/")} isActive={pathname === "/app/server/"} aria-label="Details">Details</NavbarItem>
+                        <NavbarItem key={"server-properties"} onClick={() => navigate("/app/server/properties/")} isActive={pathname === "/app/server/properties/"} aria-label="Properties">Properties</NavbarItem>
+                        <NavbarItem key={"server-mods"} onClick={() => navigate("/app/server/mods/")} isActive={pathname === "/app/server/mods/"} aria-label="Mods">Mods</NavbarItem>
+                        <NavbarItem key={"server-files"} onClick={() => navigate("/app/server/files/")} isActive={pathname === "/app/server/files/"} aria-label="Files">Files</NavbarItem>
+                        <NavbarItem key={"server-backups"} onClick={() => navigate("/app/server/backups/")} isActive={pathname === "/app/server/backups/"} aria-label="Backups">Backups</NavbarItem>
+                        <NavbarItem key={"server-console"} onClick={() => navigate("/app/server/console/")} isActive={pathname === "/app/server/console/"} aria-label="Console">Console</NavbarItem>
+                        <NavbarItem key={"server-players"} onClick={() => navigate("/app/server/players/")} isActive={pathname === "/app/server/players/"} aria-label="Players">Players</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"discover"} startContent={<MagnifyGlass/>} title={"Discover"} indicator={indicator}>
-                        <NavbarItem key={"discover-all"} onClick={() => navigate("/app/discover/")} isActive={pathname === "/app/discover/"}>Instances</NavbarItem>
+                    <AccordionItem key={"discover"} startContent={<MagnifyGlass/>} title={"Discover"} indicator={indicator} aria-label="Discover">
+                        <NavbarItem key={"discover-all"} onClick={() => navigate("/app/discover/")} isActive={pathname === "/app/discover/"} aria-label="Instances">Instances</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"users"} startContent={<UserIcon/>} title={"Users"} indicator={indicator}>
-                        <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"}>Manage Users</NavbarItem>
-                        <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"}>Manage Groups</NavbarItem>
+                    <AccordionItem key={"users"} startContent={<UserIcon/>} title={"Users"} indicator={indicator} aria-label="Users">
+                        <NavbarItem key={"manage-users"} onClick={() => navigate("/app/users/")} isActive={pathname === "/app/users/"} aria-label="Manage Users">Manage Users</NavbarItem>
+                        <NavbarItem key={"manage-groups"} onClick={() => navigate("/app/users/groups/")} isActive={pathname === "/app/users/groups/"} aria-label="Manage Groups">Manage Groups</NavbarItem>
                     </AccordionItem>
-                    <AccordionItem key={"settings/profile"} startContent={<User name={auth.getUserProfile().username} description={"Administrator"}/>} indicator={indicator}>
-                        <NavbarItem key={"profile"} onClick={() => navigate("/app/settings/profile/")} isActive={pathname === "/app/settings/profile/"}>Profile Settings</NavbarItem>
-                        <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"}>Application Settings</NavbarItem>
-                        <NavbarItem key={"logout"} onClick={() => navigate("/")}>Logout</NavbarItem>
+                    <AccordionItem key={"settings/profile"} startContent={<User name={auth.getUserProfile().username} description={"Administrator"}/>} indicator={indicator} aria-label="Settings/Profile">
+                        <NavbarItem key={"profile"} onClick={() => navigate("/app/settings/profile/")} isActive={pathname === "/app/settings/profile/"} aria-label="Profile Settings">Profile Settings</NavbarItem>
+                        <NavbarItem key={"settings"} onClick={() => navigate("/app/settings/")} isActive={pathname === "/app/settings/"} aria-label="Application Settings">Application Settings</NavbarItem>
+                        <NavbarItem key={"logout"} onClick={() =>
+                        {
+                            auth.logout();
+                            navigate("/");
+                        }} aria-label="Logout">Logout</NavbarItem>
                     </AccordionItem>
                 </Accordion>
             </NavbarContent>
