@@ -1,4 +1,4 @@
-import {api_domain} from "../../main.tsx";
+// noinspection ExceptionCaughtLocallyJS
 
 export interface UserProfile
 {
@@ -74,7 +74,7 @@ export default class Authentication
         let response: any, data: LoginResponse | ErrorResponse;
         try
         {
-            response = await fetch(`${api_domain}/auth/login`, {
+            response = await fetch(`/api/auth/login`, {
                 method: "POST",
                 body: JSON.stringify({username, password}),
                 headers: {
@@ -110,7 +110,7 @@ export default class Authentication
 
         try
         {
-            const response = await fetch(`${api_domain}/auth/login/token`, {
+            const response = await fetch(`/api/auth/login/token`, {
                 method: "POST",
                 body: JSON.stringify({token}),
                 headers: {
@@ -159,7 +159,7 @@ export default class Authentication
 
         try
         {
-            const response = await fetch(`${api_domain}`, {method: "POST", body: formData});
+            const response = await fetch(``, {method: "POST", body: formData});
             const data = await response.json();
             if (response.ok)
             {
