@@ -1,4 +1,6 @@
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{get, rt, HttpResponse, Responder};
+use actix_ws::{AggregatedMessage, ProtocolError};
+use futures_util::StreamExt;
 use serde_json::json;
 use std::env::current_dir;
 use std::sync::Mutex;
@@ -39,6 +41,62 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
             "swap_free": sys.free_swap()
         }
     }))
+}
+
+#[get("/usage/ws")]
+pub async fn get_system_usage_websocket(
+    sys: actix_web::web::Data<Mutex<System>>,
+    req: actix_web::HttpRequest,
+    stream: actix_web::web::Payload,
+) -> Result<impl Responder, actix_web::Error> {
+    let (res, mut session, stream) = actix_ws::handle(&req, stream)?;
+
+    let mut stream = stream
+        .aggregate_continuations()
+        .max_continuation_size(2_usize.pow(20)); // 1MB
+
+    rt::spawn(async move {
+        let mut sys = match sys.lock() {
+            Ok(sys) => sys,
+            Err(_) => return,
+        };
+
+        sys.refresh_all(); // Refresh all system info
+        let mut per_core_cpu_usage: Vec<f32> = vec![];
+
+        for cpu in sys.cpus() {
+            per_core_cpu_usage.push(cpu.cpu_usage());
+        }
+        
+
+        //        let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
+        while let Some(msg) = stream.next().await {
+            sys.refresh_all(); // Refresh all system info
+            let mut per_core_cpu_usage: Vec<f32> = vec![];
+
+            for cpu in sys.cpus() {
+                per_core_cpu_usage.push(cpu.cpu_usage());
+            }
+
+            match msg {
+                Ok(AggregatedMessage::Text(text)) => {
+                    session.text(text).await.unwrap();
+                }
+                Ok(AggregatedMessage::Binary(_)) => {
+                    session.close(None).await.unwrap();
+                    break;
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    break;
+                }
+
+                _ => {}
+            }
+        }
+    });
+
+    Ok(res)
 }
 
 #[get("/storage")]
