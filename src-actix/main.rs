@@ -9,6 +9,8 @@ mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
+use actix_files::file_extension_to_mime;
+use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header;
 use actix_web::{
     error, get, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder,
@@ -106,6 +108,7 @@ async fn main() -> std::io::Result<()> {
                         web::scope("system")
                             .service(system_stats_endpoint::get_system_info)
                             .service(system_stats_endpoint::get_system_usage)
+                            .service(system_stats_endpoint::get_system_usage_websocket)
                             .service(system_stats_endpoint::get_storage_info)
                             .app_data(sys.clone()),
                     )
@@ -159,7 +162,7 @@ async fn main() -> std::io::Result<()> {
                 )
         } else {
             app.default_service(web::route().to(index))
-                .service(web::resource("/assets/{file:.*}").route(web::get().to(index)))
+                .service(web::scope("assets/{file}").service(assets))
         }
     })
     .workers(4)
@@ -212,6 +215,19 @@ async fn index(_req: HttpRequest) -> Result<impl Responder, Error> {
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
     Err(error::ErrorInternalServerError("Failed to find index.html"))
+}
+
+#[get("")]
+async fn assets(file: web::Path<String>) -> impl Responder {
+    if let Some(file) = WWWROOT.get_file(format!("assets/{}", file.as_str())) {
+        let body = file.contents();
+        return Ok(HttpResponse::Ok()
+            .content_type(file_extension_to_mime(
+                file.path().extension().unwrap().to_str().unwrap(),
+            ))
+            .body(body));
+    }
+    Err(ErrorInternalServerError(format!("Failed to find {}", file)))
 }
 
 /// Proxies requests to the Vite development server.
