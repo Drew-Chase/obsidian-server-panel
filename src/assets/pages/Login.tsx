@@ -1,4 +1,4 @@
-import {Button, Card, CardBody, CardHeader, Input} from "@nextui-org/react";
+import {Button, Card, CardBody, CardHeader, cn, Input, Link, Image} from "@nextui-org/react";
 import {useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEnvelope, faEye, faEyeSlash, faKey} from "@fortawesome/free-solid-svg-icons";
@@ -7,6 +7,10 @@ import {setTitle} from "../../main.tsx";
 import ExtendedSwitch from "../components/Extends/ExtendedSwitch.tsx";
 import {useAuth} from "../providers/AuthProvider.tsx";
 import {ErrorResponse, LoginResponse} from "../ts/authentication.ts";
+import {Navbar, NavbarContent, NavbarItem, NavbarBrand} from "@nextui-org/navbar";
+import Logo from "../images/logo.gif";
+import {faGithub} from "@fortawesome/free-brands-svg-icons";
+import BackgroundImage from "../images/mc-bg.webp";
 
 export default function Login()
 {
@@ -90,11 +94,38 @@ export default function Login()
     };
 
     return (
-        <>
-            <div className={"h-[calc(100dvh_-_12rem)]"}>
+        <div className={"rounded-xl p-2 overflow-hidden relative"}>
+            <div
+                className={"absolute top-[-10px] bottom-[-10px] left-[-10px] right-[-10px] bg-cover blur-md"}
+                style={{
+                    backgroundImage: `linear-gradient(rgba(45, 55, 72, 0.47) 0%, rgb(26, 32, 46) 100%), url(${BackgroundImage})`
+                }}
+            >
+            </div>
 
+            <Navbar maxWidth={"full"} className={"rounded-xl"}>
+                <NavbarBrand className={"gap-4"}>
+                    <Image src={Logo} width={32} radius={"sm"}/>
+                    <h1 className={"font-semibold text-[1.25rem]"}>Obsidian</h1>
+                </NavbarBrand>
+                <NavbarContent justify={"end"}>
+                    <NavbarItem
+                        as={Link}
+                        href={"https://github.com/drew-chase/obsidian-server-panel"}
+                        className={"h-full text-inherit opacity-50 data-[hover=true]:opacity-100"}
+                        target={"_blank"}
+                    >
+                        <FontAwesomeIcon
+                            icon={faGithub}
+                            width={24}
+                            className={"h-full"}
+                        />
+                    </NavbarItem>
+                </NavbarContent>
+            </Navbar>
+            <div className={"flex flex-col h-[calc(100dvh_-_11.7rem)] min-h-[300px] pb-3 my-[10px]"}>
                 <Card
-                    className={"flex flex-col w-1/3 max-w-[800px] min-w-[400px] mx-auto mt-[100px] justify-center px-8 py-4 bg-custom-gradient"}
+                    className={"flex flex-col w-1/3 max-w-[900px] min-w-[400px] min-h-[200px] m-auto justify-center px-8 py-4 backdrop-blur-lg backdrop-saturate-150 bg-background/70"}
                 >
                     <CardHeader><h1 className={"text-5xl"}>Login</h1></CardHeader>
                     <CardBody>
@@ -149,6 +180,17 @@ export default function Login()
                 </Card>
 
             </div>
-        </>
+
+            <footer
+                className={
+                    cn(
+                        "flex items-center justify-center inset-x-0 rounded-xl z-40 w-full h-auto p-2",
+                        "backdrop-blur-lg backdrop-saturate-150 bg-background/70"
+                    )
+                }
+            >
+                <p>Created by Drew Chase</p>
+            </footer>
+        </div>
     );
 }
