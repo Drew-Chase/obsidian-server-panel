@@ -24,6 +24,7 @@ export default function StatCard(props: StatCardProps)
                 <>
                     <p className={"text-sm text-neutral-500 ml-auto"}>of {props.maxValueDisplay}</p>
                     <Progress
+                        aria-label={props.title}
                         size={"sm"}
                         value={props.value}
                         maxValue={props.maxValue}
