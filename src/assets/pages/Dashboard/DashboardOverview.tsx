@@ -1,84 +1,21 @@
 import {setTitle} from "../../../main.tsx";
-import StatCard from "../../components/Dashboard/StatCard.tsx";
-import CPU from "../../images/CPU.svg.tsx";
-import RAM from "../../images/RAM.svg.tsx";
-import Storage from "../../images/Storage.svg.tsx";
 import ExtendedStorageStat from "../../components/Dashboard/ExtendedStorageStat.tsx";
 import ExtendedOnlinePlayersStat from "../../components/Dashboard/ExtendedOnlinePlayersStat.tsx";
 import RecentConnectionsStat from "../../components/Dashboard/RecentConnectionsStat.tsx";
 import CrashReportsStat from "../../components/Dashboard/CrashReportsStat.tsx";
 import BackupsStat from "../../components/Dashboard/BackupsStat.tsx";
 import ServerList from "../../components/Dashboard/ServerList.tsx";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faUser} from "@fortawesome/free-solid-svg-icons";
-import {useEffect, useState} from "react";
-import Conversions from "../../ts/Conversions.ts";
-import SystemMonitor from "../../ts/system-monitor.ts";
+import OverviewStatCard from "../../components/Dashboard/StatCards/OverviewStatCard.tsx";
 
 export default function DashboardOverview()
 {
-    const [cpuUsage, setCpuUsage] = useState(0);
-    const [memoryUsage, setMemoryUsage] = useState(0);
-    const [totalMemory, setTotalMemory] = useState(0);
-    const [storageUsage, setStorageUsage] = useState(0);
-    const [onlinePlayers, setOnlinePlayers] = useState(0);
-
     setTitle("Dashboard Overview");
-    useEffect(() =>
-    {
-        const monitor = new SystemMonitor();
-        setCpuUsage(monitor.current_data.cpu_usage);
-        setMemoryUsage(monitor.current_data.memory.used);
-        setTotalMemory(monitor.current_data.memory.total);
-        setStorageUsage(0);
-        setOnlinePlayers(4);
-        monitor.startMonitoring(1000, (data) =>
-        {
-            setCpuUsage(Math.min(Math.floor(data.cpu_usage), 100));
-            setMemoryUsage(data.memory.used);
-            setTotalMemory(data.memory.total);
-            setStorageUsage(0);
-            setOnlinePlayers(4);
-        });
-    }, []);
     return (
         <div className={"flex flex-col gap-8"}>
             <div className={"flex flex-row"}>
                 <p className={"text-xl font-semibold mr-auto"}>Overview</p>
             </div>
-            <div className={"flex flex-row w-full justify-between"}>
-                <StatCard
-                    title={"CPU Usage"}
-                    value={cpuUsage}
-                    valueDisplay={`${cpuUsage}%`}
-                    maxValue={100}
-                    maxValueDisplay={"100%"}
-                    icon={<CPU size={24}/>}
-                />
-                <StatCard
-                    title={"Memory Usage"}
-                    value={memoryUsage}
-                    valueDisplay={`${Conversions.bytesToSize(memoryUsage)}`}
-                    maxValue={totalMemory}
-                    maxValueDisplay={Conversions.bytesToSize(totalMemory)}
-                    icon={<RAM size={24}/>}
-                />
-                <StatCard
-                    title={"Storage Usage"}
-                    value={storageUsage}
-                    valueDisplay={`${Conversions.bytesToSize(storageUsage)}`}
-                    maxValue={1000}
-                    maxValueDisplay={"1000 GB"}
-                    icon={<Storage size={24}/>}
-                />
-                <StatCard
-                    title={"Online Players"}
-                    value={onlinePlayers}
-                    valueDisplay={`${onlinePlayers} Players`}
-                    maxValue={20}
-                    icon={<FontAwesomeIcon icon={faUser}/>}
-                />
-            </div>
+            <OverviewStatCard/>
             <div className={"flex flex-row w-full justify-between"}>
                 <ExtendedStorageStat/>
                 <ExtendedOnlinePlayersStat/>
