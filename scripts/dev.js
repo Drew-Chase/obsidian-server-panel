@@ -17,7 +17,9 @@ let apiServerProcess = spawn('npm', ['run', 'watch-api'], {shell: true});
  * @param {Buffer} data - The data received from the standard output stream.
  */
 apiServerProcess.stdout.on('data', (data) => {
-    if (data && !first_data) first_data = true;
+    if (data && !first_data && data.toString().length > 0) {
+        first_data = true;
+    }
     process.stdout.write(data);
     apiServerProcess.stdout.on('data', (data) => {
         process.stdout.write(data);
@@ -25,15 +27,6 @@ apiServerProcess.stdout.on('data', (data) => {
     });
 });
 
-/**
- * Waits until the first data is received from the API server process.
- * If the first data is not received, it logs 'waiting for first data' every second.
- */
-while (!first_data) {
-    console.log('waiting for first data');
-    // add a delay to allow the process to start
-    await new Promise(resolve => setTimeout(resolve, 1000));
-}
 
 /**
  * Handles the 'data' event for the standard error stream of the API server process.
@@ -54,6 +47,17 @@ apiServerProcess.on('close', (code) => {
         process.exit(1);
     }
 });
+
+
+/**
+ * Waits until the first data is received from the API server process.
+ * If the first data is not received, it logs 'waiting for first data' every second.
+ */
+while (!first_data) {
+    console.log('waiting for first data');
+    // add a delay to allow the process to start
+    await new Promise(resolve => setTimeout(resolve, 1000));
+}
 
 /**
  * Spawns the Vite server process.
@@ -88,21 +92,24 @@ function debug(data) {
         switch (logLevel) {
             case 'TRACE':
                 style = 'color: gray;';
+                console.trace(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
             case 'DEBUG':
                 style = 'color: green;';
+                console.debug(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
             case 'INFO':
                 style = 'color: blue;';
+                console.info(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
             case 'WARN':
                 style = 'color: orange;';
+                console.warn(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
             case 'ERROR':
                 style = 'color: red;';
+                console.error(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
         }
-
-        console.log(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
     }
 }
