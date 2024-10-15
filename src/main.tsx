@@ -25,9 +25,6 @@ import ProfileSettings from "./assets/pages/Profile/ProfileSettings.tsx";
 import Register from "./assets/pages/Register.tsx";
 import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
 
-
-export const debug_mode = window.location.host === "127.0.0.1";
-export const api_domain = debug_mode ? "http://localhost:1420/api" : "/api";
 export const setTitle = (title: string) =>
 {
     document.title = `${title} - Obsidian Minecraft Server Panel`;
@@ -48,7 +45,7 @@ export function MainContentRenderer()
 {
     const navigate = useNavigate();
     return (
-        <NextUIProvider navigate={navigate} className={"flex flex-row gap-8"}>
+        <NextUIProvider navigate={navigate} className={"flex flex-row"}>
             <Navigation/>
             <main className={"max-h-dvh h-dvh overflow-y-auto w-full p-6 mr-6"}>
                 <Routes>
