@@ -25,7 +25,7 @@ export default function ServerConsole()
             scrollLock = (view.scrollTop() ?? 0) + (view.innerHeight() ?? 0) >= view[0].scrollHeight;
             console.log("Scroll Lock: ", scrollLock);
         });
-        setInterval(() =>
+        const scrollInterval = setInterval(() =>
         {
             if (scrollLock)
             {
@@ -33,6 +33,12 @@ export default function ServerConsole()
                 console.log("scrolling");
             }
         }, 500);
+
+        return () =>
+        {
+            clearInterval(scrollInterval);
+            view.off("scroll");
+        };
 
     }, []);
 
@@ -58,7 +64,7 @@ export default function ServerConsole()
                     }
                 }}
             >
-                {Array.from({length: 20}, (_, i) => (<AutocompleteItem key={`say-${i}`} value={"say"}>say {i}</AutocompleteItem>))}
+                {Array.from({length: 20}, (_, i) => (<AutocompleteItem key={`say-${i}`} value={"say"} textValue={`say ${i}`}>say {i}</AutocompleteItem>))}
             </Autocomplete>
         </div>
     );
