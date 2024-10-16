@@ -24,6 +24,8 @@ import ApplicationSettings from "./assets/pages/Settings/ApplicationSettings.tsx
 import ProfileSettings from "./assets/pages/Profile/ProfileSettings.tsx";
 import Register from "./assets/pages/Register.tsx";
 import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
+import {Toaster} from "sonner";
+import React from "react";
 
 export const setTitle = (title: string) =>
 {
@@ -32,13 +34,13 @@ export const setTitle = (title: string) =>
 
 
 ReactDOM.createRoot($("#root")[0]!).render(
-    // <React.StrictMode>
-    <BrowserRouter>
-        <AuthProvider>
-            <MainContentRenderer/>
-        </AuthProvider>
-    </BrowserRouter>
-    // </React.StrictMode>
+    <React.StrictMode>
+        <BrowserRouter>
+            <AuthProvider>
+                <MainContentRenderer/>
+            </AuthProvider>
+        </BrowserRouter>
+    </React.StrictMode>
 );
 
 export function MainContentRenderer()
@@ -46,6 +48,9 @@ export function MainContentRenderer()
     const navigate = useNavigate();
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row"}>
+            <Toaster position={"bottom-right"} closeButton richColors theme={"dark"} toastOptions={{
+                className: "bg-default/50 border-2 border-primary/50 rounded-md shadow-lg backdrop-blur-sm"
+            }}/>
             <Navigation/>
             <main className={"max-h-dvh h-dvh overflow-y-auto w-full p-6 mr-6"}>
                 <Routes>
