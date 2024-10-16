@@ -20,6 +20,7 @@ export default function MemoryAllocationInput()
                     classNames={{
                         inputWrapper: "bg-neutral-700"
                     }}
+                    aria-label="Minimum Memory"
                 />
                 <Input
                     label={"Max"}
@@ -31,6 +32,7 @@ export default function MemoryAllocationInput()
                     classNames={{
                         inputWrapper: "bg-neutral-700"
                     }}
+                    aria-label="Maximum Memory"
                 />
             </div>
             <Slider
@@ -46,6 +48,7 @@ export default function MemoryAllocationInput()
                     ]
                 }
                 formatOptions={{style: "unit", unit: "gigabyte"}}
+                aria-label="Memory Allocation Slider"
                 onChange={(value) =>
                 {
                     if (Array.isArray(value))
