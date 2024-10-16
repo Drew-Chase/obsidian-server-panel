@@ -15,6 +15,7 @@ export default function InstancesList()
                         color={"primary"}
                         endContent={<FontAwesomeIcon icon={faPlus}/>}
                         className={"ml-auto"}
+                        aria-label={"Create Custom Instance"}
                     >
                         Custom Instance
                     </Button>
@@ -26,6 +27,7 @@ export default function InstancesList()
                 className={"mt-8 max-h-full overflow-y-auto"}
                 color={"primary"}
                 isHeaderSticky
+                aria-label={"Instances Table"}
                 classNames={{
                     tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
                     th: "bg-neutral-700/50 backdrop-blur-lg",
@@ -58,13 +60,13 @@ export default function InstancesList()
                                 <TableCell>
                                     <div className={"flex flex-row items-center"}>
                                         <Tooltip content={"Create Server"}>
-                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faCirclePlus}/> </Button>
+                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} aria-label={"Create Server"}> <FontAwesomeIcon icon={faCirclePlus}/> </Button>
                                         </Tooltip>
                                         <Tooltip content={`Duplicate Instance`}>
-                                            <Button variant={"light"} className={"min-w-0 w-2 data-[hover]:text-foreground text-neutral-400"}> <FontAwesomeIcon icon={faCopy}/> </Button>
+                                            <Button variant={"light"} className={"min-w-0 w-2 data-[hover]:text-foreground text-neutral-400"} aria-label={"Duplicate Instance"}> <FontAwesomeIcon icon={faCopy}/> </Button>
                                         </Tooltip>
                                         <Tooltip content={"Download Instance"}>
-                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <DownloadFile/> </Button>
+                                            <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} aria-label={"Download Instance"}> <DownloadFile/> </Button>
                                         </Tooltip>
                                     </div>
                                 </TableCell>
