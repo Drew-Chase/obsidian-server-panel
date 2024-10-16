@@ -94,7 +94,7 @@ impl JavaVersion {
     }
 
     pub async fn install(&self) -> Result<(), Box<dyn Error>> {
-        Ok(())
+        todo!("Install Java version");
     }
 }
 
