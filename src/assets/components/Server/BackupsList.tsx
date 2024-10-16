@@ -10,7 +10,7 @@ export default function BackupsList()
 
                 <p className={"text-lg font-semibold mr-auto"}>Backups</p>
                 <Tooltip content={"Create a manual backup"}>
-                    <Button><FontAwesomeIcon icon={faPlus}/></Button>
+                    <Button aria-label={"Create a manual backup"}><FontAwesomeIcon icon={faPlus}/></Button>
                 </Tooltip>
             </div>
 
@@ -19,12 +19,14 @@ export default function BackupsList()
                 <p>Timestamp</p>
             </div>
             <ScrollShadow className={"max-h-[300px] h-[400px] overflow-y-auto"}>
-                <Listbox>
+                <Listbox aria-label={"List of backups"}>
                     {Array.from({length: 10}, (_, i) => (
                         <ListboxItem
                             key={i}
                             description={"Automatic backup"}
                             endContent={<p className={"text-tiny text-nowrap"}>2:36:50 PM</p>}
+                            textValue={`Backup #${i} Automatic backup`}
+                            aria-label={`Backup #${i} details`}
                         >
                             <div className={"flex flex-row items-center gap-2"}>
                                 <p className={"max-w-[90px] truncate"}>Backup #{i}</p>
