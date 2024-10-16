@@ -1,4 +1,4 @@
-import {Button, Card, CardBody, CardHeader, cn, Input, Link, Image} from "@nextui-org/react";
+import {Button, Card, CardBody, CardHeader, cn, Image, Input, Link} from "@nextui-org/react";
 import {useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEnvelope, faEye, faEyeSlash, faKey} from "@fortawesome/free-solid-svg-icons";
@@ -7,7 +7,7 @@ import {setTitle} from "../../main.tsx";
 import ExtendedSwitch from "../components/Extends/ExtendedSwitch.tsx";
 import {useAuth} from "../providers/AuthProvider.tsx";
 import {ErrorResponse, LoginResponse} from "../ts/authentication.ts";
-import {Navbar, NavbarContent, NavbarItem, NavbarBrand} from "@nextui-org/navbar";
+import {Navbar, NavbarBrand, NavbarContent, NavbarItem} from "@nextui-org/navbar";
 import Logo from "../images/logo.gif";
 import {faGithub} from "@fortawesome/free-brands-svg-icons";
 import BackgroundImage from "../images/mc-bg.webp";
@@ -26,14 +26,8 @@ export default function Login()
     const [usernameError, setUsernameError] = useState("");
     const [passwordError, setPasswordError] = useState("");
     const [error, setError] = useState("");
-    const {auth, setIsLoggedIn, isLoggedIn} = useAuth();
+    const {auth, setIsLoggedIn} = useAuth();
     const navigate = useNavigate();
-
-    if (isLoggedIn)
-    {
-        navigate("/app/");
-    }
-
 
     const resetErrors = () =>
     {
