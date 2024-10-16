@@ -21,6 +21,7 @@ export default function ExtendedBackupsList()
                 isHeaderSticky
                 className={"h-full overflow-y-auto"}
                 color={"primary"}
+                aria-label={"Backups Table"}
                 classNames={{
                     tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
                     th: "bg-neutral-700/50 backdrop-blur-lg",
