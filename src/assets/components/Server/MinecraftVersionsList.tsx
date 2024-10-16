@@ -19,7 +19,7 @@ export default function MinecraftVersionsList()
                 <p>Actions</p>
             </div>
             <ScrollShadow className={"max-h-[300px] h-[400px] overflow-y-auto"}>
-                <Listbox>
+                <Listbox aria-label="Minecraft version list">
                     {Array.from({length: 10}, (_, i) => (
                         <ListboxItem
                             key={i}
@@ -32,10 +32,11 @@ export default function MinecraftVersionsList()
                             endContent={
                                 <div className={"flex flex-row"}>
                                     <Tooltip content={"Switch to this version."}>
-                                        <Button variant={"light"} size={"sm"} className={"min-w-0"}><DownloadFile/></Button>
+                                        <Button aria-label={`Switch to version ${i === 0 ? "latest release" : i === 1 ? "latest snapshot" : "release"}`} variant={"light"} size={"sm"} className={"min-w-0"}><DownloadFile/></Button>
                                     </Tooltip>
                                 </div>
                             }
+                            textValue={`Version ${i === 0 ? "latest release" : i === 1 ? "latest snapshot" : "release"}`}
                         />
                     ))}
                 </Listbox>
