@@ -26,6 +26,7 @@ export default function BanPlayersList()
                 isHeaderSticky
                 className={"max-h-[500px] h-full overflow-y-auto"}
                 color={"primary"}
+                aria-label="Ban Players Table"
                 classNames={{
                     tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
                     th: "bg-neutral-700/50 backdrop-blur-lg",
