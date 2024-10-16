@@ -48,10 +48,7 @@ export default class Authentication
                 ?.trim()
                 .slice(6) ?? null;
 
-            this.loginWithTokenFromCookie().then((response) =>
-            {
-                console.log(response);
-            });
+            this.loginWithTokenFromCookie();
 
         } catch (e)
         {
