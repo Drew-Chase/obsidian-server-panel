@@ -27,7 +27,7 @@ use sysinfo::System;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "trace");
+    std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
     start_ticking_schedules!();
     let port = 1420; // Port to listen on
@@ -40,17 +40,17 @@ async fn main() -> std::io::Result<()> {
     servers::server_db::initialize();
     backups::initialize();
 
-    // This will open the webui port on the router using upnp
-    // Spawn a thread to refresh the upnp port every 5 minutes
-    open_port!(port, "Obsidian Minecraft Server Manager");
 
     let config = if cfg!(debug_assertions) {
         "development"
     } else {
         "production"
     };
+    
+    // This will open the webui port on the router using upnp
+    // Spawn a thread to refresh the upnp port every 5 minutes
+//    open_port!(port, "Obsidian Minecraft Server Manager");
 
-    info!("Starting {} server at http://127.0.0.1:{}", config, port);
 
     let sys = web::Data::new(Mutex::new(System::new_all()));
     let server = HttpServer::new(move || {
@@ -168,7 +168,7 @@ async fn main() -> std::io::Result<()> {
     .workers(4)
     .bind(format!("0.0.0.0:{port}", port = port))?
     .run();
-    info!("Starting server at http://127.0.0.1:{port}...");
+    info!("Starting {} server at http://127.0.0.1:{}...", config, port);
     let stop_result = server.await;
     debug!("Server stopped");
 
