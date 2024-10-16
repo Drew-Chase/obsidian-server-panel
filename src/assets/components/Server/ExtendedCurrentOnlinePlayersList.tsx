@@ -24,6 +24,7 @@ export default function ExtendedCurrentOnlinePlayersList()
             </div>
 
             <Table
+                aria-label="Players list table"
                 isStriped
                 removeWrapper
                 isHeaderSticky
