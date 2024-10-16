@@ -1,0 +1,16 @@
+.monaco-editor {
+  --vscode-editor-background: #0b2039 !important;
+  --vscode-editorGutter-background: #0b2039 !important;
+  --vscode-minimapSlider-background: rgba(184, 57, 235, 0.22) !important;
+  --vscode-minimapSlider-hoverBackground: rgba(184, 57, 235, 0.44) !important;
+  --vscode-minimapSlider-activeBackground: rgba(184, 57, 235, 0.66) !important;
+  --vscode-menu-background: rgb(8, 16, 40) !important;
+  --vscode-menu-selectionBackground: rgba(184, 57, 235, 0.99) !important;
+  --vscode-quickInput-background: rgb(8, 16, 40) !important;
+  --vscode-input-background: rgb(8, 16, 40) !important;
+  --vscode-scrollbarSlider-background: rgba(184, 57, 235, 0.44) !important;
+}
+
+.minimap {
+  display: none;
+}
