@@ -27,6 +27,7 @@ export default function ServerFiles()
                     className: "w-10"
                 }}
                 selectionMode={"multiple"}
+                aria-label="Server Files Table"
             >
                 <TableHeader>
                     <TableColumn className={"w-full"}>Filename</TableColumn>
@@ -51,8 +52,8 @@ export default function ServerFiles()
                             </TableCell>
                             <TableCell>
                                 <div className={"flex flex-row"}>
-                                    <Button className={"min-w-0"} variant={"light"}><DownloadFile/></Button>
-                                    <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faTrash}/></Button>
+                                    <Button className={"min-w-0"} variant={"light"} aria-label="Download File"><DownloadFile/></Button>
+                                    <Button className={"min-w-0"} variant={"light"} color={"danger"} aria-label="Delete File"><FontAwesomeIcon icon={faTrash}/></Button>
                                 </div>
                             </TableCell>
                         </TableRow>
