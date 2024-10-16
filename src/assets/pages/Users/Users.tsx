@@ -23,6 +23,7 @@ export default function Users()
             </div>
 
             <Table
+                aria-label="Users Management Table"
                 isStriped
                 removeWrapper
                 isHeaderSticky
