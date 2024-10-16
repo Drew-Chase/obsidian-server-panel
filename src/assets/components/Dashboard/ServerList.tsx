@@ -36,15 +36,16 @@ export default function ServerList()
                 }}
                 isStriped
                 removeWrapper
+                aria-label="List of Servers"
             >
                 <TableHeader>
-                    <TableColumn>Name</TableColumn>
-                    <TableColumn><FontAwesomeIcon icon={faUser} className={"mr-1"}/> Owner</TableColumn>
-                    <TableColumn><FontAwesomeIcon icon={faCalendar} className={"mr-1"}/> Creation Date</TableColumn>
-                    <TableColumn><FontAwesomeIcon icon={faCheckSquare} className={"mr-1"}/> Status</TableColumn>
-                    <TableColumn><FontAwesomeIcon icon={faLayerGroup} className={"mr-1"}/> Instance</TableColumn>
-                    <TableColumn><FontAwesomeIcon icon={faClock} className={"mr-1"}/> Uptime</TableColumn>
-                    <TableColumn className={"w-0"}>Actions</TableColumn>
+                    <TableColumn aria-label="Server Name">Name</TableColumn>
+                    <TableColumn aria-label="Server Owner"><FontAwesomeIcon icon={faUser} className={"mr-1"}/> Owner</TableColumn>
+                    <TableColumn aria-label="Creation Date"><FontAwesomeIcon icon={faCalendar} className={"mr-1"}/> Creation Date</TableColumn>
+                    <TableColumn aria-label="Server Status"><FontAwesomeIcon icon={faCheckSquare} className={"mr-1"}/> Status</TableColumn>
+                    <TableColumn aria-label="Server Instance"><FontAwesomeIcon icon={faLayerGroup} className={"mr-1"}/> Instance</TableColumn>
+                    <TableColumn aria-label="Server Uptime"><FontAwesomeIcon icon={faClock} className={"mr-1"}/> Uptime</TableColumn>
+                    <TableColumn className={"w-0"} aria-label="Actions">Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
                     {Array.from({length: 20}).map((_, index) =>
