@@ -12,7 +12,7 @@ export default function LoaderVersionsList()
                 <p>Actions</p>
             </div>
             <ScrollShadow className={"max-h-[300px] h-[400px] overflow-y-auto"}>
-                <Listbox>
+                <Listbox aria-label="List of Fabric Versions">
                     {Array.from({length: 10}, (_, i) => (
                         <ListboxItem
                             key={i}
@@ -21,11 +21,12 @@ export default function LoaderVersionsList()
                                     <p className={"max-w-[90px] truncate"}>0.16.5</p>
                                 </div>
                             }
+                            textValue={`0.16.5 - ${i === 0 ? "latest release" : i === 1 ? "latest snapshot" : "release"}`}
                             description={i === 0 ? "latest release" : i === 1 ? "latest snapshot" : "release"}
                             endContent={
                                 <div className={"flex flex-row"}>
                                     <Tooltip content={"Switch to this version."}>
-                                        <Button variant={"light"} size={"sm"} className={"min-w-0"}><DownloadFile/></Button>
+                                        <Button variant={"light"} size={"sm"} className={"min-w-0"} aria-label="Download version"><DownloadFile/></Button>
                                     </Tooltip>
                                 </div>
                             }
