@@ -70,6 +70,7 @@ export default function UserGroups()
                     isHeaderSticky
                     className={"h-[calc(100dvh_-_200px)] max-h-screen overflow-y-auto"}
                     color={"primary"}
+                    aria-label={"User Groups Table"}
                     classNames={{
                         tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
                         th: "bg-neutral-700/50 backdrop-blur-lg",
