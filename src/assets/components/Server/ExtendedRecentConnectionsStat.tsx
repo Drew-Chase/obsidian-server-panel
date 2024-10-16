@@ -33,6 +33,7 @@ export default function ExtendedRecentConnectionsStat()
                     className: "w-0"
                 }}
                 selectionMode={"multiple"}
+                aria-label="Recent Connections Table"
             >
                 <TableHeader>
                     <TableColumn>Player Name</TableColumn>
