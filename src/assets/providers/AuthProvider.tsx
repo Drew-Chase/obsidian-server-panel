@@ -1,5 +1,6 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import Authentication, {LoginResponse} from "../ts/authentication.ts";
+import {useNavigate} from "react-router-dom";
 
 interface AuthContextType
 {
@@ -14,18 +15,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
 {
     const [auth] = useState(() => new Authentication());
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() =>
     {
         auth.loginWithTokenFromCookie()
             .then((response: LoginResponse | boolean) =>
             {
-                if (typeof response === "boolean")
+                const isLoggedIn = typeof response === "boolean" ? response : !!response;
+                setIsLoggedIn(isLoggedIn);
+                const newPath = isLoggedIn ? "/app" : "/";
+                if (window.location.pathname.startsWith("/app") !== isLoggedIn)
                 {
-                    setIsLoggedIn(response);
-                } else
-                {
-                    if (response) setIsLoggedIn(true);
+                    auth.logout();
+                    navigate(newPath);
                 }
             });
     }, [auth]);
