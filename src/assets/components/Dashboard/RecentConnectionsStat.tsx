@@ -12,7 +12,7 @@ export default function RecentConnectionsStat()
                 <p>Duration</p>
             </div>
             <ScrollShadow className={"max-h-[300px] h-[400px] overflow-y-auto"}>
-                <Listbox>
+                <Listbox aria-label={"A list of all recent connections"}>
                     {Array.from({length: 10}, (_, i) => (
                         <ListboxItem
                             key={i}
@@ -23,6 +23,8 @@ export default function RecentConnectionsStat()
                             }
                             description={"SMP Server"}
                             endContent={<p className={"text-tiny text-nowrap"}>4 Hours</p>}
+                            aria-label={"Shroototem"}
+                            textValue={"Shroototem"}
                         >
                             <p>Shroototem</p>
                         </ListboxItem>
