@@ -21,6 +21,7 @@ export default function WhiteListPlayers()
             </div>
 
             <Table
+                aria-label="Whitelist Players Table"
                 isStriped
                 removeWrapper
                 isHeaderSticky
