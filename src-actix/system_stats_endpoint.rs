@@ -1,5 +1,5 @@
-use actix_web::{get, rt, HttpResponse, Responder};
-use actix_ws::{AggregatedMessage, ProtocolError};
+use actix_web::{get, rt, web, HttpResponse, Responder};
+use actix_ws::AggregatedMessage;
 use futures_util::StreamExt;
 use serde_json::json;
 use std::env::current_dir;
@@ -45,29 +45,23 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
 
 #[get("/usage/ws")]
 pub async fn get_system_usage_websocket(
-    sys: actix_web::web::Data<Mutex<System>>,
     req: actix_web::HttpRequest,
-    stream: actix_web::web::Payload,
+    stream: web::Payload,
 ) -> Result<impl Responder, actix_web::Error> {
     let (res, mut session, stream) = actix_ws::handle(&req, stream)?;
 
+    let mut sys = System::new_all();
     let mut stream = stream
         .aggregate_continuations()
         .max_continuation_size(2_usize.pow(20)); // 1MB
 
     rt::spawn(async move {
-        let mut sys = match sys.lock() {
-            Ok(sys) => sys,
-            Err(_) => return,
-        };
-
         sys.refresh_all(); // Refresh all system info
         let mut per_core_cpu_usage: Vec<f32> = vec![];
 
         for cpu in sys.cpus() {
             per_core_cpu_usage.push(cpu.cpu_usage());
         }
-        
 
         //        let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
         while let Some(msg) = stream.next().await {
