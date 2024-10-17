@@ -5,7 +5,7 @@ use serde_json::json;
 use std::env::current_dir;
 use std::sync::Mutex;
 use sysinfo::{Disks, System};
-#[get("/")]
+#[get("")]
 pub async fn get_system_info() -> impl Responder {
     HttpResponse::Ok().json(json!({
         "name": System::name(),
