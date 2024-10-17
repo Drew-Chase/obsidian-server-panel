@@ -100,7 +100,7 @@ pub async fn get_users() -> impl Responder {
     }
 }
 
-#[get("exists")]
+#[get("/exists")]
 pub async fn check_if_access_token_exists(req: HttpRequest) -> impl Responder {
     let query = req.query_string();
     let parts: HashMap<&str, &str> = query
@@ -127,9 +127,3 @@ pub async fn check_if_access_token_exists(req: HttpRequest) -> impl Responder {
         Err(e) => HttpResponse::BadRequest().json(json!({"error": e})),
     }
 }
-
-//#[derive(Debug, MultipartForm)]
-//struct UploadFile {
-//	#[multipart(rename = "file")]
-//	file: TempFile,
-//}
