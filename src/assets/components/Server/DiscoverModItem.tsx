@@ -1,8 +1,11 @@
-import {Avatar, Button, Chip, Link, Tooltip} from "@nextui-org/react";
+import {Avatar, Button, Chip, Image, Link, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCalendar, faDownload, faHeart} from "@fortawesome/free-solid-svg-icons";
-import {Instance} from "../../ts/instances.ts";
+import {Instance, Modloader} from "../../ts/instances.ts";
 import Conversions from "../../ts/conversions.ts";
+import ForgeIcon from "../../images/ForgeIcon.svg.tsx";
+import FabricIcon from "../../images/fabric-logo.png";
+import MinecraftIcon from "../../images/minecraft-chip-logo.png";
 
 
 export default function DiscoverModItem(instance: Instance)
@@ -26,8 +29,36 @@ export default function DiscoverModItem(instance: Instance)
                     </Tooltip>
                     <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faHeart} className={"mr-3 text-red-600"}/>{Conversions.formatLargeNumber(instance.likes, 1)}</Chip>
                     {instance.last_updated && (
-                        <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faCalendar} className={"mr-3"}/>{Conversions.formatTimeClosestRelative(instance.last_updated)}</Chip>
+                        <Tooltip content={instance.last_updated.toLocaleString()} closeDelay={0}>
+                            <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faCalendar} className={"mr-3"}/>{Conversions.formatTimeClosestRelative(instance.last_updated)}</Chip>
+                        </Tooltip>
                     )}
+                    <Chip radius={"sm"} color={"default"} variant={"flat"}>
+                        <span className={"flex flex-row gap-1 items-center"}>
+
+                        {(() =>
+                        {
+
+                            switch (instance.modloader)
+                            {
+                                case Modloader.FABRIC:
+                                    return <Image src={FabricIcon} width={20} height={20}/>;
+                                case Modloader.FORGE:
+                                    return <ForgeIcon size={20}/>;
+                                default:
+                                    break;
+                            }
+
+                            return <></>;
+                        })()}
+                            <p>{instance.modloader}</p>
+                        </span>
+                    </Chip>
+                    <Chip radius={"sm"} color={"default"} variant={"flat"}>
+                        <span className={"flex flex-row gap-2 items-center"}>
+                            <Image src={MinecraftIcon} width={16} height={16} radius={"none"}/>{instance.game_versions[0]}
+                        </span>
+                    </Chip>
                 </div>
                 <Button color={"primary"} variant={"flat"} startContent={<FontAwesomeIcon icon={faDownload} className={"mr-1"}/>}>Install</Button>
                 <Button href={instance.project_url} as={Link} variant={"flat"} showAnchorIcon isExternal target={"_blank"}>View on {instance.platform}</Button>
