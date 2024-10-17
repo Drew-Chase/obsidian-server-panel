@@ -1,6 +1,5 @@
 use crate::Platform;
 use chrono::{DateTime, Utc};
-use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::ops::AddAssign;
@@ -66,8 +65,8 @@ impl ModpackSearchResults {
     pub fn merge(&mut self, other: ModpackSearchResults) {
         self.hits.extend(other.hits);
         self.offset = other.offset;
-        self.limit = other.limit;
-        self.total_hits = other.total_hits;
+        self.limit += other.limit;
+        self.total_hits += other.total_hits;
     }
 }
 
@@ -89,23 +88,30 @@ pub async fn search_modpacks(
                 total_hits: 0,
             };
 
-            let searches = vec![
-                crate::modrinth::ModrinthPackSearchResults::search(options.clone()),
-                crate::curseforge::CurseForgePackSearchResults::search(options.clone()),
-                crate::atlauncher::ATLauncherPackSearchResults::search(),
-            ];
+            let modrinth_thread = std::thread::spawn({
+                let options = options.clone();
+                move || crate::modrinth::ModrinthPackSearchResults::search(options.clone())
+            });
 
-            let search_results: Result<Vec<_>, _> = searches
-                .into_par_iter()
-                .map(|search| async { search.await?.to_modpack_results() })
-                .collect::<Vec<_>>()
-                .await
-                .into_iter()
-                .collect();
+            let curseforge_thread = std::thread::spawn({
+                let options = options.clone();
+                move || crate::curseforge::CurseForgePackSearchResults::search(options.clone())
+            });
 
-            for result in search_results? {
-                results += result;
-            }
+            //            let atlauncher_thread = std::thread::spawn({
+            //                crate::atlauncher::ATLauncherPackSearchResults::search
+            //            });
+
+            results += modrinth_thread.join().unwrap().await?.to_modpack_results();
+            results += curseforge_thread
+                .join()
+                .unwrap()
+                .await?
+                .to_modpack_results();
+            //            results += atlauncher_thread.join().unwrap().await?.to_modpack_results();
+            
+            // sort results by downloads
+            results.hits.sort_by(|a, b| b.downloads.cmp(&a.downloads));
 
             Ok(results)
         }
