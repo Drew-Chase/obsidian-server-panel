@@ -3,12 +3,14 @@ mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
 mod file_system_endpoint;
+mod instance_endpoint;
 mod java_endpoint;
 mod minecraft_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
+
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header;
@@ -151,7 +153,8 @@ async fn main() -> std::io::Result<()> {
                             .service(server_endpoint::get_servers)
                             .service(server_endpoint::create_server)
                             .service(server_endpoint::get_supported_loaders),
-                    ),
+                    )
+                    .service(web::scope("instances").service(instance_endpoint::discover_modpacks)),
             );
         // Add conditional routing based on the config
         if config == "development" {
