@@ -8,7 +8,7 @@ use serde_json::json;
 use servers::server_db;
 use std::path::Path;
 
-#[get("/")]
+#[get("")]
 pub async fn get_backups(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if req.extensions().get::<User>().is_some() {
         let id_number: u32 = match decode(id.as_str()) {
