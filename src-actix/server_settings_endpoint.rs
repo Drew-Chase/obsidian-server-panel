@@ -5,7 +5,7 @@ use serde_json::json;
 use servers::server_db;
 use servers::server_db::ServerSettings;
 
-#[get("/")]
+#[get("")]
 pub async fn get_server_settings(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number: u32 = match decode(id.as_str()) {
@@ -21,7 +21,7 @@ pub async fn get_server_settings(id: web::Path<String>, req: HttpRequest) -> imp
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[post("/memory/min/")]
+#[post("/memory/min")]
 pub async fn set_memory_min(
     id: web::Path<String>,
     body: String,
@@ -49,7 +49,7 @@ pub async fn set_memory_min(
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[post("/memory/max/")]
+#[post("/memory/max")]
 pub async fn set_memory_max(
     id: web::Path<String>,
     body: String,
@@ -77,7 +77,7 @@ pub async fn set_memory_max(
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[post("/args/minecraft/")]
+#[post("/args/minecraft")]
 pub async fn set_minecraft_arguments(
     id: web::Path<String>,
     body: String,
@@ -100,7 +100,7 @@ pub async fn set_minecraft_arguments(
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
-#[post("/args/java/")]
+#[post("/args/java")]
 pub async fn set_java_arguments(
     id: web::Path<String>,
     body: String,
@@ -123,7 +123,7 @@ pub async fn set_java_arguments(
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
-#[post("/executable/")]
+#[post("/executable")]
 pub async fn set_executable(
     id: web::Path<String>,
     body: String,
@@ -147,7 +147,7 @@ pub async fn set_executable(
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[post("/server-name/")]
+#[post("/server-name")]
 pub async fn set_name(id: web::Path<String>, body: String, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number: u32 = match decode(id.as_str()) {
