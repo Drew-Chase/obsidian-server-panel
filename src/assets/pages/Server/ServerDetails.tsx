@@ -10,7 +10,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
 import MinecraftVersionsList from "../../components/Server/MinecraftVersionsList.tsx";
 import LoaderVersionsList from "../../components/Server/LoaderVersionsList.tsx";
-import Conversions from "../../ts/Conversions.ts";
+import Conversions from "../../ts/conversions.ts";
 import {useState} from "react";
 
 export default function ServerDetails()
