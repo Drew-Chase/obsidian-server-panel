@@ -5,9 +5,13 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/y7dALql02apYGBkN/settings/executable/
+  url: http://127.0.0.1:1420/api/server/:id/settings/executable
   body: text
   auth: none
+}
+
+params:path {
+  id: 
 }
 
 headers {

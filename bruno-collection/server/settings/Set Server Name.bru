@@ -5,9 +5,13 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/y7dALql02apYGBkN/settings/server-name/
+  url: http://127.0.0.1:1420/api/server/:id/settings/server-name
   body: text
   auth: none
+}
+
+params:path {
+  id: 
 }
 
 headers {

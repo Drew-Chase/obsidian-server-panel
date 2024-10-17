@@ -5,9 +5,14 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/j1G8eKbJPRYmn0vr/properties/max-players
+  url: http://127.0.0.1:1420/api/server/:id/properties/:key
   body: text
   auth: none
+}
+
+params:path {
+  key: 
+  id: 
 }
 
 headers {

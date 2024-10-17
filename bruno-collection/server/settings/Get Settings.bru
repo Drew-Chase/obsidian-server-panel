@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:1420/api/server/y7dALql02apYGBkN/settings/
+  url: http://127.0.0.1:1420/api/server/:id/settings
   body: none
   auth: none
+}
+
+params:path {
+  id: 
 }
 
 headers {
