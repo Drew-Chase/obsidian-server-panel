@@ -17,14 +17,8 @@ let apiServerProcess = spawn('npm', ['run', 'watch-api'], {shell: true});
  * @param {Buffer} data - The data received from the standard output stream.
  */
 apiServerProcess.stdout.on('data', (data) => {
-    if (data && !first_data && data.toString().length > 0) {
-        first_data = true;
-    }
     process.stdout.write(data);
-    apiServerProcess.stdout.on('data', (data) => {
-        process.stdout.write(data);
-        debug(data.toString());
-    });
+    debug(data.toString());
 });
 
 
@@ -53,28 +47,30 @@ apiServerProcess.on('close', (code) => {
  * Waits until the first data is received from the API server process.
  * If the first data is not received, it logs 'waiting for first data' every second.
  */
-while (!first_data) {
-    console.log('waiting for first data');
-    // add a delay to allow the process to start
-    await new Promise(resolve => setTimeout(resolve, 1000));
+// while (!first_data) {
+//     console.log('waiting for first data');
+//     // add a delay to allow the process to start
+//     await new Promise(resolve => setTimeout(resolve, 1000));
+// }
+
+function startViteServer() {
+    /**
+     * Spawns the Vite server process.
+     * @type {ChildProcessWithoutNullStreams}
+     */
+    let viteServerProcess = spawn('vite', ['.'], {shell: true});
+
+    /**
+     * Handles the 'close' event for the Vite server process, logging and exiting if it fails.
+     * @param {number} code - The exit code of the process.
+     */
+    viteServerProcess.on('close', (code) => {
+        if (code !== 0) {
+            console.error(`Vite server process exited with code ${code}`);
+            process.exit(1);
+        }
+    });
 }
-
-/**
- * Spawns the Vite server process.
- * @type {ChildProcessWithoutNullStreams}
- */
-let viteServerProcess = spawn('vite', ['.'], {shell: true});
-
-/**
- * Handles the 'close' event for the Vite server process, logging and exiting if it fails.
- * @param {number} code - The exit code of the process.
- */
-viteServerProcess.on('close', (code) => {
-    if (code !== 0) {
-        console.error(`Vite server process exited with code ${code}`);
-        process.exit(1);
-    }
-});
 
 /**
  * Logs formatted debug information based on the log pattern provided.
@@ -111,5 +107,12 @@ function debug(data) {
                 console.error(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
         }
+
+        if (!first_data && message.includes(`Starting development server at http://127.0.0.1:`)) {
+            first_data = true;
+            startViteServer();
+        }
+
     }
+
 }
