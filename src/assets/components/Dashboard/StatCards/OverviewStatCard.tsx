@@ -1,6 +1,6 @@
 import StatCard from "../StatCard.tsx";
 import CPU from "../../../images/CPU.svg.tsx";
-import Conversions from "../../../ts/Conversions.ts";
+import Conversions from "../../../ts/conversions.ts";
 import RAM from "../../../images/RAM.svg.tsx";
 import Storage from "../../../images/Storage.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
