@@ -7,7 +7,7 @@ import ServerList from "../../components/Dashboard/ServerList.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
 import {useState} from "react";
-import Conversions from "../../ts/Conversions.ts";
+import Conversions from "../../ts/conversions.ts";
 
 export default function DashboardServers()
 {
