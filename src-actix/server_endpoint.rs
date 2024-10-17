@@ -10,7 +10,7 @@ use servers::server_db;
 use servers::server_db::{BasicHashedServer, HashedServer, Server};
 use std::path::Path;
 
-#[get("/")]
+#[get("")]
 pub async fn get_servers(req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let servers = match server_db::get_servers_by_owner(user.id) {
@@ -32,7 +32,7 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-#[get("/")]
+#[get("")]
 pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number: u32 = match decode(id.as_str()) {
@@ -66,7 +66,7 @@ struct CreateServerRequest {
     loader: u8,
     loader_version: Option<String>,
 }
-#[post("/")]
+#[post("")]
 pub async fn create_server(
     req: HttpRequest,
     body: web::Json<CreateServerRequest>,
