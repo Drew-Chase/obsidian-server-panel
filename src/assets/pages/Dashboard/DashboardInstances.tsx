@@ -6,7 +6,7 @@ import InstancesList from "../../components/Dashboard/InstancesList.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
-import Conversions from "../../ts/Conversions.ts";
+import Conversions from "../../ts/conversions.ts";
 import {useState} from "react";
 
 export default function DashboardInstances()
