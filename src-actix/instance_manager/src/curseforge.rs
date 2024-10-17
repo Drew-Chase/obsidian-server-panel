@@ -81,7 +81,7 @@ struct FileItem {
     #[serde(rename = "downloadCount")]
     pub download_count: i64,
     #[serde(rename = "downloadUrl")]
-    pub download_url: String,
+    pub download_url: Option<String>,
     #[serde(rename = "gameVersions")]
     pub game_versions: Vec<String>,
     #[serde(rename = "sortableGameVersions")]
@@ -213,9 +213,20 @@ impl CurseForgePackSearchResults {
         let response = client.get(&url).headers(headers).send().await?;
         let response_text = response.text().await?;
         let parsed_response = serde_json::from_str::<Self>(&response_text).map_err(|e| {
+            let line = e.line();
+            let column = e.column();
+            let part = response_text
+                .lines()
+                .nth(line - 1)
+                .map(|line| {
+                    let start = column.saturating_sub(100);
+                    let end = (column + 100).min(line.len());
+                    &line[start..end]
+                })
+                .unwrap_or("");
             let error_message = format!(
                 "JSON parsing error: {}. Response text: {}",
-                e, response_text
+                e, part
             );
             Box::<dyn std::error::Error>::from(error_message)
         })?;
