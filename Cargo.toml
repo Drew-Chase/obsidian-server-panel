@@ -10,6 +10,7 @@ members = [
     "src-actix/database",
     "src-actix/scheduler",
     "src-actix/network_utility",
+    "src-actix/minecraft_modding_platforms",
     "."
 ]
 
@@ -30,6 +31,7 @@ scheduler = { path = "src-actix/scheduler" }
 network_utility = { path = "src-actix/network_utility" }
 minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
+minecraft_modding_platforms = { path = "src-actix/minecraft_modding_platforms" }
 crypto = { path = "src-actix/crypto" }
 backups = { path = "src-actix/backups" }
 database = { path = "src-actix/database" }
