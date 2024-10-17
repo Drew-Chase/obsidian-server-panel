@@ -7,7 +7,7 @@ use servers::properties::Properties;
 use servers::server_db;
 use std::path::Path;
 
-#[get("/")]
+#[get("")]
 pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> impl Responder {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number: u32 = match decode(id.as_str()) {
@@ -40,7 +40,7 @@ pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> i
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
-#[post("/{key}/")]
+#[post("/{key}")]
 pub async fn set_server_property(
     path: web::Path<(String, String)>,
     body: String,
