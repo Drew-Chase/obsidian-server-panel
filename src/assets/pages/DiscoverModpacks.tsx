@@ -24,7 +24,7 @@ export default function DiscoverModpacks()
             platform: platform,
             search: search,
             sort: sort,
-            limit: 10,
+            limit: 50,
             offset: 0
         }, abortController.signal)
             .then(i => i.hits)
