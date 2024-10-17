@@ -12,7 +12,8 @@
 		"build-api": "cargo build --release",
 		"run-api": "cargo run --bin obsidian-server-panel",
 		"build-frontend": "tsc && vite build",
-		"watch-api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../../src-actix"
+		"watch-api": "cargo watch -x \"run --bin obsidian-server-panel\" -C target/dev-env -N --why -w ../../src-actix",
+		"build": "npm run build-frontend && npm run build-api"
 	},
 	"dependencies": {
 		"@fortawesome/fontawesome-free": "^6.6.0",
