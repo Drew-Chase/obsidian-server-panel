@@ -10,7 +10,7 @@ pub struct ModrinthPackSearchResults {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-struct ModrinthPackItem {
+pub struct ModrinthPackItem {
     pub slug: String,
     pub title: String,
     pub description: String,
@@ -21,8 +21,6 @@ struct ModrinthPackItem {
     pub downloads: i64,
     pub icon_url: String,
     pub color: i64,
-    pub thread_id: String,
-    pub monetization_status: String,
     pub project_id: String,
     pub author: String,
     pub display_categories: Vec<String>,
@@ -33,19 +31,18 @@ struct ModrinthPackItem {
     pub latest_version: String,
     pub license: String,
     pub gallery: Vec<String>,
-    pub featured_gallery: String,
+    pub featured_gallery: Option<String>,
 }
 
 impl ModrinthPackSearchResults {
     pub async fn search(options: BrowseOptions) -> Result<Self, Box<dyn std::error::Error>> {
         let url = format!(
-            r#"	https://api.modrinth.com/v2/search?limit={limit}&offset={offset}&index={sort}&facets=[["client_side:optional","client_side:unsupported"],["server_side:optional","server_side:required"],["project_type:modpack"]]&query={query}"#,
+            r#"https://api.modrinth.com/v2/search?limit={limit}&offset={offset}&index={sort}&facets=[["client_side:optional","client_side:unsupported"],["server_side:optional","server_side:required"],["project_type:modpack"]]&query={query}"#,
             query = options.search,
             sort = options.sort,
             limit = options.limit,
             offset = options.offset
         );
-
         Ok(reqwest::get(&url).await?.json::<Self>().await?)
     }
     pub fn to_modpack_results(self) -> ModpackSearchResults {
