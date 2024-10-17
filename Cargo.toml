@@ -11,6 +11,7 @@ members = [
     "src-actix/scheduler",
     "src-actix/network_utility",
     "src-actix/instance_manager",
+    "src-actix/loader_manager",
     "."
 ]
 
@@ -29,6 +30,7 @@ authentication = { path = "src-actix/authentication" }
 configuration = { path = "src-actix/configuration" }
 scheduler = { path = "src-actix/scheduler" }
 network_utility = { path = "src-actix/network_utility" }
+loader_manager = { path = "src-actix/loader_manager" }
 minecraft = { path = "src-actix/minecraft" }
 servers = { path = "src-actix/servers" }
 instance_manager = { path = "src-actix/instance_manager" }
