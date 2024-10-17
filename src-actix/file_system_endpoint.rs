@@ -5,7 +5,7 @@ use log::error;
 use serde_json::json;
 use servers::physical_server;
 
-#[post("/")]
+#[post("")]
 pub async fn get_server_files(
     id: web::Path<String>,
     body: Option<String>,
@@ -20,7 +20,7 @@ pub async fn get_server_files(
                     .json(json!({"error": format!("Invalid id: {}", id)}));
             }
         };
-        if id_number.len() <= 0 {
+        if id_number.is_empty() {
             return HttpResponse::BadRequest()
                 .json(json!({"error": format!("Invalid id: {}", id)}));
         }
