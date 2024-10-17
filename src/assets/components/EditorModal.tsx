@@ -16,6 +16,9 @@ export default function EditorModal(props: EditorModalProps)
             isOpen={props.isOpen}
             onClose={props.onClose}
             size={"5xl"}
+            classNames={{
+                base: "w-[80vw] max-w-[unset]"
+            }}
 
         >
             <ModalContent>
