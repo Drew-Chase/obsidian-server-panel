@@ -1,10 +1,14 @@
 use actix_web::{get, rt, web, HttpResponse, Responder};
 use actix_ws::AggregatedMessage;
 use futures_util::StreamExt;
+use log::error;
 use serde_json::json;
 use std::env::current_dir;
 use std::sync::Mutex;
 use sysinfo::{Disks, System};
+use tokio::select;
+use tokio::time::interval;
+
 #[get("")]
 pub async fn get_system_info() -> impl Responder {
     HttpResponse::Ok().json(json!({
@@ -48,48 +52,68 @@ pub async fn get_system_usage_websocket(
     req: actix_web::HttpRequest,
     stream: web::Payload,
 ) -> Result<impl Responder, actix_web::Error> {
-    let (res, mut session, stream) = actix_ws::handle(&req, stream)?;
-
-    let mut sys = System::new_all();
-    let mut stream = stream
-        .aggregate_continuations()
-        .max_continuation_size(2_usize.pow(20)); // 1MB
+    let (res, mut session, mut stream) = actix_ws::handle(&req, stream)?;
+    // Aggregating continuation frames into a complete message
+    let mut aggregated_stream = stream.aggregate_continuations().boxed_local();
 
     rt::spawn(async move {
-        sys.refresh_all(); // Refresh all system info
-        let mut per_core_cpu_usage: Vec<f32> = vec![];
+        let mut sys = System::new_all();
+        let mut ticker = interval(std::time::Duration::from_secs(1));
 
-        for cpu in sys.cpus() {
-            per_core_cpu_usage.push(cpu.cpu_usage());
-        }
+        loop {
+            // Refresh all system info
+            sys.refresh_all();
 
-        //        let mut interval = tokio::time::interval(std::time::Duration::from_secs(1));
-        while let Some(msg) = stream.next().await {
-            sys.refresh_all(); // Refresh all system info
+            // Collect per-core CPU usage
             let mut per_core_cpu_usage: Vec<f32> = vec![];
-
             for cpu in sys.cpus() {
                 per_core_cpu_usage.push(cpu.cpu_usage());
             }
 
-            match msg {
-                Ok(AggregatedMessage::Text(text)) => {
-                    session.text(text).await.unwrap();
+            // Create JSON payload with system usage data
+            let json = json!({
+                "cpu_usage": sys.global_cpu_usage(),
+                "cores": per_core_cpu_usage,
+                "memory": {
+                    "total": sys.total_memory(),
+                    "used": sys.used_memory(),
+                    "free": sys.free_memory(),
+                    "swap_total": sys.total_swap(),
+                    "swap_used": sys.used_swap(),
+                    "swap_free": sys.free_swap()
                 }
-                Ok(AggregatedMessage::Binary(_)) => {
-                    session.close(None).await.unwrap();
-                    break;
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    break;
+            });
+
+            select! {
+                // Send system usage data every tick
+                _ = ticker.tick() => {
+                    if let Err(e) = session.text(serde_json::to_string(&json).unwrap()).await {
+                        error!("Error sending message: {:?}", e);
+                        break;
+                    }
                 }
 
-                _ => {}
+                // Handle incoming WebSocket messages
+                msg = aggregated_stream.next() => {
+                    match msg {
+                        // Close connection if a close message is received
+                        Some(Ok(AggregatedMessage::Close(Some(close_msg)))) => {
+                            if let Err(e) = session.close(Some(close_msg)).await {
+                                error!("Error closing session: {:?}", e);
+                            }
+                            break;
+                        }
+                        // Log and break on stream error
+                        Some(Err(e)) => {
+                            error!("Stream error: {:?}", e);
+                            break;
+                        }
+                        _ => {}
+                    }
+                }
             }
         }
     });
-
     Ok(res)
 }
 
