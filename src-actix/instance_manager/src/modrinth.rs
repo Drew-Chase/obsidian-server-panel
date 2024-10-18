@@ -20,7 +20,7 @@ pub struct ModrinthPackItem {
     pub project_type: String,
     pub downloads: i64,
     pub icon_url: String,
-    pub color: i64,
+    pub color: Option<i64>,
     pub project_id: String,
     pub author: String,
     pub display_categories: Vec<String>,
