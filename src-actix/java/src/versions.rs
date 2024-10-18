@@ -1,6 +1,15 @@
-use crate::data::{JavaVersionData, OSVersions, RuntimeVersion, OS};
+use crate::data::{JavaVersionData, Manifest, OSVersions, RuntimeVersion, OS};
+use futures::stream::{self, StreamExt};
+use log::{debug, error, info, warn};
+use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
-use std::error::Error;
+use serde_json::Value;
+use std::cmp::PartialEq;
+use std::ops::Deref;
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use std::{error::Error, fs::File, io::Write, sync::Arc};
+use tokio::task;
 
 #[derive(Serialize, Deserialize)]
 pub struct JavaVersion {
@@ -8,6 +17,15 @@ pub struct JavaVersion {
     pub runtime: RuntimeVersion,
     pub version: String,
     pub installed: bool,
+    #[serde(skip_serializing)]
+    manifest: Manifest,
+    executable: Option<PathBuf>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct DownloadProgress {
+    pub file: String,
+    pub completed: bool,
 }
 
 impl JavaVersion {
@@ -73,12 +91,16 @@ impl JavaVersion {
         runtime: RuntimeVersion,
     ) {
         for version in version_data {
-            versions.push(JavaVersion {
+            let mut vcard = JavaVersion {
                 operating_system: os,
                 runtime,
                 version: version.version.name,
                 installed: false,
-            });
+                manifest: version.manifest,
+                executable: None,
+            };
+            vcard.check_if_version_installed();
+            versions.push(vcard);
         }
     }
 
@@ -93,8 +115,149 @@ impl JavaVersion {
         Err("Version not found".into())
     }
 
-    pub async fn install(&self) -> Result<(), Box<dyn Error>> {
-        todo!("Install Java version");
+    pub async fn from_version(version: impl AsRef<str>) -> Result<Self, Box<dyn Error>> {
+        let version_id = version.as_ref();
+        let all_versions = Self::list().await?;
+        for version in all_versions {
+            if version.version == version_id {
+                return Ok(version);
+            }
+        }
+        Err("Version not found".into())
+    }
+
+    fn check_if_version_installed(&mut self) -> bool {
+        self.installed = self.get_executable().exists();
+        self.installed
+    }
+
+    fn get_installation_directory(&self) -> PathBuf {
+        let path =
+            std::fs::canonicalize("meta/java").unwrap_or_else(|_| PathBuf::from("meta/java"));
+        let path = path.join(&self.version);
+        path
+    }
+
+    fn get_executable(&mut self) -> PathBuf {
+        let path = self.get_installation_directory();
+        let executable = if cfg!(windows) {
+            path.join("bin/java.exe")
+        } else {
+            path.join("bin/java")
+        };
+        if !executable.exists() {
+            self.executable = None;
+        } else {
+            self.executable = Some(executable.clone());
+        }
+        executable
+    }
+
+    pub async fn install<F>(&self, callback: F) -> Result<(), Box<dyn Error>>
+    where
+        F: Fn(Vec<DownloadProgress>) + 'static + Send + Sync,
+    {
+        let now = std::time::Instant::now();
+        warn!("Installing Java {}, this may take some time!", self.version);
+        let url = &self.manifest.url;
+        let client = Client::new();
+        let response = client.get(url).send().await?;
+        let json = response.json::<Value>().await?;
+        let files = json.get("files").ok_or("No files found")?;
+        let keys = files
+            .as_object()
+            .ok_or("Files not an object")?
+            .keys()
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let files = Arc::new(files.clone());
+        let client = Arc::new(Client::new());
+        let progress: Vec<DownloadProgress> = keys
+            .iter()
+            .map(|key| DownloadProgress {
+                file: key.clone(),
+                completed: false,
+            })
+            .collect();
+
+        let callback = Arc::new(Mutex::new(callback));
+        let progress = Arc::new(Mutex::new(progress));
+
+        // Using a concurrent stream to download files.
+        stream::iter(keys)
+            .for_each_concurrent(10, move |key| {
+                let files = Arc::clone(&files);
+                let client = Arc::clone(&client);
+                let progress = Arc::clone(&progress);
+                let callback = Arc::clone(&callback);
+
+                async move {
+                    if let Err(e) = self
+                        .download_installation_file(client, files, &key, move |item| {
+                            let mut progress = progress.lock().unwrap();
+                            let index = progress.iter().position(|x| x.file == item.file).unwrap();
+                            progress[index] = item;
+
+                            let callback = callback.lock().unwrap();
+                            callback(progress.clone());
+                        })
+                        .await
+                    {
+                        error!("Error downloading file {}: {:?}", key, e);
+                    }
+                }
+            })
+            .await;
+
+        let duration = now.elapsed();
+        info!("Java {} installed in {:?}", self.version, duration);
+        Ok(())
+    }
+
+    async fn download_installation_file<F>(
+        &self,
+        client: Arc<Client>,
+        files: Arc<Value>,
+        key: &String,
+        callback: F,
+    ) -> Result<(), Box<dyn Error>>
+    where
+        F: Fn(DownloadProgress) + 'static + Send + Sync,
+    {
+        let file = files.get(key).ok_or("File not found")?;
+        let downloads = file.get("downloads").ok_or("No downloads found")?;
+        let r#type = file.get("type").ok_or("No type found")?;
+        let is_directory = r#type == "directory";
+        let raw = downloads.get("raw").ok_or("No raw download found")?;
+        let url = raw.get("url").ok_or("No url found")?;
+        let url = url.as_str().ok_or("Url not a string")?;
+
+        let path = self.get_installation_directory().join(key);
+        let response = client.get(url).send().await?;
+
+        info!("Creating {} {}", r#type, path.display());
+
+        if is_directory {
+            tokio::fs::create_dir_all(&path).await?;
+        } else {
+            debug!("Downloading file {}", key);
+            if let Some(parent) = path.parent() {
+                if !parent.exists() {
+                    tokio::fs::create_dir_all(parent).await?;
+                }
+            }
+            let mut file = File::create(&path)?;
+            let content = response.bytes().await?;
+            file.write_all(&content)?;
+        }
+
+        callback(DownloadProgress {
+            file: key.clone(),
+            completed: true,
+        });
+
+        Ok(())
     }
 }
 
