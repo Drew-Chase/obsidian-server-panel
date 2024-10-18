@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:1420/api/instances/discover?search=&sort=Relevance&platform=All&limit=20&offset=0
+  url: http://127.0.0.1:1420/api/instances/discover?search=&sort=Relevance&platform=Modrinth&limit=100&offset=0
   body: none
   auth: none
 }
@@ -13,7 +13,7 @@ get {
 params:query {
   search: 
   sort: Relevance
-  platform: All
-  limit: 20
+  platform: Modrinth
+  limit: 100
   offset: 0
 }
