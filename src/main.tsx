@@ -46,6 +46,17 @@ ReactDOM.createRoot($("#root")[0]!).render(
 export function MainContentRenderer()
 {
     const navigate = useNavigate();
+    
+    // Java.versions().then((versions) =>
+    // {
+    //     console.log(versions);
+    //     return versions[0];
+    // }).then(version=>{
+    //     version.install().then(()=>{
+    //         console.log("Installed");
+    //     });
+    // });
+
     return (
         <NextUIProvider navigate={navigate} className={"flex flex-row"}>
             <Toaster position={"bottom-right"} closeButton richColors theme={"dark"} toastOptions={{
