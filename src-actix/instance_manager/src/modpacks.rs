@@ -109,7 +109,7 @@ pub async fn search_modpacks(
                 .await?
                 .to_modpack_results();
             //            results += atlauncher_thread.join().unwrap().await?.to_modpack_results();
-            
+
             // sort results by downloads
             results.hits.sort_by(|a, b| b.downloads.cmp(&a.downloads));
 
