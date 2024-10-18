@@ -18,7 +18,28 @@ use log::error;
 pub fn create_appdb_connection() -> Result<sqlite::Connection, sqlite::Error> {
     match sqlite::Connection::open("app.db").map_err(|e| {
         error!(
-            "Failed to open servers database connection for backups: {}",
+            "Failed to open apps database connection: {}",
+            e
+        );
+        e
+    }) {
+        Ok(conn) => {
+            // allows multiple connections to the database
+            match conn.execute("PRAGMA journal_mode = WAL;") {
+                Ok(_) => {}
+                Err(e) => {
+                    error!("Failed to set journal mode to WAL: {}", e);
+                }
+            }
+            Ok(conn)
+        }
+        Err(e) => Err(e),
+    }
+}
+pub fn create_cachedb_connection() -> Result<sqlite::Connection, sqlite::Error> {
+    match sqlite::Connection::open("cache.db").map_err(|e| {
+        error!(
+            "Failed to open cache database connection: {}",
             e
         );
         e
