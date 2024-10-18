@@ -1,0 +1,15 @@
+meta {
+  name: Install Java Version
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:1420/api/java/install/:version/ws
+  body: none
+  auth: none
+}
+
+params:path {
+  version: 17.0.1.12.1
+}
