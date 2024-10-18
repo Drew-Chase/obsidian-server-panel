@@ -3,16 +3,6 @@ info:
   title: openapi
   version: 1.0.0
 paths:
-  /api/java/versions:
-    get:
-      summary: Get Java Runtime for OS
-      operationId: Get Java Runtime for OS
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
   /api/auth/register:
     post:
       summary: Create user
@@ -105,10 +95,10 @@ paths:
       responses:
         '200':
           description: ''
-  /api/minecraft/:version/java:
+  /api/instances/discover:
     get:
-      summary: Get Java from Minecraft
-      operationId: Get Java from Minecraft
+      summary: Discover Instances
+      operationId: Discover Instances
       description: ''
       tags:
         - ''
@@ -116,61 +106,31 @@ paths:
         '200':
           description: ''
       parameters:
-        - name: version
+        - name: search
           in: query
           description: ''
           required: true
-          example: '1.17'
-  /api/minecraft/version/releases/latest:
-    get:
-      summary: Latest Release
-      operationId: Latest Release
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
+          example: ''
+        - name: sort
+          in: query
           description: ''
-  /api/minecraft/version/snapshots/latest:
-    get:
-      summary: Latest Snapshot
-      operationId: Latest Snapshot
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
+          required: true
+          example: Relevance
+        - name: platform
+          in: query
           description: ''
-  /api/minecraft/versions/releases:
-    get:
-      summary: Releases
-      operationId: Releases
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
+          required: true
+          example: Modrinth
+        - name: limit
+          in: query
           description: ''
-  /api/minecraft/versions/snapshots:
-    get:
-      summary: Snapshots
-      operationId: Snapshots
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
+          required: true
+          example: '100'
+        - name: offset
+          in: query
           description: ''
-  /api/minecraft/versions:
-    get:
-      summary: Versions
-      operationId: Versions
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
+          required: true
+          example: '0'
   /api/server/supported_loaders:
     get:
       summary: Get Supported Loaders
@@ -181,10 +141,10 @@ paths:
       responses:
         '200':
           description: ''
-  /api/server/:id/files:
-    post:
-      summary: Get Server Files
-      operationId: Get Server Files
+  /api/server/:id/properties:
+    get:
+      summary: Get Properties
+      operationId: Get Properties
       description: ''
       tags:
         - ''
@@ -196,83 +156,45 @@ paths:
           in: query
           description: ''
           required: true
-          example: gYnxpl9aBABWrZ7N
+          example: ''
         - name: X-Authorization-Token
           in: header
           description: ''
           required: true
           example: >-
-            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+            eyJoYXNoIjoiJDJiJDA0JFkxRmpaQUwyNU9SMDF6Y2tSZXNaTGVYalNKbmtxQTlUV2FCc2t5SkFicGZSVm4yRjdueUkyIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/:id/properties/:key:
+    post:
+      summary: Set Property
+      operationId: Set Property
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: key
+          in: query
+          description: ''
+          required: true
+          example: ''
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: ''
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFkxRmpaQUwyNU9SMDF6Y2tSZXNaTGVYalNKbmtxQTlUV2FCc2t5SkFicGZSVm4yRjdueUkyIiwidXNlcm5hbWUiOiJhZG1pbiJ9
       requestBody:
         content:
           text/plain:
             schema:
               type: string
-  /api/server/:id/backups/create/full:
-    post:
-      summary: Create Full Manual Backup
-      operationId: Create Full Manual Backup
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-        - name: X-Authorization-Token
-          in: header
-          description: ''
-          required: true
-          example: >-
-            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-  /api/server/:id/backups/create/incremental:
-    post:
-      summary: Create Incremental Manual Backup
-      operationId: Create Incremental Manual Backup
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-        - name: X-Authorization-Token
-          in: header
-          description: ''
-          required: true
-          example: >-
-            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-  /api/server/:id/backups:
-    get:
-      summary: Get Backups
-      operationId: Get Backups
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-        - name: X-Authorization-Token
-          in: header
-          description: ''
-          required: true
-          example: ''
   /api/server:
     post:
       summary: Create a new server
@@ -324,6 +246,71 @@ paths:
           description: ''
           required: true
           example: ''
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/:id/backups/create/full:
+    post:
+      summary: Create Full Manual Backup
+      operationId: Create Full Manual Backup
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+  /api/server/:id/backups:
+    get:
+      summary: Get Backups
+      operationId: Get Backups
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: ''
+  /api/server/:id/backups/create/incremental:
+    post:
+      summary: Create Incremental Manual Backup
+      operationId: Create Incremental Manual Backup
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
         - name: X-Authorization-Token
           in: header
           description: ''
@@ -460,33 +447,6 @@ paths:
           text/plain:
             schema:
               type: string
-  /api/server/:id/settings/memory/max:
-    post:
-      summary: Set Memory Max
-      operationId: Set Memory Max
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: ''
-        - name: X-Authorization-Token
-          in: header
-          description: ''
-          required: true
-          example: >-
-            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
   /api/server/:id/settings/memory/min:
     post:
       summary: Set Memory Min
@@ -514,32 +474,10 @@ paths:
           text/plain:
             schema:
               type: string
-  /api/server/:id/properties:
-    get:
-      summary: Get Properties
-      operationId: Get Properties
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: ''
-        - name: X-Authorization-Token
-          in: header
-          description: ''
-          required: true
-          example: >-
-            eyJoYXNoIjoiJDJiJDA0JFkxRmpaQUwyNU9SMDF6Y2tSZXNaTGVYalNKbmtxQTlUV2FCc2t5SkFicGZSVm4yRjdueUkyIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-  /api/server/:id/properties/:key:
+  /api/server/:id/settings/memory/max:
     post:
-      summary: Set Property
-      operationId: Set Property
+      summary: Set Memory Max
+      operationId: Set Memory Max
       description: ''
       tags:
         - ''
@@ -547,11 +485,6 @@ paths:
         '200':
           description: ''
       parameters:
-        - name: key
-          in: query
-          description: ''
-          required: true
-          example: ''
         - name: id
           in: query
           description: ''
@@ -562,12 +495,65 @@ paths:
           description: ''
           required: true
           example: >-
-            eyJoYXNoIjoiJDJiJDA0JFkxRmpaQUwyNU9SMDF6Y2tSZXNaTGVYalNKbmtxQTlUV2FCc2t5SkFicGZSVm4yRjdueUkyIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
       requestBody:
         content:
           text/plain:
             schema:
               type: string
+  /api/server/:id/files:
+    post:
+      summary: Get Server Files
+      operationId: Get Server Files
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
+        - name: X-Authorization-Token
+          in: header
+          description: ''
+          required: true
+          example: >-
+            eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/java/versions:
+    get:
+      summary: Get Java Runtime for OS
+      operationId: Get Java Runtime for OS
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/java/install/:version/ws:
+    post:
+      summary: Install Java Version
+      operationId: Install Java Version
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: version
+          in: query
+          description: ''
+          required: true
+          example: 17.0.1.12.1
   /api/system/storage:
     get:
       summary: Get storage information
@@ -592,6 +578,72 @@ paths:
     get:
       summary: Get system usage
       operationId: Get system usage
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/:version/java:
+    get:
+      summary: Get Java from Minecraft
+      operationId: Get Java from Minecraft
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: version
+          in: query
+          description: ''
+          required: true
+          example: '1.17'
+  /api/minecraft/version/releases/latest:
+    get:
+      summary: Latest Release
+      operationId: Latest Release
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/version/snapshots/latest:
+    get:
+      summary: Latest Snapshot
+      operationId: Latest Snapshot
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions/releases:
+    get:
+      summary: Releases
+      operationId: Releases
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions/snapshots:
+    get:
+      summary: Snapshots
+      operationId: Snapshots
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions:
+    get:
+      summary: Versions
+      operationId: Versions
       description: ''
       tags:
         - ''
