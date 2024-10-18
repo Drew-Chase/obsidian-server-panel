@@ -15,8 +15,9 @@ use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header;
 use actix_web::{
-    error, get, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder,
+    error, get, middleware, rt, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder,
 };
+use actix_ws::AggregatedMessage;
 use awc::Client;
 use configuration::config::CONFIG;
 use futures_util::stream::StreamExt;
@@ -85,6 +86,7 @@ async fn main() -> std::io::Result<()> {
             // Handle API routes here
             .service(
                 web::scope("api")
+                    .service(status)
                     .service(
                         web::scope("auth")
                             .service(authentication_endpoint::create_user)
@@ -105,7 +107,11 @@ async fn main() -> std::io::Result<()> {
                             .service(minecraft_endpoint::get_snapshots)
                             .service(minecraft_endpoint::get_java_version_by_minecraft_version),
                     )
-                    .service(web::scope("java").service(java_endpoint::get_java_versions))
+                    .service(
+                        web::scope("java")
+                            .service(java_endpoint::get_java_versions)
+                            .service(java_endpoint::install_java_version),
+                    )
                     .service(
                         web::scope("system")
                             .service(system_stats_endpoint::get_system_info)
@@ -307,6 +313,39 @@ async fn proxy_to_vite(req: HttpRequest, mut payload: web::Payload) -> Result<Ht
 ///
 /// A JSON object with a `status` field set to "ok".
 #[get("/")]
-async fn status() -> impl Responder {
-    HttpResponse::Ok().json(json!({ "status": "ok" }))
+async fn status(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
+    let (res, mut session, stream) = actix_ws::handle(&req, stream)?;
+
+    let mut stream = stream
+        .aggregate_continuations()
+        // aggregate continuation frames up to 1MiB
+        .max_continuation_size(2_usize.pow(20));
+
+    // start task but don't wait for it
+    rt::spawn(async move {
+        // receive messages from websocket
+        while let Some(msg) = stream.next().await {
+            match msg {
+                Ok(AggregatedMessage::Text(text)) => {
+                    // echo text message
+                    session.text(text).await.unwrap();
+                }
+
+                Ok(AggregatedMessage::Binary(bin)) => {
+                    // echo binary message
+                    session.binary(bin).await.unwrap();
+                }
+
+                Ok(AggregatedMessage::Ping(msg)) => {
+                    // respond to PING frame with PONG frame
+                    session.pong(&msg).await.unwrap();
+                }
+
+                _ => {}
+            }
+        }
+    });
+
+    // respond immediately with response connected to WS session
+    Ok(res)
 }
