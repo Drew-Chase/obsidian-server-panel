@@ -1,0 +1,15 @@
+meta {
+  name: Uninstall Java Version
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://127.0.0.1:1420/api/java/versions/:version/
+  body: none
+  auth: none
+}
+
+params:path {
+  version: 17.0.1.12.1
+}

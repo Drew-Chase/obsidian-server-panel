@@ -1,0 +1,15 @@
+meta {
+  name: Get Java Installation Files
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://127.0.0.1:1420/api/java/versions/:version/files
+  body: none
+  auth: none
+}
+
+params:path {
+  version: 16.0.1.9.1
+}
