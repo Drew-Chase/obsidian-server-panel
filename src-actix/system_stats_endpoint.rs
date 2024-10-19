@@ -1,12 +1,12 @@
-use actix_web::{get, rt, web, HttpResponse, Responder};
-use actix_ws::AggregatedMessage;
-use futures_util::StreamExt;
-use log::error;
-use serde_json::json;
 use std::env::current_dir;
+use actix_web::{get, web, HttpResponse, Responder};
+use futures_util::Stream;
+use serde_json::json;
+use std::pin::Pin;
 use std::sync::Mutex;
+use std::time::Duration;
+use actix_web_lab::sse;
 use sysinfo::{Disks, System};
-use tokio::select;
 use tokio::time::interval;
 
 #[get("")]
@@ -47,18 +47,15 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
     }))
 }
 
-#[get("/usage/ws")]
-pub async fn get_system_usage_websocket(
-    req: actix_web::HttpRequest,
-    stream: web::Payload,
-) -> Result<impl Responder, actix_web::Error> {
-    let (res, mut session, mut stream) = actix_ws::handle(&req, stream)?;
-    // Aggregating continuation frames into a complete message
-    let mut aggregated_stream = stream.aggregate_continuations().boxed_local();
 
-    rt::spawn(async move {
+
+#[get("/usage/sse")]
+pub async fn get_system_usage_sse() -> impl Responder {
+    let (sender, receiver) = tokio::sync::mpsc::channel(2);
+
+    actix_web::rt::spawn(async move {
         let mut sys = System::new_all();
-        let mut ticker = interval(std::time::Duration::from_secs(1));
+        let mut ticker = interval(Duration::from_secs(1));
 
         loop {
             // Refresh all system info
@@ -84,37 +81,19 @@ pub async fn get_system_usage_websocket(
                 }
             });
 
-            select! {
-                // Send system usage data every tick
-                _ = ticker.tick() => {
-                    if let Err(e) = session.text(serde_json::to_string(&json).unwrap()).await {
-                        error!("Error sending message: {:?}", e);
-                        break;
-                    }
-                }
+            // Send system usage data
+            let msg = sse::Data::new(serde_json::to_string(&json).unwrap()).event("system_usage");
 
-                // Handle incoming WebSocket messages
-                msg = aggregated_stream.next() => {
-                    match msg {
-                        // Close connection if a close message is received
-                        Some(Ok(AggregatedMessage::Close(Some(close_msg)))) => {
-                            if let Err(e) = session.close(Some(close_msg)).await {
-                                error!("Error closing session: {:?}", e);
-                            }
-                            break;
-                        }
-                        // Log and break on stream error
-                        Some(Err(e)) => {
-                            error!("Stream error: {:?}", e);
-                            break;
-                        }
-                        _ => {}
-                    }
-                }
+            if sender.send(msg.into()).await.is_err() {
+                break;
             }
+
+            // Wait for the next tick
+            ticker.tick().await;
         }
     });
-    Ok(res)
+
+    sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3))
 }
 
 #[get("/storage")]
