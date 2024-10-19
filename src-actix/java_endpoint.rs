@@ -1,58 +1,99 @@
-use actix_web::{get, post, web, Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{delete, get, web, Error, HttpRequest, HttpResponse, Responder};
+use actix_web_lab::sse;
+use futures_util::FutureExt;
 use java::versions::JavaVersion;
+use log::error;
 use serde_json::json;
-use std::sync::{Arc, Mutex};
+use std::time::Duration;
+use tokio::sync::mpsc;
 
 #[get("/versions")]
 pub async fn get_java_versions() -> impl Responder {
     HttpResponse::Ok().json(json!(JavaVersion::list().await.unwrap()))
 }
-#[get("/install/{version}/ws")]
+
+#[get("/versions/{version}/files")]
+pub async fn get_installation_files(version: web::Path<String>) -> impl Responder {
+    let version = version.into_inner();
+    match JavaVersion::from_version(&version).await {
+        Ok(v) => match v.get_installation_files().await {
+            Ok(files) => HttpResponse::Ok().json(json!(files)),
+            Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
+        },
+        Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
+    }
+}
+
+#[delete("/versions/{version}")]
+pub async fn uninstall_java_version(version: web::Path<String>) -> impl Responder {
+    let version = version.into_inner();
+    match JavaVersion::from_version(&version).await {
+        Ok(v) => match v.uninstall() {
+            Ok(_) => HttpResponse::Ok().json(json!({ "message": "Uninstalled" })),
+            Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
+        },
+        Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
+    }
+}
+
+#[get("/install/{version}/sse")]
 pub async fn install_java_version(
     version: web::Path<String>,
-    req: HttpRequest,
-    stream: web::Payload,
+    _req: HttpRequest,
 ) -> Result<impl Responder, Error> {
-    let (res, session, _stream) = actix_ws::handle(&req, stream)?;
-    let session = Arc::new(Mutex::new(session));
-    let version = version.clone();
-    let session_clone = Arc::clone(&session);
-
+    let (sender, receiver) = mpsc::channel(2);
+    let version = version.into_inner();
     actix_web::rt::spawn(async move {
         match JavaVersion::from_version(&version).await {
             Ok(v) => {
                 let install_fut = v.install({
-                    let session_clone = Arc::clone(&session_clone);
+                    let sender = sender.clone();
                     move |progress| {
                         let json = serde_json::to_string(&progress).unwrap();
-                        let session_clone = Arc::clone(&session_clone);
-                        async move {
-                            let mut session = session_clone.lock().unwrap();
-                            session.text(json).await.unwrap();
-                        };
+                        let sender = sender.clone();
+                        // Spawn a new task for each progress update
+                        tokio::spawn(async move {
+                            if sender
+                                .send(sse::Data::new(json).event("progress").into())
+                                .await
+                                .is_err()
+                            {
+                                // Handle error or log it
+                                error!("Failed to send progress update");
+                            }
+                        });
                     }
                 });
-
                 if let Err(e) = install_fut.await {
                     let error_msg = json!({ "error": e.to_string() }).to_string();
-                    let session_clone = Arc::clone(&session_clone);
-                    actix_web::rt::spawn(async move {
-                        let mut session = session_clone.lock().unwrap();
-                        session.text(error_msg).await.unwrap();
-                    });
+                    if sender
+                        .send(sse::Data::new(error_msg).event("error").into())
+                        .await
+                        .is_err()
+                    {
+                        // Handle error or log it
+                        error!("Failed to send error message");
+                        return;
+                    }
                 }
-
             }
             Err(e) => {
                 let error_msg = json!({ "error": e.to_string() }).to_string();
-                let session_clone = Arc::clone(&session_clone);
-                actix_web::rt::spawn(async move {
-                    let mut session = session_clone.lock().unwrap();
-                    session.text(error_msg).await.unwrap();
-                });
+                if sender
+                    .send(sse::Data::new(error_msg).event("error").into())
+                    .await
+                    .is_err()
+                {
+                    // Handle error or log it
+                    error!("Failed to send error message");
+                    return;
+                }
             }
         };
+        // Close the channel after the task is done
+        let _ = sender
+            .send(sse::Data::new("done").event("done").into())
+            .await;
     });
-
-    Ok(res)
+    Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
 }
