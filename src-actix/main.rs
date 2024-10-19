@@ -110,13 +110,15 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("java")
                             .service(java_endpoint::get_java_versions)
+                            .service(java_endpoint::get_installation_files)
+                            .service(java_endpoint::uninstall_java_version)
                             .service(java_endpoint::install_java_version),
                     )
                     .service(
                         web::scope("system")
                             .service(system_stats_endpoint::get_system_info)
                             .service(system_stats_endpoint::get_system_usage)
-                            .service(system_stats_endpoint::get_system_usage_websocket)
+                            .service(system_stats_endpoint::get_system_usage_sse)
                             .service(system_stats_endpoint::get_storage_info)
                             .app_data(sys.clone()),
                     )
