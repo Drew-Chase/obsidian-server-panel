@@ -214,6 +214,14 @@ impl JavaVersion {
         info!("Java {} installed in {:?}", self.version, duration);
         Ok(())
     }
+    
+    pub fn uninstall(&self) -> Result<(), Box<dyn Error>> {
+        let path = self.get_installation_directory();
+        if path.exists() {
+            std::fs::remove_dir_all(path)?;
+        }
+        Ok(())
+    }
 
     async fn download_installation_file<F>(
         &self,
@@ -258,6 +266,19 @@ impl JavaVersion {
         });
 
         Ok(())
+    }
+
+    pub async fn get_installation_files(&self) -> Result<Vec<String>, Box<dyn Error>> {
+        let response = reqwest::get(&self.manifest.url).await?;
+        let json = response.json::<Value>().await?;
+        let files = json.get("files").ok_or("No files found")?;
+        Ok(files
+            .as_object()
+            .ok_or("Files not an object")?
+            .iter()
+            .filter(|(_, v)| v.get("type") != Some(&Value::String("directory".to_string())))
+            .map(|(k, _)| k.clone())
+            .collect::<Vec<_>>())
     }
 }
 
