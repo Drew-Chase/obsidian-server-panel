@@ -107,12 +107,10 @@ function debug(data) {
                 console.error(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
         }
-
-        if (!first_data && message.includes(`Starting development server at http://127.0.0.1:`)) {
-            first_data = true;
-            startViteServer();
-        }
-
+    }
+    if (!first_data && data.includes(`Starting development server at http://127.0.0.1:`)) {
+        first_data = true;
+        startViteServer();
     }
 
 }
