@@ -1,5 +1,10 @@
 import $ from "jquery";
 
+export type InstallItems = {
+    file: string;
+    completed: boolean;
+}
+
 export class JavaVersion
 {
     executable: string | null = null;
@@ -17,25 +22,40 @@ export class JavaVersion
         this.version = data.version;
     }
 
-    async install(): Promise<void>
+    async install(onprogress: (items: InstallItems[]) => void, onerror: (msg: string) => void, oncomplete: () => void): Promise<void>
     {
-        let websocket = new WebSocket(`/api/java/install/${this.version}/ws`);
-        websocket.onmessage = (event) =>
+        let eventSource = new EventSource(`/api/java/install/${this.version}/sse`);
+        eventSource.addEventListener("open", () => console.log("Installation started"));
+        eventSource.addEventListener("progress", (event) =>
         {
-            console.log(event.data);
-        };
-        websocket.onclose = () =>
+            onprogress(JSON.parse(event.data));
+        });
+        eventSource.addEventListener("error", (event) =>
         {
-            console.log("WebSocket closed");
-        };
-        websocket.onerror = (event) =>
+            console.log("Installation failed", event);
+            eventSource.close();
+            onerror(JSON.stringify(event));
+        });
+        eventSource.addEventListener("done", () =>
         {
-            console.error(event);
-        };
-        websocket.onopen = () =>
-        {
-            console.log("WebSocket opened");
-        };
+            console.log("Installation done");
+            eventSource.close();
+            oncomplete();
+        });
+
+    }
+
+    async uninstall(): Promise<void>
+    {
+        return $.ajax({
+            method: "DELETE",
+            url: `/api/java/versions/${this.version}`
+        });
+    }
+
+    async files(): Promise<string[]>
+    {
+        return $.get(`/api/java/versions/${this.version}/files`);
     }
 }
 
