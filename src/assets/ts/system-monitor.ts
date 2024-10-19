@@ -29,32 +29,34 @@ export const SystemMonitorResponseDefault: SystemMonitorResponse = {
 export default class SystemMonitor
 {
     public current_data: SystemMonitorResponse = SystemMonitorResponseDefault;
-    private socket: WebSocket | null = null;
+    private socket: EventSource | null = null;
 
     startMonitoring(action: (data: SystemMonitorResponse) => void): void
     {
-        this.socket = new WebSocket("/api/system/usage/ws");
+        this.socket = new EventSource("/api/system/usage/sse");
         this.socket.addEventListener("open", () =>
         {
-            console.log("Connected to system monitor websocket");
+            console.log("System Monitor SSE Connected");
         });
-        this.socket.addEventListener("message", (event) =>
+        this.socket.addEventListener("system_usage", (event) =>
         {
             const data = JSON.parse(event.data);
+            this.current_data = data;
             action(data);
-        });
-        this.socket.addEventListener("close", () =>
-        {
-            console.log("Disconnected from system monitor websocket");
         });
         this.socket.addEventListener("error", (event) =>
         {
-            console.error("Error on system monitor websocket", event);
+            console.error("System Monitor SSE Error", event);
+        });
+        this.socket.addEventListener("close", () =>
+        {
+            console.log("System Monitor SSE Closed");
         });
     }
 
     stopMonitoring(): void
     {
+        console.log("System Monitor SSE Stopped");
         this.socket?.close();
     }
 
