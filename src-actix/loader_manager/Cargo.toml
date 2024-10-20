@@ -7,3 +7,4 @@ edition = "2021"
 reqwest = { version = "0.12.8", features = ["json", "stream"] }
 serde_json = "1.0.128"
 log = "0.4.22"
+java = { path = "../java" }
