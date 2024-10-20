@@ -1,7 +1,5 @@
 import {Input, Listbox, ListboxItem, Select, SelectItem} from "@nextui-org/react";
 import MagnifyGlass from "../../images/MagnifyGlass.svg.tsx";
-import icon from "../../images/demo/test-mod-icon.webp";
-import DiscoverModItem from "./DiscoverModItem.tsx";
 
 export default function DiscoverMods()
 {
