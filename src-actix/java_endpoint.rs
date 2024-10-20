@@ -12,10 +12,10 @@ pub async fn get_java_versions() -> impl Responder {
     HttpResponse::Ok().json(json!(JavaVersion::list().await.unwrap()))
 }
 
-#[get("/versions/{version}/files")]
-pub async fn get_installation_files(version: web::Path<String>) -> impl Responder {
-    let version = version.into_inner();
-    match JavaVersion::from_version(&version).await {
+#[get("/versions/{runtime}/files")]
+pub async fn get_installation_files(runtime: web::Path<String>) -> impl Responder {
+    let runtime = runtime.into_inner();
+    match JavaVersion::from_runtime(&runtime).await {
         Ok(v) => match v.get_installation_files().await {
             Ok(files) => HttpResponse::Ok().json(json!(files)),
             Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
@@ -24,10 +24,10 @@ pub async fn get_installation_files(version: web::Path<String>) -> impl Responde
     }
 }
 
-#[delete("/versions/{version}")]
-pub async fn uninstall_java_version(version: web::Path<String>) -> impl Responder {
-    let version = version.into_inner();
-    match JavaVersion::from_version(&version).await {
+#[delete("/versions/{runtime}")]
+pub async fn uninstall_java_version(runtime: web::Path<String>) -> impl Responder {
+    let runtime = runtime.into_inner();
+    match JavaVersion::from_runtime(&runtime).await {
         Ok(v) => match v.uninstall() {
             Ok(_) => HttpResponse::Ok().json(json!({ "message": "Uninstalled" })),
             Err(e) => HttpResponse::BadRequest().json(json!({ "error": e.to_string() })),
@@ -36,15 +36,15 @@ pub async fn uninstall_java_version(version: web::Path<String>) -> impl Responde
     }
 }
 
-#[get("/install/{version}/sse")]
+#[get("/install/{runtime}/sse")]
 pub async fn install_java_version(
-    version: web::Path<String>,
+    runtime: web::Path<String>,
     _req: HttpRequest,
 ) -> Result<impl Responder, Error> {
     let (sender, receiver) = mpsc::channel(2);
-    let version = version.into_inner();
+    let runtime = runtime.into_inner();
     actix_web::rt::spawn(async move {
-        match JavaVersion::from_version(&version).await {
+        match JavaVersion::from_runtime(&runtime).await {
             Ok(v) => {
                 let install_fut = v.install({
                     let sender = sender.clone();
