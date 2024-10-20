@@ -57,15 +57,14 @@ export default class Authentication
     }
 
     /**
-     * Login method for authenticating a user.
+     * Authenticates a user with the provided username and password.
      *
-     * @param {string} username - The username of the user.
-     * @param {string} password - The password of the user.
-     * @param {number} [expiration=-1] - The expiration time of the generated token.
-     * @return {Promise<JSON>} - A Promise that resolves to a JSON object containing the login response data.
-     * @throws {Error} - Throws an Error object if an error occurs during the login process.
+     * @param {string} username - The username of the user attempting to log in.
+     * @param {string} password - The password of the user attempting to log in.
+     * @param {boolean} [rememberMe=false] - A flag indicating whether the user should be remembered for future sessions.
+     * @return {Promise<LoginResponse|ErrorResponse>} A Promise that resolves to a LoginResponse if authentication is successful, or an ErrorResponse if it fails.
      */
-    public async login(username: string, password: string, expiration: number = -1): Promise<LoginResponse | ErrorResponse>
+    public async login(username: string, password: string, rememberMe: boolean = false): Promise<LoginResponse | ErrorResponse>
     {
 
         let response: any, data: LoginResponse | ErrorResponse;
@@ -86,7 +85,7 @@ export default class Authentication
         }
         if ("token" in data)
         {
-            this.generateCookies(data.token, expiration);
+            this.generateCookies(data.token, rememberMe);
             return data;
         } else
         {
@@ -95,14 +94,13 @@ export default class Authentication
     }
 
     /**
-     * Logs in a user with a token.
+     * Logs in a user using a provided token.
      *
-     * @param {string} token - The token to be used for authentication.
-     * @param {number} [expiration=-1] - The expiration time for the generated cookies.
-     * @returns {Promise<JSON>} - A Promise that resolves to the response data in JSON format.
-     * @throws {Error} - Throws an error if the login process fails.
+     * @param {string} token - The token used for authentication.
+     * @param {boolean} [rememberMe=false] - Whether to remember the user for future sessions.
+     * @return {Promise<LoginResponse>} A promise that resolves to the login response.
      */
-    public async loginWithToken(token: string, expiration: number = -1): Promise<LoginResponse>
+    public async loginWithToken(token: string, rememberMe: boolean = false): Promise<LoginResponse>
     {
 
         try
@@ -125,7 +123,7 @@ export default class Authentication
             {
                 if (data)
                 {
-                    this.generateCookies(token, expiration);
+                    this.generateCookies(token, rememberMe);
                 }
             } else
             {
@@ -183,12 +181,12 @@ export default class Authentication
     /**
      * Logs in the user with the token obtained from the cookie.
      *
-     * @param {number} expiration - The expiration time of the token in minutes. Default is -1 (no expiration).
+     * @param {number} rememberMe - The rememberMe time of the token in minutes. Default is -1 (no rememberMe).
      * @return {Promise<JSON | boolean>} - A promise that resolves with JSON data if the login is successful, false otherwise.
      */
-    public async loginWithTokenFromCookie(expiration: number = -1): Promise<LoginResponse | boolean>
+    public async loginWithTokenFromCookie(rememberMe: boolean = false): Promise<LoginResponse | boolean>
     {
-        return this.token === null ? false : await this.loginWithToken(this.token, expiration);
+        return this.token === null ? false : await this.loginWithToken(this.token, rememberMe);
     }
 
     /**
@@ -202,22 +200,22 @@ export default class Authentication
     }
 
     /**
-     * Generates cookies for the given token.
+     * Generates a cookie with the provided token.
      *
-     * @param {string} token - The token used for generating the cookies.
-     * @param {number} [days=-1] - The number of days the cookie should be valid for. Default value is -1.
-     *
-     * @returns {void}
+     * @param {string} token - The token to be stored in the cookie.
+     * @param {boolean} [rememberMe=false] - Whether the cookie should have a long expiration date for remembering the user.
+     * @return {void}
      */
-    public generateCookies(token: string, days: number = -1): void
+    public generateCookies(token: string, rememberMe: boolean = false): void
     {
-        if (days <= 0)
+        if (!rememberMe)
         {
             document.cookie = `token=${token}; path=/; domain=.${window.location.hostname}; samesite=strict`;
         } else
         {
             let expire = new Date();
-            expire.setDate(expire.getDate() + days);
+            expire.setFullYear(3000, 0, 1);
+            console.log(`token=${token}; path=/; domain=.${window.location.hostname}; samesite=strict; expires=${expire.toUTCString()}`);
             document.cookie = `token=${token}; path=/; domain=.${window.location.hostname}; samesite=strict; expires=${expire.toUTCString()}`;
         }
         this.token = token;
