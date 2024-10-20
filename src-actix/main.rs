@@ -1,4 +1,7 @@
 use actix_web::dev::Service;
+use std::ops::Deref;
+use std::process::ExitStatus;
+
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -22,12 +25,14 @@ use awc::Client;
 use configuration::config::CONFIG;
 use futures_util::stream::StreamExt;
 use include_dir::{include_dir, Dir};
+use java::versions::JavaVersion;
 use log::{debug, error, info};
 use network_utility::{close_all_ports, open_port};
 use scheduler::{start_ticking_schedules, stop_ticking_schedules};
 use serde_json::json;
 use std::sync::Mutex;
 use sysinfo::System;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
