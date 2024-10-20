@@ -90,6 +90,7 @@ export default class Instances
                             break;
 
                     }
+                    if(hit.modloader === Modloader.UNKNOWN) console.log(hit);
                     if (hit.last_updated) hit.last_updated = new Date(hit.last_updated);
                     if (hit.published) hit.published = new Date(hit.published);
                 });
