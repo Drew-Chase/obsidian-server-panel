@@ -24,7 +24,7 @@ export class JavaVersion
 
     async install(onprogress: (items: InstallItems[]) => void, onerror: (msg: string) => void, oncomplete: () => void): Promise<void>
     {
-        let eventSource = new EventSource(`/api/java/install/${this.version}/sse`);
+        let eventSource = new EventSource(`/api/java/install/${this.runtime}/sse`);
         eventSource.addEventListener("open", () => console.log("Installation started"));
         eventSource.addEventListener("progress", (event) =>
         {
@@ -49,13 +49,13 @@ export class JavaVersion
     {
         return $.ajax({
             method: "DELETE",
-            url: `/api/java/versions/${this.version}`
+            url: `/api/java/versions/${this.runtime}`
         });
     }
 
     async files(): Promise<string[]>
     {
-        return $.get(`/api/java/versions/${this.version}/files`);
+        return $.get(`/api/java/versions/${this.runtime}/files`);
     }
 }
 
