@@ -1,15 +1,19 @@
 use crate::data::{JavaVersionData, Manifest, OSVersions, RuntimeVersion, OS};
-use futures::stream::{self, StreamExt};
+use futures::stream::StreamExt;
 use log::{debug, error, info, warn};
 use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use std::cmp::PartialEq;
-use std::ops::Deref;
-use std::path::{Path, PathBuf};
+use std::error::Error;
+use std::path::PathBuf;
 use std::sync::Mutex;
-use std::{error::Error, fs::File, io::Write, sync::Arc};
-use tokio::task;
+use std::{fs::File, io::Write, sync::Arc};
+use futures::stream;
+use shellwords::split;
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 
 #[derive(Serialize, Deserialize)]
 pub struct JavaVersion {
@@ -108,7 +112,7 @@ impl JavaVersion {
         let runtime = runtime.as_ref();
         let all_versions = Self::list().await?;
         for version in all_versions {
-            if version.version == runtime {
+            if version.runtime.to_string() == runtime {
                 return Ok(version);
             }
         }
@@ -134,7 +138,7 @@ impl JavaVersion {
     fn get_installation_directory(&self) -> PathBuf {
         let path =
             std::fs::canonicalize("meta/java").unwrap_or_else(|_| PathBuf::from("meta/java"));
-        let path = path.join(&self.version);
+        let path = path.join(format!("{}-{}", self.runtime, self.version));
         path
     }
 
@@ -151,6 +155,81 @@ impl JavaVersion {
             self.executable = Some(executable.clone());
         }
         executable
+    }
+
+    pub async fn get_installed_versions() -> Result<Vec<Self>, Box<dyn Error>> {
+        let mut versions: Vec<Self> = vec![];
+        let all_versions = Self::list().await?;
+        for mut version in all_versions {
+            if version.check_if_version_installed() {
+                versions.push(version);
+            }
+        }
+        Ok(versions)
+    }
+
+    pub async fn execute_command<F>(
+        &mut self,
+        args: impl AsRef<str>,
+        callback: F,
+    ) -> Result<(), Box<dyn Error>>
+    where
+        F: Fn(String) + Send + 'static,
+    {
+        let executable = self.get_executable().canonicalize().unwrap();
+        if !executable.exists() {
+            return Err("Java executable not found".into());
+        }
+        
+        println!("Executing command: {} {}", executable.display(), args.as_ref());
+
+        let args = args.as_ref();
+        let mut command = Command::new(executable)
+            .args(split(args)?)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()?;
+
+        let stdout = command.stdout.take().ok_or("Failed to capture stdout")?;
+        let stderr = command.stderr.take().ok_or("Failed to capture stderr")?;
+
+        let (tx, rx) = mpsc::channel(100);
+        let mut stdout_reader = BufReader::new(stdout).lines();
+        let mut stderr_reader = BufReader::new(stderr).lines();
+
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    line = stdout_reader.next_line() => {
+                        match line {
+                            Ok(Some(content)) => {
+                                if tx.send(content).await.is_err() {
+                                    break;
+                                }
+                            },
+                            _ => break,
+                        }
+                    },
+                    line = stderr_reader.next_line() => {
+                        match line {
+                            Ok(Some(content)) => {
+                                if tx.send(content).await.is_err() {
+                                    break;
+                                }
+                            },
+                            _ => break,
+                        }
+                    },
+                }
+            }
+        });
+
+        let mut stream = ReceiverStream::new(rx);
+        while let Some(line) = stream.next().await {
+            callback(line);
+        }
+
+        Ok(())
     }
 
     pub async fn install<F>(&self, callback: F) -> Result<(), Box<dyn Error>>
@@ -214,7 +293,7 @@ impl JavaVersion {
         info!("Java {} installed in {:?}", self.version, duration);
         Ok(())
     }
-    
+
     pub fn uninstall(&self) -> Result<(), Box<dyn Error>> {
         let path = self.get_installation_directory();
         if path.exists() {
