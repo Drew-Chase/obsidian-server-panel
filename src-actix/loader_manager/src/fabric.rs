@@ -1,4 +1,8 @@
+use java::versions::JavaVersion;
+use log::{debug, info};
+use std::fmt::format;
 use std::io;
+use std::io::Write;
 use std::path::Path;
 
 const FABRIC_LOADER_API: &str = "https://meta.fabricmc.net/v2/versions/loader";
@@ -36,14 +40,20 @@ async fn download_installer(path: impl AsRef<Path>) -> Result<(), Box<dyn std::e
         return Err("Failed to get download url".into());
     }
 
+    debug!("Downloading installer from: {}", download_url.unwrap());
+
     let response = reqwest::get(download_url.unwrap()).await?;
-    let body = response.text().await?;
+    let content = response.bytes().await?;
     let mut file = std::fs::File::create(path)?;
-    io::copy(&mut body.as_bytes(), &mut file)?;
+    file.write_all(&content)?;
 
     Ok(())
 }
-pub async fn install(version: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn install(
+    mc_version: &str,
+    loader_version: &str,
+    dir: impl AsRef<Path>,
+) -> Result<String, Box<dyn std::error::Error>> {
     let latest_installer_version = get_latest_installer_version().await?;
     let path = format!(
         "meta/loaders/installers/fabric/fabric-installer-{}.jar",
@@ -53,6 +63,27 @@ pub async fn install(version: &str) -> Result<(), Box<dyn std::error::Error>> {
     if !path.exists() {
         download_installer(path).await?;
     }
+    let mut java_versions = JavaVersion::get_installed_versions().await?;
+    if java_versions.is_empty() {
+        return Err("No java versions installed".into());
+    }
 
-    todo!("installing fabric version {}", version)
+    let java = java_versions
+        .get_mut(0)
+        .ok_or("No java versions installed")?;
+    java.execute_command(
+        format!(
+            "-jar {:?} server -mcversion {} -dir {:?} -loader {} -downloadMinecraft",
+            path.canonicalize().unwrap(),
+            mc_version,
+            dir.as_ref().canonicalize().unwrap(),
+            loader_version
+        ),
+        |output| {
+            debug!("FABRIC INSTALLER: {}", output);
+        },
+    )
+    .await?;
+
+    Ok("fabric-server-launch.jar".into())
 }
