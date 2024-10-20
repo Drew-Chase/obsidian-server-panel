@@ -55,7 +55,7 @@ export default function DiscoverMods()
                 >
                     {Array.from({length: 10}).map((_, i) => (
                         <ListboxItem key={i} textValue={"Sodium - The fastest and most compatible rendering optimization mod for Minecraft. Now available for both NeoForge and Fabric!"}>
-                            <DiscoverModItem icon={icon} name={"Sodium"} author={"jellysquid3"} description={"The fastest and most compatible rendering optimization mod for Minecraft. Now available for both NeoForge and Fabric!"}/>
+                            {/*<DiscoverModItem icon={icon} name={"Sodium"} author={"jellysquid3"} description={"The fastest and most compatible rendering optimization mod for Minecraft. Now available for both NeoForge and Fabric!"}/>*/}
                         </ListboxItem>
                     ))}
                 </Listbox>
