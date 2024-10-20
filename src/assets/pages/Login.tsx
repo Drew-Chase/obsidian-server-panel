@@ -47,8 +47,7 @@ export default function Login()
             return;
         }
         setIsLoggingIn(true);
-        const expiration = rememberMe ? 60 * 60 * 24 * 365 * 1000 : -1; // 1000 years in the future, this is a hacky way to keep the user logged in
-        const response: LoginResponse | ErrorResponse = await auth.login(username, password, expiration);
+        const response: LoginResponse | ErrorResponse = await auth.login(username, password, rememberMe);
 
         console.log("Login response", response);
         if ("token" in response) // If the response is a LoginResponse
