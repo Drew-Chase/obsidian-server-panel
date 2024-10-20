@@ -11,5 +11,7 @@ log = "0.4.22"
 reqwest = { version = "0.12.8", features = ["json"] }
 database = { path = "../database" }
 sqlite = "0.36.1"
-tokio = { version = "1.40.0", features = ["fs"] }
+tokio = { version = "1.40.0", features = ["fs", "full"] }
+tokio-stream = "0.1.16"
 futures = "0.3.21"
+shellwords = "1.1.0"
