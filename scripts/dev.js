@@ -1,4 +1,10 @@
 import {spawn} from "node:child_process";
+import {existsSync, mkdirSync} from "node:fs";
+import path from "path";
+
+const devEnvPath = path.resolve("./target/dev-env");
+if (!existsSync(devEnvPath)) mkdirSync(devEnvPath);
+
 
 /**
  * Tracks if any data has been received from the process.
