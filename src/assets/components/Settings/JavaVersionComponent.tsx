@@ -12,7 +12,7 @@ export default function JavaVersionComponent(props: JavaVersionComponentProps)
 {
     return (
         <div className={"flex flex-row w-full h-16 rounded-md data-[installed=true]:bg-neutral-700 bg-neutral-800 items-center px-2"} data-installed={props.version.installed}>
-            <p className={"text-neutral-200 font-bold"}>{props.version.installed ? props.version.executable : props.version.version}</p>
+            <p className={"text-neutral-200 font-bold"}>{props.version.installed ? props.version.executable : (<p>{props.version.version} <span className={"text-sm italic opacity-50"}>({props.version.runtime})</span></p>)}</p>
             <Tooltip content={props.version.installed ? `Uninstall Java ${props.version.version} from your server!` : `Install Java ${props.version.version} to your server!`} closeDelay={0}>
                 <Button
                     onClick={() => props.version.installed ? props.onUninstall(props.version) : props.onInstall(props.version)}
