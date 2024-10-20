@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -75,6 +76,20 @@ pub enum RuntimeVersion {
     GammaSnapshot,
     #[serde(rename = "legacy")]
     Legacy,
+}
+
+impl Display for RuntimeVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            RuntimeVersion::Alpha => "alpha".to_string(),
+            RuntimeVersion::Beta => "beta".to_string(),
+            RuntimeVersion::Delta => "delta".to_string(),
+            RuntimeVersion::Gamma => "gamma".to_string(),
+            RuntimeVersion::GammaSnapshot => "gamma-snapshot".to_string(),
+            RuntimeVersion::Legacy => "legacy".to_string(),
+        };
+        write!(f, "{}", str)
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
