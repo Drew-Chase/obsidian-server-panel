@@ -23,7 +23,7 @@ export default function ExtendedSwitch(props: IExpandedSwitchProps)
             classNames={{
                 ...props.classNames,
                 base: cn(
-                    "inline-flex flex-row-reverse w-full max-w-md bg-content1 hover:bg-background-L000 items-center",
+                    "inline-flex flex-row-reverse w-full max-w-md bg-neutral-700 hover:bg-neutral-800 items-center",
                     "justify-between cursor-pointer rounded-lg gap-2 p-4 border-2 border-transparent",
                     "data-[selected=true]:border-primary",
                     props.classNames?.base
