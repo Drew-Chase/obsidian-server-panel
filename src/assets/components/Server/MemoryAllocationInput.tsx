@@ -1,5 +1,6 @@
 import {useState} from "react";
-import {Input, Slider} from "@nextui-org/react";
+import {Slider} from "@nextui-org/react";
+import OInput from "../Extends/OInput.tsx";
 
 export default function MemoryAllocationInput()
 {
@@ -10,28 +11,22 @@ export default function MemoryAllocationInput()
         <div className={"flex flex-col gap-2"}>
             <p>Memory Allocation</p>
             <div className={"flex flex-row justify-between"}>
-                <Input
+                <OInput
                     label={"Min"}
                     className={"w-[100px]"}
                     value={minMemory}
                     onValueChange={value => setMinMemory(value.replace(/\D/g, ""))}
                     onFocusChange={isFocused => !isFocused && setMinMemory((Number.isNaN(Number.parseInt(minMemory.replace(/\D/g, ""))) ? 1 : Number.parseInt(minMemory.replace(/\D/g, ""))).toString())}
                     endContent={<p className={"text-medium text-neutral-400"}>GB</p>}
-                    classNames={{
-                        inputWrapper: "bg-neutral-700"
-                    }}
                     aria-label="Minimum Memory"
                 />
-                <Input
+                <OInput
                     label={"Max"}
                     className={"w-[100px]"}
                     value={maxMemory}
                     onValueChange={value => setMaxMemory(value.replace(/\D/g, ""))}
                     onFocusChange={isFocused => !isFocused && setMaxMemory((Number.isNaN(Number.parseInt(maxMemory.replace(/\D/g, ""))) ? systemMemoryCapacity : Number.parseInt(maxMemory.replace(/\D/g, ""))).toString())}
                     endContent={<p className={"text-medium text-neutral-400"}>GB</p>}
-                    classNames={{
-                        inputWrapper: "bg-neutral-700"
-                    }}
                     aria-label="Maximum Memory"
                 />
             </div>
