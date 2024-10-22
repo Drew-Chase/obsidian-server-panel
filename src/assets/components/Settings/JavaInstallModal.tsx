@@ -1,4 +1,4 @@
-import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, Spinner} from "@nextui-org/react";
+import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Progress, Skeleton, Spinner} from "@nextui-org/react";
 import {InstallItems, JavaVersion} from "../../ts/java.ts";
 import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -19,6 +19,8 @@ export default function JavaInstallModal(props: JavaInstallModalProps)
     const [installItems, setInstallItems] = useState<InstallItems[]>([]);
     const [progress, setProgress] = useState<number>(0);
     const [completed, setCompleted] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
+
     const install = async () =>
     {
         if (completed) return;
@@ -52,17 +54,23 @@ export default function JavaInstallModal(props: JavaInstallModalProps)
     {
         if (props.version)
         {
+            setLoading(true);
             setCompleted(false);
             setProgress(0);
-            props.version.files().then(files =>
-            {
-                setInstallItems(files.map(file => ({file: file, completed: false})));
-            });
+            props
+                .version
+                .files()
+                .then(files =>
+                {
+                    setInstallItems(files.map(file => ({file: file, completed: false})));
+                }).finally(() => setLoading(false));
         }
     }, [props.version]);
 
+
     return (
         <Modal isOpen={props.isOpen} onClose={props.onClose} size={"5xl"} scrollBehavior={"inside"} isDismissable={!isInstalling}>
+
             <ModalContent>
                 {onClose => (
                     <>
@@ -73,39 +81,51 @@ export default function JavaInstallModal(props: JavaInstallModalProps)
                         </ModalHeader>
                         <ModalBody>
                             <div className={"flex flex-col"}>
-                                {completed ? (
-                                        <>
-                                            {installItems.map((item, index) => (
-                                                <div key={index} className={"flex flex-row w-full h-16 rounded-md bg-neutral-700 items-center px-2 mt-2"}>
-                                                    <p className={"text-neutral-200 font-bold"}>{item.file}</p>
-                                                    <FontAwesomeIcon icon={faCheck} className={"ml-auto text-green-500"}/>
-                                                </div>
-                                            ))}
-                                        </>
-                                    ) :
-                                    (
-                                        <>
-                                            {isInstalling ? (
-                                                <>
-                                                    {installItems.map((item, index) => (
-                                                        <div key={index} className={"flex flex-row w-full h-16 rounded-md bg-neutral-700 items-center px-2 mt-2"}>
-                                                            <p className={"text-neutral-200 font-bold"}>Downloading {item.file}</p>
-                                                            {item.completed ? <FontAwesomeIcon icon={faCheck} className={"ml-auto text-green-500"}/> : <Spinner size={"sm"} className={"ml-auto"}/>}
-                                                        </div>
-                                                    ))}
-                                                </>
-                                            ) : (
+                                {loading ? (
+                                    <div className={"flex flex-col gap-2"}>
+                                        {Array.from({length: 9}).map(() => (
+                                            <Skeleton>
+                                                <div className={"w-full h-16"}></div>
+                                            </Skeleton>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <>
+                                        {completed ? (
                                                 <>
                                                     {installItems.map((item, index) => (
                                                         <div key={index} className={"flex flex-row w-full h-16 rounded-md bg-neutral-700 items-center px-2 mt-2"}>
                                                             <p className={"text-neutral-200 font-bold"}>{item.file}</p>
+                                                            <FontAwesomeIcon icon={faCheck} className={"ml-auto text-green-500"}/>
                                                         </div>
                                                     ))}
                                                 </>
-                                            )}
-                                        </>
-                                    )
-                                }
+                                            ) :
+                                            (
+                                                <>
+                                                    {isInstalling ? (
+                                                        <>
+                                                            {installItems.map((item, index) => (
+                                                                <div key={index} className={"flex flex-row w-full h-16 rounded-md bg-neutral-700 items-center px-2 mt-2"}>
+                                                                    <p className={"text-neutral-200 font-bold"}>Downloading {item.file}</p>
+                                                                    {item.completed ? <FontAwesomeIcon icon={faCheck} className={"ml-auto text-green-500"}/> : <Spinner size={"sm"} className={"ml-auto"}/>}
+                                                                </div>
+                                                            ))}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            {installItems.map((item, index) => (
+                                                                <div key={index} className={"flex flex-row w-full h-16 rounded-md bg-neutral-700 items-center px-2 mt-2"}>
+                                                                    <p className={"text-neutral-200 font-bold"}>{item.file}</p>
+                                                                </div>
+                                                            ))}
+                                                        </>
+                                                    )}
+                                                </>
+                                            )
+                                        }
+                                    </>
+                                )}
                             </div>
                         </ModalBody>
                         <ModalFooter>
