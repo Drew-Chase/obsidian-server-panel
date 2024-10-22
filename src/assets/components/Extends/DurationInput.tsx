@@ -1,6 +1,7 @@
-import {cn, Input, InputProps} from "@nextui-org/react";
+import {cn, InputProps} from "@nextui-org/react";
 import {useEffect, useState} from "react";
 import $ from "jquery";
+import OInput from "./OInput.tsx";
 
 interface DurationInputProps
 {
@@ -49,13 +50,12 @@ export default function DurationInput(props: DurationInputProps)
         <div id={id} className={"flex flex-col rounded-lg bg-neutral-700 overflow-hidden p-2 shrink-0"}>
             <p className={"text-sm opacity-90 font-light mb-1 ml-1"}>{props.label || ""}</p>
             <div className={cn("flex flex-row rounded-lg overflow-hidden", props.className)}>
-                <Input
+                <OInput
                     {...props.inputProps}
                     label={"Days"}
                     placeholder={props.placeholders?.days || "DD"}
                     tabIndex={60}
                     radius={"none"}
-                    classNames={{inputWrapper: "bg-neutral-700 group-data-[focus=true]:bg-neutral-800"}}
                     value={days}
                     onValueChange={(value) =>
                     {
@@ -73,13 +73,12 @@ export default function DurationInput(props: DurationInputProps)
                         }
                     }}
                 />
-                <Input
+                <OInput
                     {...props.inputProps}
                     label={"Hours"}
                     placeholder={props.placeholders?.hours || "HH"}
                     tabIndex={61}
                     radius={"none"}
-                    classNames={{inputWrapper: "bg-neutral-700 group-data-[focus=true]:bg-neutral-800"}}
                     value={hours}
                     onValueChange={(value) =>
                     {
@@ -99,13 +98,12 @@ export default function DurationInput(props: DurationInputProps)
                         }
                     }}
                 />
-                <Input
+                <OInput
                     {...props.inputProps}
                     label={"Minutes"}
                     placeholder={props.placeholders?.minutes || "MM"}
                     tabIndex={62}
                     radius={"none"}
-                    classNames={{inputWrapper: "bg-neutral-700 group-data-[focus=true]:bg-neutral-800"}}
                     value={minutes}
                     onValueChange={(value) =>
                     {
