@@ -3,6 +3,7 @@ import {Input, ScrollShadow} from "@nextui-org/react";
 import ExtendedSwitch from "../../components/Extends/ExtendedSwitch.tsx";
 import {useState} from "react";
 import MagnifyGlass from "../../images/MagnifyGlass.svg.tsx";
+import OInput from "../../components/Extends/OInput.tsx";
 
 interface ServerPropertiesItem
 {
@@ -37,13 +38,9 @@ export default function ServerProperties()
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map(({name, value, type}) => (
                         type === "string" || type === "number" ? (
-                            <Input
+                            <OInput
                                 label={name}
                                 value={value}
-                                className={"w-full drop-shadow-lg shrink-0"}
-                                classNames={{
-                                    inputWrapper: "bg-neutral-700"
-                                }}
                             />
                         ) : (
                             <ExtendedSwitch
