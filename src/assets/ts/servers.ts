@@ -1,5 +1,16 @@
 import $ from "jquery";
 
+export enum ServerStatus
+{
+    OFFLINE = "offline",
+    ONLINE = "online",
+    STARTING = "starting",
+    STOPPING = "stopping",
+    RESTARTING = "restarting",
+    CRASHING = "crashing",
+    UNKNOWN = "unknown"
+}
+
 export class Server
 {
     id: string;
@@ -20,13 +31,16 @@ export class Server
     loader: number;
     loader_version: string | null;
     directory: string | null;
+    status: ServerStatus = ServerStatus.UNKNOWN;
+    uptime: number = 0;
 
     constructor(
         id: string, name: string, owner: string, members: string[],
         created_at: Date, updated_at: Date, instance: string | null = null, size: number = 0,
         auto_start: boolean = false, min_ram: number = 0, max_ram: number = 0, executable: string | null = null,
         minecraft_arguments: string | null = null, java_arguments: string | null = null, minecraft_version: string | null = null,
-        loader: number = 0, loader_version: string | null = null, directory: string | null = null
+        loader: number = 0, loader_version: string | null = null, directory: string | null = null,
+        status: ServerStatus = ServerStatus.UNKNOWN, uptime: number = 0
     )
     {
         this.id = id;
@@ -47,6 +61,8 @@ export class Server
         this.loader = loader;
         this.loader_version = loader_version;
         this.directory = directory;
+        this.status = status;
+        this.uptime = uptime;
     }
 
     static fromJson(json: any): Server
@@ -69,7 +85,9 @@ export class Server
             json.minecraft_version ?? null,
             json.loader ?? 0,
             json.loader_version ?? null,
-            json.directory ?? null
+            json.directory ?? null,
+            json.status ?? ServerStatus.UNKNOWN,
+            json.uptime ?? 0
         );
     }
 
@@ -93,7 +111,9 @@ export class Server
             minecraft_version: this.minecraft_version,
             loader: this.loader,
             loader_version: this.loader_version,
-            directory: this.directory
+            directory: this.directory,
+            status: this.status,
+            uptime: this.uptime
         };
     }
 
