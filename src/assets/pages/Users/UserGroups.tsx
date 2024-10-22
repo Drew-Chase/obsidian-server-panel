@@ -1,8 +1,9 @@
-import {Button, Checkbox, CheckboxGroup, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ScrollShadow, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip, useDisclosure} from "@nextui-org/react";
+import {Button, Checkbox, CheckboxGroup, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ScrollShadow, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip, useDisclosure} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faTrash, faUserEdit} from "@fortawesome/free-solid-svg-icons";
 import {useState} from "react";
 import {setTitle} from "../../../main.tsx";
+import OInput from "../../components/Extends/OInput.tsx";
 
 export default function UserGroups()
 {
@@ -17,7 +18,7 @@ export default function UserGroups()
                         <>
                             <ModalHeader>Create New Group</ModalHeader>
                             <ModalBody className={"flex flex-col"}>
-                                <Input
+                                <OInput
                                     label={"Group Name"}
                                     placeholder={"Enter the group name"}
                                     className={"w-full"}
