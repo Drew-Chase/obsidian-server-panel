@@ -1,7 +1,7 @@
 import {Avatar, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
 import testImage from "../../images/demo/test-server.png";
 import {useState} from "react";
-import EditorModal from "../EditorModal.tsx";
+import EditorModal, {crashReport} from "../EditorModal.tsx";
 
 interface CrashReportsStatProps
 {
@@ -13,7 +13,7 @@ export default function CrashReportsStat(props: CrashReportsStatProps)
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     return (
         <>
-            <EditorModal isOpen={isEditorOpen} onClose={() => setIsEditorOpen(false)}/>
+            <EditorModal title={"Crash Report"} isOpen={isEditorOpen} onClose={() => setIsEditorOpen(false)} content={crashReport} language={"log"} isReadonly/>
             <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-w-md w-full max-h-[400px] h-dvh overflow-y-auto"}>
                 <p className={"text-lg font-semibold"}>Crash Reports</p>
 
