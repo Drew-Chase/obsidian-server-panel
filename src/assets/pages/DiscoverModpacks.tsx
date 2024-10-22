@@ -1,9 +1,11 @@
-import {Input, Listbox, ListboxItem, Select, SelectItem, Spinner, Tooltip} from "@nextui-org/react";
+import {Listbox, ListboxItem, SelectItem, Spinner, Tooltip} from "@nextui-org/react";
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import DiscoverModItem from "../components/Server/DiscoverModItem.tsx";
 import {setTitle} from "../../main.tsx";
 import Instances, {Instance, Platforms, SortOptions} from "../ts/instances.ts";
 import {useEffect, useState} from "react";
+import OInput from "../components/Extends/OInput.tsx";
+import OSelect from "../components/Extends/OSelect.tsx";
 
 export default function DiscoverModpacks()
 {
@@ -39,27 +41,21 @@ export default function DiscoverModpacks()
                 <div className={"flex flex-row items-center gap-4"}>
                     <h2 className={"text-2xl font-semibold text-nowrap"}>Discover Modpacks</h2>
                     <div className={"-mb-4 flex flex-row items-center gap-4 w-full"}>
-                        <Input
+                        <OInput
                             label={"Search"}
                             placeholder={"Search for mods"}
                             startContent={<MagnifyGlass/>}
                             className={"w-full"}
-                            classNames={{
-                                inputWrapper: "bg-neutral-700 data-[focus]:!bg-neutral-800 data-[hover]:!bg-neutral-800",
-                            }}
                             value={search}
                             onValueChange={setSearch}
                             description={"Search for mods by name, author, or category"}
                         />
-                        <Select
+                        <OSelect
                             label={"Source"}
                             disallowEmptySelection
                             defaultSelectedKeys={[platform]}
                             disabledKeys={[Platforms.ATLAUNCHER]}
                             className={"w-[400px]"}
-                            classNames={{
-                                trigger: "bg-neutral-700 data-[hover]:!bg-neutral-800"
-                            }}
                             onSelectionChange={(key) => setPlatform([...key][0] as string as Platforms)}
                             value={platform}
                             description={"AtLauncher is not supported yet"}
@@ -67,16 +63,13 @@ export default function DiscoverModpacks()
                             {Object.values(Platforms).map(platform => (
                                 <SelectItem key={platform}>{platform}</SelectItem>
                             ))}
-                        </Select>
+                        </OSelect>
                         <Tooltip content={"Sort options only work for Modrinth"} closeDelay={0}>
-                            <Select
+                            <OSelect
                                 label={"Sort By"}
                                 disallowEmptySelection
                                 defaultSelectedKeys={[sort]}
                                 className={"w-[400px]"}
-                                classNames={{
-                                    trigger: "bg-neutral-700 data-[hover]:!bg-neutral-800"
-                                }}
                                 onSelectionChange={(key) => setSort([...key][0] as string as SortOptions)}
                                 value={sort}
                                 description={"Sort options only work for Modrinth"}
@@ -84,7 +77,7 @@ export default function DiscoverModpacks()
                                 {Object.values(SortOptions).map(sort => (
                                     <SelectItem key={sort}>{sort}</SelectItem>
                                 ))}
-                            </Select>
+                            </OSelect>
                         </Tooltip>
                     </div>
                 </div>
