@@ -3,7 +3,7 @@ import {existsSync, mkdirSync} from "node:fs";
 import path from "path";
 
 const devEnvPath = path.resolve("./target/dev-env");
-if (!existsSync(devEnvPath)) mkdirSync(devEnvPath);
+if (!existsSync(devEnvPath)) mkdirSync(devEnvPath, {recursive: true});
 
 
 /**
