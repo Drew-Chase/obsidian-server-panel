@@ -2,11 +2,19 @@ import {Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader} from "
 import {Editor} from "@monaco-editor/react";
 import {toast} from "sonner";
 import "../scss/editor.scss";
+// @ts-ignore
+import {Prism as SyntaxHighlighter} from "react-syntax-highlighter";
+// @ts-ignore
+import {duotoneDark} from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface EditorModalProps
 {
     isOpen: boolean;
     onClose: () => void;
+    title?: string;
+    isReadonly?: boolean;
+    content?: string;
+    language?: string;
 }
 
 export default function EditorModal(props: EditorModalProps)
@@ -16,30 +24,46 @@ export default function EditorModal(props: EditorModalProps)
             isOpen={props.isOpen}
             onClose={props.onClose}
             size={"5xl"}
+            scrollBehavior={"inside"}
             classNames={{
-                base: "w-[80vw] max-w-[unset]"
+                base: "w-[80vw] max-w-[unset] bg-neutral-600"
             }}
 
         >
             <ModalContent>
                 {onClose => (
                     <>
-                        <ModalHeader>Code Editor</ModalHeader>
-                        <ModalBody>
-                            <Editor
-                                height="70vh"
-                                defaultLanguage="log"
-                                defaultValue={crashReport.trim()}
-                                theme={"vs-dark"}
-                            />
+                        <ModalHeader>{props.title ?? "Code Editor"}</ModalHeader>
+                        <ModalBody className={"bg-neutral-800 mx-4 rounded-xl"}>
+                            {props.isReadonly ? (
+                                <SyntaxHighlighter language={props.language ?? "text"} style={duotoneDark} wrapLongLines wrapLines>
+                                    {props.content?.trim() ?? ""}
+                                </SyntaxHighlighter>
+                            ) : (
+                                <Editor
+                                    height="70vh"
+                                    defaultLanguage={props.language ?? "text"}
+                                    defaultValue={props.content?.trim() ?? ""}
+                                    theme={"vs-dark"}
+                                />
+                            )}
                         </ModalBody>
                         <ModalFooter>
-                            <Button onClick={() =>
-                            {
-                                toast("Changes saved successfully!", {description: "The crash report has been saved successfully."});
-                                onClose();
-                            }} color={"primary"}>Save</Button>
-                            <Button onClick={onClose} color={"danger"} variant={"light"}>Cancel</Button>
+                            {props.isReadonly ? (
+                                <Button onClick={onClose}>Close</Button>) : (
+                                <>
+                                    <Button
+                                        onClick={() =>
+                                        {
+                                            toast("Changes saved successfully!", {description: "The crash report has been saved successfully."});
+                                            onClose();
+                                        }}
+                                    >
+                                        Save
+                                    </Button>
+                                    <Button onClick={onClose} color={"danger"} variant={"light"}>Cancel</Button>
+                                </>
+                            )}
                         </ModalFooter>
                     </>
                 )}
@@ -50,7 +74,7 @@ export default function EditorModal(props: EditorModalProps)
 }
 
 
-const crashReport = `
+export const crashReport = `
 ---- Minecraft Crash Report ----
 // Ooh. Shiny.
 
