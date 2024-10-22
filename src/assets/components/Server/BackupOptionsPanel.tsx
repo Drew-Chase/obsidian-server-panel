@@ -1,6 +1,7 @@
-import {Select, SelectItem, Slider} from "@nextui-org/react";
+import {SelectItem, Slider} from "@nextui-org/react";
 import ExtendedSwitch from "../Extends/ExtendedSwitch.tsx";
 import BackupIntervalSelector from "./BackupIntervalSelector.tsx";
+import OSelect from "../Extends/OSelect.tsx";
 
 export default function BackupOptionsPanel()
 {
@@ -23,17 +24,14 @@ export default function BackupOptionsPanel()
                 showTooltip
             />
             <p className={"text-tiny text-neutral-400 opacity-70"}>The number of backups to keep.</p>
-            <Select
+            <OSelect
                 label={"Backup Type"}
                 placeholder={"Select a backup type"}
-                classNames={{
-                    trigger: "bg-neutral-700"
-                }}
                 defaultSelectedKeys={["incremental"]}
             >
                 <SelectItem key={"full"} description={"This will make a complete copy of the server, this will take up the most storage."}>Full Backup</SelectItem>
                 <SelectItem key={"incremental"} description={"This will make an incremental backup using git, this will only backup files that change."}>Incremental Backup</SelectItem>
-            </Select>
+            </OSelect>
 
             <BackupIntervalSelector/>
         </div>
