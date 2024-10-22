@@ -112,6 +112,9 @@ function debug(data) {
                 style = 'color: red;';
                 console.error(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
                 break;
+            default:
+                style = 'color: gray;';
+                console.log(`%c[${timestamp} ${logLevel} ${source}]%c ${message}`, style, 'color: white;');
         }
     }
     if (!first_data && data.includes(`Starting development server at http://127.0.0.1:`)) {
