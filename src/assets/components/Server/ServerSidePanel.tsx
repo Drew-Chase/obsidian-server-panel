@@ -1,9 +1,11 @@
 import MemoryAllocationInput from "./MemoryAllocationInput.tsx";
 import StopButton from "./StopButton.tsx";
-import {Autocomplete, AutocompleteItem, Button, Input, Link, Tooltip} from "@nextui-org/react";
+import {AutocompleteItem, Button, Link, Tooltip} from "@nextui-org/react";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArchive, faLayerGroup} from "@fortawesome/free-solid-svg-icons";
+import OInput from "../Extends/OInput.tsx";
+import OAutocomplete from "../Extends/OAutocomplete.tsx";
 
 export default function ServerSidePanel()
 {
@@ -14,45 +16,31 @@ export default function ServerSidePanel()
             </div>
             <StopButton/>
 
-            <Input
+            <OInput
                 label={"Server Name"}
                 placeholder={"My Server"}
                 isRequired
-                classNames={{
-                    inputWrapper: "bg-neutral-700"
-                }}
             />
 
             <MemoryAllocationInput/>
-            <Input
+            <OInput
                 label={"Minecraft Arguments"}
                 placeholder={"nogui"}
-                classNames={{
-                    inputWrapper: "bg-neutral-700"
-                }}
                 description={<p>These arguments are passed to the Minecraft server when starting, for more information please visit <Link className={"text-tiny"} href={"https://minecraft.wiki/w/Tutorials/Setting_up_a_server#Minecraft_options"} target={"_blank"}>Minecraft's Documentation</Link>.</p>}
             />
-            <Input
+            <OInput
                 label={"Additional Java Arguments"}
                 placeholder={"-XX:+DisableExplicitGC"}
-                classNames={{
-                    inputWrapper: "bg-neutral-700"
-                }}
                 description={<p>These arguments are passed to the JVM when starting the server, for more information please visit <Link className={"text-tiny"} href={"https://docs.oracle.com/en/java/javase/17/docs/specs/man/java.html"} target={"_blank"}>Java's Documentation</Link>.</p>}
             />
 
-            <Autocomplete
+            <OAutocomplete
                 label={"Runnable Jar"}
                 placeholder={"Select a runnable jar"}
-                inputProps={{
-                    classNames: {
-                        inputWrapper: "bg-neutral-700"
-                    }
-                }}
             >
                 <AutocompleteItem key={"server.jar"} value={"server.jar"}>server.jar</AutocompleteItem>
 
-            </Autocomplete>
+            </OAutocomplete>
 
             <Tooltip content={"This will zip the entire server and download it."}>
                 <Button endContent={<DownloadFile/>}><span className={"w-full"}>Download Server</span></Button>
