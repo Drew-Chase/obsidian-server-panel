@@ -1,7 +1,8 @@
-import {Button, Chip, Input, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faTrash, faUserEdit} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
+import OInput from "../../components/Extends/OInput.tsx";
 
 export default function Users()
 {
@@ -11,13 +12,10 @@ export default function Users()
             <p className={"text-lg font-semibold mr-auto mb-8"}>Manage Users</p>
 
             <div className={"flex flex-row items-center mb-6"}>
-                <Input
+                <OInput
                     label={"Username"}
                     placeholder={"Add a managed user"}
                     className={"w-full"}
-                    classNames={{
-                        inputWrapper: "bg-neutral-700"
-                    }}
                 />
                 <Button className={"ml-4"} endContent={<FontAwesomeIcon icon={faPlus}/>}>Add</Button>
             </div>
