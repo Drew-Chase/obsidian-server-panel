@@ -1,6 +1,7 @@
-import {cn, Select, SelectItem} from "@nextui-org/react";
+import {cn, SelectItem} from "@nextui-org/react";
 import DurationInput, {Duration} from "../Extends/DurationInput.tsx";
 import {useState} from "react";
+import OSelect from "../Extends/OSelect.tsx";
 
 
 export default function BackupIntervalSelector()
@@ -12,15 +13,12 @@ export default function BackupIntervalSelector()
 
     return (
         <div className={"flex flex-col bg-neutral-700 rounded-lg overflow-hidden p-1 shrink-0"}>
-            <Select
+            <OSelect
                 label={"Backup Interval"}
                 placeholder={"Select a backup interval"}
                 className="bg-neutral-700"
                 onSelectionChange={(key) => setBackupInterval((key.currentKey ?? "") as string)}
                 defaultSelectedKeys={["never"]}
-                classNames={{
-                    trigger: "bg-neutral-700"
-                }}
                 disallowEmptySelection
             >
                 <SelectItem key={"never"} description={"This will never create a backup"}>Never</SelectItem>
@@ -40,7 +38,7 @@ export default function BackupIntervalSelector()
                 <SelectItem key={"every3months"} value={"0 0 1 */3 *"} description={"This will create a backup every 3 months"}>Every 3 Months</SelectItem>
                 <SelectItem key={"every6months"} value={"0 0 1 */6 *"} description={"This will create a backup every 6 months"}>Every 6 Months</SelectItem>
                 <SelectItem key={"yearly"} value={"0 0 1 1 *"} description={"This will create a backup every year"}>Every Year</SelectItem>
-            </Select>
+            </OSelect>
             <div
                 data-custom={backupInterval === "custom"}
                 className={
