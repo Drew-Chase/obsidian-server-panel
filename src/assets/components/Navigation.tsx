@@ -18,7 +18,7 @@ export default function Navigation()
     const {pathname} = useLocation();
 
     const sections = ["server", "discover", "users", "files", "settings", "profile"];
-    const section = sections.find((s) => pathname.startsWith(`/app/${s}`)) || "";
+    const section = sections.find((s) => pathname.startsWith(`/app/${s}/`)) || "";
 
     const {auth, isLoggedIn} = useAuth();
 
