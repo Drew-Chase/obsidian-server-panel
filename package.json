@@ -29,6 +29,7 @@
 		"framer-motion": "^11.5.4",
 		"jquery": "^3.7.1",
 		"react": "^18.3.1",
+		"react-cropper": "^2.3.3",
 		"react-dom": "^18.3.1",
 		"react-image-file-resizer": "^0.4.8",
 		"react-router-dom": "^6.26.2",
