@@ -1,12 +1,12 @@
-import {Avatar, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
+import {Avatar, cn, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
 import testImage from "../../images/demo/test-server.png";
+import {HTMLAttributes} from "react";
 
-export default function RecentConnectionsStat()
+export default function RecentConnectionsStat(props: HTMLAttributes<any>)
 {
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-w-md w-full mx-2 max-h-[400px] h-dvh overflow-y-auto"}>
+        <div className={cn("flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 xl:max-w-md w-full max-w-full grow shrink max-h-[400px] h-dvh overflow-y-auto", props.className ?? "")} {...props}>
             <p className={"text-lg font-semibold"}>Recent Connections</p>
-
             <div className={"flex flex-row w-full text-tiny my-4"}>
                 <p className={"mr-auto"}>Players / Server</p>
                 <p>Duration</p>
