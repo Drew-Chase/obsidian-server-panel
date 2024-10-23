@@ -48,8 +48,6 @@ export default class Authentication
                 ?.trim()
                 .slice(6) ?? null;
 
-            this.loginWithTokenFromCookie();
-
         } catch (e)
         {
             this.token = null;
@@ -97,10 +95,9 @@ export default class Authentication
      * Logs in a user using a provided token.
      *
      * @param {string} token - The token used for authentication.
-     * @param {boolean} [rememberMe=false] - Whether to remember the user for future sessions.
      * @return {Promise<LoginResponse>} A promise that resolves to the login response.
      */
-    public async loginWithToken(token: string, rememberMe: boolean = false): Promise<LoginResponse>
+    public async loginWithToken(token: string): Promise<LoginResponse>
     {
 
         try
@@ -119,16 +116,8 @@ export default class Authentication
             {
                 throw new Error(JSON.stringify(data));
             }
-            if (response.ok)
-            {
-                if (data)
-                {
-                    this.generateCookies(token, rememberMe);
-                }
-            } else
-            {
+            if (!response.ok)
                 throw new Error(JSON.stringify(data));
-            }
 
             return data;
         } catch (error)
@@ -179,14 +168,14 @@ export default class Authentication
     }
 
     /**
-     * Logs in the user with the token obtained from the cookie.
+     * Logs in a user using the token stored in the cookie.
+     * This method checks if a token is present and, if so, attempts to log in using that token.
      *
-     * @param {number} rememberMe - The rememberMe time of the token in minutes. Default is -1 (no rememberMe).
-     * @return {Promise<JSON | boolean>} - A promise that resolves with JSON data if the login is successful, false otherwise.
+     * @return {Promise<LoginResponse | boolean>} A promise that resolves to a LoginResponse if the login is successful, or false if no token is available.
      */
-    public async loginWithTokenFromCookie(rememberMe: boolean = false): Promise<LoginResponse | boolean>
+    public async loginWithTokenFromCookie(): Promise<LoginResponse | boolean>
     {
-        return this.token === null ? false : await this.loginWithToken(this.token, rememberMe);
+        return this.token === null ? false : await this.loginWithToken(this.token);
     }
 
     /**
