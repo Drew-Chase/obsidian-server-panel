@@ -1,0 +1,20 @@
+meta {
+  name: Upload File
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://127.0.0.1:1420/api/server/:id/files/upload
+  body: multipartForm
+  auth: none
+}
+
+params:path {
+  id: 
+}
+
+body:multipart-form {
+  json: {"directory":"", "filename: ""}
+  file: @file(C:\Workspaces\Web\obsidian-server-panel\.gitignore)
+}
