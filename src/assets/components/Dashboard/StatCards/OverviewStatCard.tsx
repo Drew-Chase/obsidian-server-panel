@@ -36,7 +36,7 @@ export default function OverviewStatCard()
         return () => monitor.stopMonitoring();
     }, []);
     return (
-        <div className={"flex flex-row w-full justify-between"}>
+        <div className={"flex flex-row w-full justify-between flex-wrap gap-4 grow shrink"}>
             <StatCard
                 title={"CPU Usage"}
                 value={cpuUsage}
