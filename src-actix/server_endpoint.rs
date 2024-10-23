@@ -183,12 +183,6 @@ pub async fn create_server(
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
-/// Retrieves all supported server loaders
-#[get("/supported_loaders")]
-pub async fn get_supported_loaders() -> impl Responder {
-    // Return the list of all supported loaders as JSON response
-    HttpResponse::Ok().json(servers::supported_loaders::SupportedLoaders::all())
-}
 
 /// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
