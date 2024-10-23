@@ -1,8 +1,9 @@
 import {RadialBar, RadialBarChart, ResponsiveContainer} from "recharts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCircle} from "@fortawesome/free-solid-svg-icons";
+import {HTMLAttributes} from "react";
 
-export default function BackupsStat()
+export default function BackupsStat(props: HTMLAttributes<any>)
 {
     let data = [{
         "SMP Server": 75,
@@ -11,7 +12,7 @@ export default function BackupsStat()
     }];
     const total = data.reduce((acc, cur) => acc + cur["SMP Server"] + cur["All The Mods 6"] + cur["Other"], 0);
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[400px] h-dvh overflow-y-auto grow relative"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full max-h-[400px] h-dvh overflow-y-auto grow relative"} {...props}>
             <p className={"text-lg font-semibold"}>Backups</p>
             <ResponsiveContainer width={"100%"} height={"100%"}>
                 <RadialBarChart
