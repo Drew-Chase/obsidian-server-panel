@@ -8,12 +8,12 @@ mod backups_endpoint;
 mod file_system_endpoint;
 mod instance_endpoint;
 mod java_endpoint;
+mod loader_endpoint;
 mod minecraft_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
-mod loader_endpoint;
 
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
@@ -26,7 +26,6 @@ use awc::Client;
 use configuration::config::CONFIG;
 use futures_util::stream::StreamExt;
 use include_dir::{include_dir, Dir};
-use java::versions::JavaVersion;
 use log::{debug, error, info};
 use network_utility::{close_all_ports, open_port};
 use scheduler::{start_ticking_schedules, stop_ticking_schedules};
@@ -165,10 +164,14 @@ async fn main() -> std::io::Result<()> {
                                     ),
                             )
                             .service(server_endpoint::get_servers)
-                            .service(server_endpoint::create_server)
+                            .service(server_endpoint::create_server),
                     )
                     .service(web::scope("instances").service(instance_endpoint::discover_modpacks))
-                    .service(web::scope("loaders").service(loader_endpoint::get_supported_loaders)),
+                    .service(
+                        web::scope("loaders")
+                            .service(loader_endpoint::get_supported_loaders)
+                            .service(loader_endpoint::get_loader_by_id),
+                    ),
             );
         // Add conditional routing based on the config
         if config == "development" {
@@ -231,7 +234,7 @@ async fn index(_req: HttpRequest) -> Result<impl Responder, Error> {
         let body = file.contents();
         return Ok(HttpResponse::Ok().content_type("text/html").body(body));
     }
-    Err(error::ErrorInternalServerError("Failed to find index.html"))
+    Err(ErrorInternalServerError("Failed to find index.html"))
 }
 
 #[get("")]
@@ -271,7 +274,7 @@ async fn proxy_to_vite(req: HttpRequest, mut payload: web::Payload) -> Result<Ht
     while let Some(chunk) = payload.next().await {
         let chunk = chunk?;
         if (body_bytes.len() + chunk.len()) > MAX_PAYLOAD_SIZE {
-            return Err(actix_web::error::ErrorPayloadTooLarge("Payload overflow"));
+            return Err(error::ErrorPayloadTooLarge("Payload overflow"));
         }
         body_bytes.extend_from_slice(&chunk);
     }
@@ -281,21 +284,14 @@ async fn proxy_to_vite(req: HttpRequest, mut payload: web::Payload) -> Result<Ht
         .no_decompress()
         .send_body(body_bytes)
         .await
-        .map_err(|err| {
-            actix_web::error::ErrorInternalServerError(format!(
-                "Failed to forward request: {}",
-                err
-            ))
-        })?;
+        .map_err(|err| ErrorInternalServerError(format!("Failed to forward request: {}", err)))?;
 
     // Buffer the entire response body
     let mut resp_body_bytes = web::BytesMut::new();
     while let Some(chunk) = forwarded_resp.next().await {
         let chunk = chunk?;
         if (resp_body_bytes.len() + chunk.len()) > MAX_PAYLOAD_SIZE {
-            return Err(actix_web::error::ErrorPayloadTooLarge(
-                "Response payload overflow",
-            ));
+            return Err(error::ErrorPayloadTooLarge("Response payload overflow"));
         }
         resp_body_bytes.extend_from_slice(&chunk);
     }
