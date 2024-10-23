@@ -6,9 +6,11 @@ import CrashReportsStat from "../../components/Dashboard/CrashReportsStat.tsx";
 import BackupsStat from "../../components/Dashboard/BackupsStat.tsx";
 import ServerList from "../../components/Dashboard/ServerList.tsx";
 import OverviewStatCard from "../../components/Dashboard/StatCards/OverviewStatCard.tsx";
+import {useScreenSize} from "../../providers/ScreenSizeProvider.tsx";
 
 export default function DashboardOverview()
 {
+    const {width} =useScreenSize();
     setTitle("Dashboard Overview");
     return (
         <div className={"flex flex-col gap-8"}>
@@ -16,11 +18,11 @@ export default function DashboardOverview()
                 <p className={"text-xl font-semibold mr-auto"}>Overview</p>
             </div>
             <OverviewStatCard/>
-            <div className={"flex flex-row w-full justify-between"}>
+            <div className={"flex flex-row w-full justify-between flex-wrap xl:flex-nowrap gap-4"}>
                 <ExtendedStorageStat/>
-                <ExtendedOnlinePlayersStat/>
+                <ExtendedOnlinePlayersStat hidden={width < 930}/>
             </div>
-            <div className={"flex flex-row w-full justify-between gap-4"}>
+            <div className={"flex flex-row w-full justify-between flex-wrap xl:flex-nowrap gap-4"}>
                 <RecentConnectionsStat/>
                 <CrashReportsStat/>
                 <BackupsStat/>
