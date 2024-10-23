@@ -45,7 +45,7 @@ archive_utility = { path = "src-actix/archive_utility" }
 actix-web = { version = "4.9.0" }
 actix-ws = "0.3.0"
 actix-web-lab = "0.23.0"
-actix-multipart = "0.7.2"
+actix-multipart = { version = "0.7.2", features = ["actix-multipart-derive", "derive", "tempfile", "default"] }
 actix-files = "0.6.6"
 futures-util = "0.3.30"
 serde = { version = "1.0.208", features = ["derive"] }
