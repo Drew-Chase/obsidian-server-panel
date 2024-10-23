@@ -1,13 +1,12 @@
-import {Button, Divider} from "@nextui-org/react";
+import {Button} from "@nextui-org/react";
 import {useState} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faUpload} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
 import ServerInfo from "../../components/Dashboard/CreateServer/ServerInfo.tsx";
 import ServerSettings from "../../components/Dashboard/CreateServer/ServerSettings.tsx";
 import AdvancedSettings from "../../components/Dashboard/CreateServer/AdvancedSettings.tsx";
 import VersionSettings from "../../components/Dashboard/CreateServer/VersionSettings.tsx";
 import LoaderSettings from "../../components/Dashboard/CreateServer/LoaderSettings.tsx";
+import UploadIcon from "../../components/Dashboard/CreateServer/UploadIcon.tsx";
 
 export default function DashboardCreateServer()
 {
@@ -23,15 +22,7 @@ export default function DashboardCreateServer()
     return (
         <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[calc(100dvh_-_60px)] h-dvh overflow-y-auto gap-4"}>
             <p className={"text-lg font-semibold"}>Create Server</p>
-            <div className={"outline-2 outline-dotted outline-primary w-full h-[200px] rounded-2xl flex flex-row p-4 gap-8 items-center justify-center shadow-inner"}>
-                <p className={"text-4xl font-bold text-center p-4"}>
-                    Drag<br/>&amp;<br/>Drop
-                </p>
-                <Divider orientation={"vertical"} className={"mx-[100px]"}/>
-                <div className={"flex flex-col"}>
-                    <Button size={"lg"} variant={"ghost"} color={"primary"} className={"p-8"} startContent={<FontAwesomeIcon icon={faUpload}/>}>Select Icon</Button>
-                </div>
-            </div>
+            <UploadIcon/>
             <ServerInfo
                 serverName={serverName}
                 setServerName={setServerName}
