@@ -3,12 +3,14 @@ import ExtendedSwitch from "../../Extends/ExtendedSwitch.tsx";
 import OAutocomplete from "../../Extends/OAutocomplete.tsx";
 import {useEffect, useState} from "react";
 import MinecraftVersions, {MinecraftVersion} from "../../../ts/mincraft-versions.ts";
+import LoaderSettings from "./LoaderSettings.tsx";
 
 export default function VersionSettings()
 {
     const [versions, setVersions] = useState<MinecraftVersion[]>([]);
     const [showSnapshots, setShowSnapshots] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [minecraftVersion, setMinecraftVersion] = useState<string>("");
 
     useEffect(() =>
     {
@@ -34,6 +36,12 @@ export default function VersionSettings()
                 label={"Minecraft Version"}
                 placeholder={"Select a Minecraft version"}
                 isLoading={isLoading}
+                onSelectionChange={key =>
+                {
+                    if (key)
+                        setMinecraftVersion(key as string);
+                }}
+                value={minecraftVersion}
             >
                 {versions.map((version) => (
                     <AutocompleteItem key={version.id}>{version.id}</AutocompleteItem>
@@ -46,6 +54,8 @@ export default function VersionSettings()
                 toggle={showSnapshots}
                 onToggle={setShowSnapshots}
             />
+
+            <LoaderSettings minecraft_version={minecraftVersion} snapshots={showSnapshots}/>
         </>
     );
 }
