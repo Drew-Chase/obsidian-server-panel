@@ -2,11 +2,12 @@ import {Button, CircularProgress, Listbox, ListboxItem, Tooltip} from "@nextui-o
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowDown, faCircle, faCloudDownload} from "@fortawesome/free-solid-svg-icons";
 import {toast} from "sonner";
+import {HTMLAttributes} from "react";
 
-export default function ExtendedStorageStat()
+export default function ExtendedStorageStat(props: HTMLAttributes<any>)
 {
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-w-md w-full mx-2 h-lg"} aria-label="Extended Storage Statistic">
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 xl:max-w-md w-full max-w-full grow shrink h-lg"} aria-label="Extended Storage Statistic" {...props}>
             <div className={"flex flex-row w-full items-center"}>
                 <p className={"text-lg font-semibold"}>Storage Usage</p>
                 <Tooltip content={"Export a spreadsheet csv with a breakdown of your storage consumption."} aria-label="Export Tooltip">
@@ -14,7 +15,7 @@ export default function ExtendedStorageStat()
                         endContent={<FontAwesomeIcon icon={faArrowDown}/>}
                         className={"ml-auto"}
                         aria-label="Export to CSV"
-                        onClick={()=>toast("Exported CSV file.", {description: "A CSV file has been exported with a breakdown of your storage consumption.", icon: <FontAwesomeIcon icon={faCloudDownload}/>})}
+                        onClick={() => toast("Exported CSV file.", {description: "A CSV file has been exported with a breakdown of your storage consumption.", icon: <FontAwesomeIcon icon={faCloudDownload}/>})}
                     >
                         Export
                     </Button>
@@ -93,6 +94,5 @@ export default function ExtendedStorageStat()
                 </ListboxItem>
             </Listbox>
         </div>
-    )
-        ;
+    );
 }
