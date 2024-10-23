@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SupportedLoaders {
@@ -42,6 +43,22 @@ impl SupportedLoaders {
             SupportedLoaders::NEOFORGE => 3,
             SupportedLoaders::SPIGOT => 4,
             SupportedLoaders::PAPER => 5,
+        }
+    }
+}
+
+
+impl FromStr for SupportedLoaders {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "FABRIC" => Ok(SupportedLoaders::FABRIC),
+            "FORGE" => Ok(SupportedLoaders::FORGE),
+            "QUILT" => Ok(SupportedLoaders::QUILT),
+            "NEOFORGE" => Ok(SupportedLoaders::NEOFORGE),
+            "SPIGOT" => Ok(SupportedLoaders::SPIGOT),
+            "PAPER" => Ok(SupportedLoaders::PAPER),
+            _ => Err(()),
         }
     }
 }
