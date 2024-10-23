@@ -37,3 +37,8 @@ body {
   background-color: hsl(var(--nextui-primary));
   color: hsl(var(--nextui-neutral-800));
 }
+
+[hidden]
+{
+    display: none !important;
+}
