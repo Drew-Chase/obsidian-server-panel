@@ -2,6 +2,7 @@ import {Bar, BarChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxi
 import {Button, Divider, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowDown, faCircle} from "@fortawesome/free-solid-svg-icons";
+import {HTMLAttributes} from "react";
 
 
 interface CustomTooltipProps
@@ -17,7 +18,7 @@ interface Payload
     value: number;
 }
 
-export default function ExtendedOnlinePlayersStat()
+export default function ExtendedOnlinePlayersStat(props: HTMLAttributes<any>)
 {
 
     // @ts-ignore
@@ -68,7 +69,7 @@ export default function ExtendedOnlinePlayersStat()
     const total = data.reduce((acc, cur) => acc + cur["SMP Server"] + cur["All The Mods 6"] + cur["Other"], 0);
 
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-w-full w-full mx-2 h-lg grow"}>
+        <div  {...props} className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 max-w-full h-lg min-w-[540px] grow shrink"}>
             <p className={"text-[16px] font-semibold text-neutral-400 mb-2"}>Total Online Players</p>
             <div className={"flex flex-row w-full items-center gap-8"}>
                 <p className={"text-3xl font-bold"}>{total} Players</p>
@@ -93,7 +94,7 @@ export default function ExtendedOnlinePlayersStat()
                     </Button>
                 </Tooltip>
             </div>
-            <ResponsiveContainer width={"100%"} height={"100%"}>
+            <ResponsiveContainer width={"100%"} height={"100%"} className={"min-h-[200px]"}>
                 <BarChart
                     width={500}
                     height={300}
