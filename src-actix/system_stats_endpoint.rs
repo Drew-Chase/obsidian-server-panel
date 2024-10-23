@@ -1,11 +1,9 @@
-use std::env::current_dir;
-use actix_web::{get, web, HttpResponse, Responder};
-use futures_util::Stream;
+use actix_web::{get, HttpResponse, Responder};
+use actix_web_lab::sse;
 use serde_json::json;
-use std::pin::Pin;
+use std::env::current_dir;
 use std::sync::Mutex;
 use std::time::Duration;
-use actix_web_lab::sse;
 use sysinfo::{Disks, System};
 use tokio::time::interval;
 
@@ -46,8 +44,6 @@ pub async fn get_system_usage(sys: actix_web::web::Data<Mutex<System>>) -> impl 
         }
     }))
 }
-
-
 
 #[get("/usage/sse")]
 pub async fn get_system_usage_sse() -> impl Responder {
