@@ -26,6 +26,7 @@ import Register from "./assets/pages/Register.tsx";
 import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
 import {Toaster} from "sonner";
 import React from "react";
+import {ScreenSizeProvider} from "./assets/providers/ScreenSizeProvider.tsx";
 
 export const setTitle = (title: string) =>
 {
@@ -36,9 +37,11 @@ export const setTitle = (title: string) =>
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <AuthProvider>
-                <MainContentRenderer/>
-            </AuthProvider>
+            <ScreenSizeProvider>
+                <AuthProvider>
+                    <MainContentRenderer/>
+                </AuthProvider>
+            </ScreenSizeProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
