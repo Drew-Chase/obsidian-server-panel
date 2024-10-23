@@ -5,7 +5,6 @@ import ServerInfo from "../../components/Dashboard/CreateServer/ServerInfo.tsx";
 import ServerSettings from "../../components/Dashboard/CreateServer/ServerSettings.tsx";
 import AdvancedSettings from "../../components/Dashboard/CreateServer/AdvancedSettings.tsx";
 import VersionSettings from "../../components/Dashboard/CreateServer/VersionSettings.tsx";
-import LoaderSettings from "../../components/Dashboard/CreateServer/LoaderSettings.tsx";
 import UploadIcon from "../../components/Dashboard/CreateServer/UploadIcon.tsx";
 
 export default function DashboardCreateServer()
@@ -45,7 +44,6 @@ export default function DashboardCreateServer()
                 setServerMaxPlayers={setServerMaxPlayers}
             />
             <VersionSettings/>
-            <LoaderSettings/>
             <Button color={"primary"} className={"mt-4 shrink-0"}>Create Server</Button>
         </div>
     );
