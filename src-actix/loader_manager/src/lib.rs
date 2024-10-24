@@ -3,12 +3,13 @@ pub mod forge;
 pub mod neoforge;
 pub mod quilt;
 
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use std::path::Path;
 use std::str::FromStr;
 
 /// Represents the various loaders available in the system.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub enum Loaders {
     VANILLA,
     FORGE,
@@ -36,7 +37,7 @@ impl FromStr for Loaders {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```no-error
     /// let loader: Loaders = "forge".parse().unwrap();
     /// ```
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -51,23 +52,38 @@ impl FromStr for Loaders {
     }
 }
 
-/// Converts a u8 into a Loaders enum.
-///
-/// # Arguments
-///
-/// * `loader` - A u8 representing a loader.
-///
-/// # Returns
-///
-/// An Option containing the corresponding Loaders enum, or None if the value is invalid.
-pub fn from_u8(loader: u8) -> Option<Loaders> {
-    match loader {
-        0 => Some(Loaders::VANILLA),
-        1 => Some(Loaders::FORGE),
-        2 => Some(Loaders::FABRIC),
-        3 => Some(Loaders::NEOFORGE),
-        4 => Some(Loaders::QUILT),
-        _ => None,
+pub trait FromU8 {
+    fn from_u8(value: u8) -> Option<Self>
+    where
+        Self: Sized;
+}
+
+impl FromU8 for Loaders {
+    fn from_u8(value: u8) -> Option<Self> {
+        match value {
+            0 => Some(Loaders::VANILLA),
+            1 => Some(Loaders::FORGE),
+            2 => Some(Loaders::FABRIC),
+            3 => Some(Loaders::NEOFORGE),
+            4 => Some(Loaders::QUILT),
+            _ => None,
+        }
+    }
+}
+
+pub trait AsU8 {
+    fn as_u8(&self) -> u8;
+}
+
+impl AsU8 for Loaders {
+    fn as_u8(&self) -> u8 {
+        match self {
+            Loaders::VANILLA => 0,
+            Loaders::FORGE => 1,
+            Loaders::FABRIC => 2,
+            Loaders::NEOFORGE => 3,
+            Loaders::QUILT => 4,
+        }
     }
 }
 
