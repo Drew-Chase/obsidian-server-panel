@@ -27,6 +27,8 @@ import {AuthProvider} from "./assets/providers/AuthProvider.tsx";
 import {Toaster} from "sonner";
 import React from "react";
 import {ScreenSizeProvider} from "./assets/providers/ScreenSizeProvider.tsx";
+import {SelectedServerProvider} from "./assets/providers/SelectedServerProvider.tsx";
+import {AlertModalProvider} from "./assets/providers/AlertModalProvider.tsx";
 
 export const setTitle = (title: string) =>
 {
@@ -37,11 +39,15 @@ export const setTitle = (title: string) =>
 ReactDOM.createRoot($("#root")[0]!).render(
     <React.StrictMode>
         <BrowserRouter>
-            <ScreenSizeProvider>
-                <AuthProvider>
-                    <MainContentRenderer/>
-                </AuthProvider>
-            </ScreenSizeProvider>
+            <AlertModalProvider>
+                <ScreenSizeProvider>
+                    <AuthProvider>
+                        <SelectedServerProvider>
+                            <MainContentRenderer/>
+                        </SelectedServerProvider>
+                    </AuthProvider>
+                </ScreenSizeProvider>
+            </AlertModalProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
