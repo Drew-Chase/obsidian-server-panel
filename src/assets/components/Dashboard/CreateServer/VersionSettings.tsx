@@ -5,12 +5,24 @@ import {useEffect, useState} from "react";
 import MinecraftVersions, {MinecraftVersion} from "../../../ts/mincraft-versions.ts";
 import LoaderSettings from "./LoaderSettings.tsx";
 
-export default function VersionSettings()
+interface VersionSettingsProps
+{
+    onVersionChange: (version: string) => void;
+    onLoaderChange: (loader: string, version: string) => void;
+}
+
+export default function VersionSettings(props: VersionSettingsProps)
 {
     const [versions, setVersions] = useState<MinecraftVersion[]>([]);
     const [showSnapshots, setShowSnapshots] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [minecraftVersion, setMinecraftVersion] = useState<string>("");
+
+    useEffect(() =>
+    {
+        props.onVersionChange(minecraftVersion);
+    }, [minecraftVersion]);
+
 
     useEffect(() =>
     {
@@ -55,7 +67,11 @@ export default function VersionSettings()
                 onToggle={setShowSnapshots}
             />
 
-            <LoaderSettings minecraft_version={minecraftVersion} snapshots={showSnapshots}/>
+            <LoaderSettings
+                minecraft_version={minecraftVersion}
+                snapshots={showSnapshots}
+                onLoaderChange={props.onLoaderChange}
+            />
         </>
     );
 }
