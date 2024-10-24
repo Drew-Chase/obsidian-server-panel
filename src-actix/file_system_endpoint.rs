@@ -2,13 +2,13 @@ use actix_multipart::form::{json::Json as MPJson, tempfile::TempFile, MultipartF
 use actix_web::{post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
-use log::{debug, error, info};
+use log::{debug, error};
 use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[post("")]
 pub async fn get_server_files(
