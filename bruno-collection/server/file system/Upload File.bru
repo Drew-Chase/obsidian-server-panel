@@ -11,10 +11,14 @@ post {
 }
 
 params:path {
-  id: 
+  id: B5X0D6oXMgOLYG4b
+}
+
+headers {
+  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JGg1YWcybktjSi5RR0xKTWFrZmhwZU9RczJNTlRwdzBnVDJpeDMxRG1WRjZ4MEZLWU8ydnFlIiwidXNlcm5hbWUiOiJhZG1pbiJ9
 }
 
 body:multipart-form {
-  json: {"directory":"", "filename: ""}
-  file: @file(C:\Workspaces\Web\obsidian-server-panel\.gitignore)
+  json: {"directory":"", "filename: "test.json"};type=application/json
+  file: @file(/home/drewc/Pictures/Gaming/Minecraft/Mods/Warp Mod/logo.jpg)
 }
