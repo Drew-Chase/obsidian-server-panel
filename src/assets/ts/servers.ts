@@ -11,7 +11,7 @@ export enum ServerStatus
     UNKNOWN = "unknown"
 }
 
-export class Server
+export default class Server
 {
     id: string;
     name: string;
@@ -128,6 +128,29 @@ export class Server
             }
         });
         return response.map(Server.fromJson);
+    }
+
+    static async create(name: string, port: number, difficulty: string, gameMode: string, hardcore: boolean, maxPlayers: number, minecraftVersion: string, loader: string, loaderVersion: string): Promise<Server | null>
+    {
+        return $.ajax({
+            url: "/api/server",
+            method: "POST",
+            contentType: "application/json",
+            headers: {
+                "X-Authorization-Token": document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
+            },
+            data: JSON.stringify({
+                name: name,
+                port: port,
+                difficulty: difficulty,
+                gamemode: gameMode,
+                hardcore: hardcore,
+                max_players: maxPlayers,
+                minecraft_version: minecraftVersion,
+                loader: loader,
+                loader_version: loaderVersion
+            })
+        });
     }
 
 }
