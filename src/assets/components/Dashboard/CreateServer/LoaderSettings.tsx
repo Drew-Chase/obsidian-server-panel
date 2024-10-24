@@ -3,17 +3,21 @@ import OAutocomplete from "../../Extends/OAutocomplete.tsx";
 import {useEffect, useState} from "react";
 import {getFabricVersions, getForgeVersions} from "../../../ts/loaders.ts";
 
-export default function LoaderSettings({minecraft_version, snapshots}: { minecraft_version: string, snapshots: boolean })
+
+export default function LoaderSettings({minecraft_version, snapshots, onLoaderChange}: { minecraft_version: string, snapshots: boolean, onLoaderChange: (loader: string, version: string) => void })
 {
 
     const [versions, setVersions] = useState<string[]>([]);
     const [loader, setLoader] = useState<string>("Vanilla");
+    const [loaderVersion, setLoaderVersion] = useState<string>("");
     const [forgeOnly, setForgeOnly] = useState<boolean>(false);
     useEffect(() =>
     {
         switch (loader)
         {
             case "Vanilla":
+                setVersions([]);
+                setLoaderVersion("");
                 break;
             case "Fabric":
                 getFabricVersions().then(setVersions);
@@ -37,18 +41,24 @@ export default function LoaderSettings({minecraft_version, snapshots}: { minecra
 
     }, [minecraft_version, loader]);
 
+    useEffect(() =>
+    {
+        onLoaderChange(loader, loaderVersion);
+    }, [loader, loaderVersion]);
+
 
     return (
         <div>
             <p>Select Loader</p>
             <Tabs onSelectionChange={key => setLoader(key as string)} isDisabled={minecraft_version == ""}>
-                <Tab title={"Vanilla"}></Tab>
+                <Tab title={"Vanilla"} key={"Vanilla"}></Tab>
                 <Tab title={"Fabric"} key={"Fabric"} isDisabled={forgeOnly}>
                     <div className={"flex flex-row w-full gap-4 items-center"}>
                         <OAutocomplete
                             label={"Fabric Loader Version"}
                             placeholder={"Select a Fabric Loader version"}
                             className={"w-full"}
+                            onSelectionChange={(key) => setLoaderVersion(key as string)}
                         >
                             {versions.map((version) => (
                                 <AutocompleteItem key={version}>{version}</AutocompleteItem>
@@ -64,6 +74,7 @@ export default function LoaderSettings({minecraft_version, snapshots}: { minecra
                         label={"Forge Version"}
                         placeholder={"Select a Forge version"}
                         className={"w-full"}
+                        onSelectionChange={(key) => setLoaderVersion(key as string)}
                     >
                         {versions.map((version) => (
                             <AutocompleteItem key={version}>{version}</AutocompleteItem>
@@ -75,6 +86,7 @@ export default function LoaderSettings({minecraft_version, snapshots}: { minecra
                         label={"NeoForge Version"}
                         placeholder={"Select a NeoForge version"}
                         className={"w-full"}
+                        onSelectionChange={(key) => setLoaderVersion(key as string)}
                     >
                         <AutocompleteItem key={"1.20.4"}>1.20.4</AutocompleteItem>
                     </OAutocomplete>
@@ -84,6 +96,7 @@ export default function LoaderSettings({minecraft_version, snapshots}: { minecra
                         label={"Quilt Version"}
                         placeholder={"Select a Quilt version"}
                         className={"w-full"}
+                        onSelectionChange={(key) => setLoaderVersion(key as string)}
                     >
                         <AutocompleteItem key={"1.20.4"}>1.20.4</AutocompleteItem>
                     </OAutocomplete>
