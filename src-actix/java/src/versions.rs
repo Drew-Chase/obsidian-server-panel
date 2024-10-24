@@ -190,6 +190,12 @@ impl JavaVersion {
             .stderr(std::process::Stdio::piped())
             .spawn()?;
 
+        // Create and write the PID to a PID file
+        let pid = command.id().ok_or("Failed to get process ID")?;
+        let pid_file_path = format!("./{}.pid", pid);
+        let mut pid_file = File::create(&pid_file_path)?;
+        writeln!(pid_file, "{}", pid)?;
+
         let stdout = command.stdout.take().ok_or("Failed to capture stdout")?;
         let stderr = command.stderr.take().ok_or("Failed to capture stderr")?;
 
