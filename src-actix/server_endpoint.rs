@@ -1,7 +1,7 @@
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
-use loader_manager::{AsU8, FromU8};
+use loader_manager::supported_loaders::Loader;
 use log::error;
 use minecraft::minecraft_version::download_server_jar;
 use serde::Deserialize;
@@ -78,7 +78,7 @@ struct CreateServerRequest {
     hardcore: bool,
     max_players: u16,
     minecraft_version: String,
-    loader: loader_manager::Loaders,
+    loader: Loader,
     loader_version: Option<String>,
 }
 
@@ -126,7 +126,7 @@ pub async fn create_server(
         // Set the server's loader if provided
         if let Some(loader_version) = &body.loader_version {
             if let Err(e) =
-                server_db::set_loader(server.id, body.loader.as_u8(), loader_version.as_str())
+                server_db::set_loader(server.id, body.loader.to(), loader_version.as_str())
             {
                 error!("{}", e);
                 return HttpResponse::BadRequest().json(json!({"error":e}));
@@ -134,9 +134,9 @@ pub async fn create_server(
         }
 
         let loader_version = body.loader_version.clone();
-        if body.loader != loader_manager::Loaders::VANILLA {
+        if body.loader != Loader::Vanilla {
             let executable = loader_manager::install_loader(
-                body.loader,
+                body.loader.clone(),
                 &body.minecraft_version,
                 &dir,
                 loader_version,
@@ -268,7 +268,7 @@ pub async fn install_loader(
         };
 
         // Install the specified loader if it's not VANILLA
-        let loader = match loader_manager::Loaders::from_str(loader.as_ref().as_str()) {
+        let loader = match Loader::from_str(loader.as_ref().as_str()) {
             Ok(l) => l,
             Err(_) => {
                 let msg = format!("Loader {} not found", loader);
@@ -276,7 +276,7 @@ pub async fn install_loader(
                 return HttpResponse::BadRequest().json(json!({"error":msg}));
             }
         };
-        if loader != loader_manager::Loaders::VANILLA {
+        if loader != Loader::Vanilla {
             let executable = loader_manager::install_loader(
                 loader,
                 &version,
