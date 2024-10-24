@@ -9,3 +9,4 @@ serde_json = "1.0.128"
 log = "0.4.22"
 java = { path = "../java" }
 serde = { version = "1.0.210", features = ["derive"] }
+serde_derive = "1.0.210"
