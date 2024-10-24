@@ -7,7 +7,6 @@ use crate::data::{User, UserRegistration};
 use crate::management::create_user;
 use database::create_appdb_connection;
 use log::{info, warn};
-use sqlite::Connection;
 use std::error::Error;
 
 pub fn initialize() -> Result<(), Box<dyn Error>> {
