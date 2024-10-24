@@ -1,7 +1,4 @@
 use actix_web::dev::Service;
-use std::ops::Deref;
-use std::process::ExitStatus;
-
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -154,7 +151,8 @@ async fn main() -> std::io::Result<()> {
                                     )
                                     .service(
                                         web::scope("files")
-                                            .service(file_system_endpoint::get_server_files),
+                                            .service(file_system_endpoint::get_server_files)
+                                            .service(file_system_endpoint::upload_file_to_server),
                                     )
                                     .service(server_endpoint::get_server_by_id)
                                     .service(
