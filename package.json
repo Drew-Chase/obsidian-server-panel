@@ -16,8 +16,6 @@
 		"build": "npm run build-frontend && npm run build-api"
 	},
 	"dependencies": {
-		"@ffmpeg/ffmpeg": "^0.12.10",
-		"@ffmpeg/util": "^0.12.1",
 		"@fortawesome/fontawesome-free": "^6.6.0",
 		"@fortawesome/fontawesome-svg-core": "^6.6.0",
 		"@fortawesome/free-brands-svg-icons": "^6.6.0",
@@ -31,7 +29,6 @@
 		"react": "^18.3.1",
 		"react-cropper": "^2.3.3",
 		"react-dom": "^18.3.1",
-		"react-image-file-resizer": "^0.4.8",
 		"react-router-dom": "^6.26.2",
 		"react-syntax-highlighter": "^15.5.0",
 		"recharts": "^2.12.7",
