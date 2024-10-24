@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import OInput from "../components/Extends/OInput.tsx";
 import OSelect from "../components/Extends/OSelect.tsx";
 
-export default function DiscoverModpacks()
+export default function DiscoverInstances()
 {
     const [instances, setInstances] = useState<Instance[]>([]);
     const [search, setSearch] = useState<string>("");
@@ -39,7 +39,7 @@ export default function DiscoverModpacks()
         <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
             <div className={"flex flex-col"}>
                 <div className={"flex flex-row items-center gap-4"}>
-                    <h2 className={"text-2xl font-semibold text-nowrap"}>Discover Modpacks</h2>
+                    <h2 className={"text-2xl font-semibold text-nowrap"}>Discover Instances</h2>
                     <div className={"-mb-4 flex flex-row items-center gap-4 w-full"}>
                         <OInput
                             label={"Search"}
@@ -81,7 +81,7 @@ export default function DiscoverModpacks()
                         </Tooltip>
                     </div>
                 </div>
-                <div className={"flex flex-col gap-4 mt-4 rounded-lg bg-neutral-800 p-4 overflow-y-auto max-h-[calc(100dvh_-_200px)] h-screen"}>
+                <div className={"flex flex-col gap-4 mt-4 rounded-lg bg-neutral-800 p-4 overflow-y-auto max-h-[calc(100dvh_-_270px)] h-screen"}>
                     {loading ? <Spinner color={"primary"} className={"mx-auto"}/> : (
                         <Listbox
                             aria-label="Discover Modpacks List"
