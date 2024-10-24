@@ -1,4 +1,4 @@
-use crate::modpacks::{BrowseOptions, Modpack, ModpackSearchResults};
+use crate::modpacks::{Modpack, ModpackSearchResults};
 use crate::Platform;
 use serde::{Deserialize, Serialize};
 
@@ -64,7 +64,6 @@ impl ATLauncherPackItem {
             .first()
             .map(|v| v.published)
             .unwrap_or_default();
-       
 
         let latest_published = chrono::DateTime::from_timestamp(latest_published, 0);
 
