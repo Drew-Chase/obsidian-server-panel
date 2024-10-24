@@ -1,6 +1,5 @@
 use actix_web::{delete, get, web, Error, HttpRequest, HttpResponse, Responder};
 use actix_web_lab::sse;
-use futures_util::FutureExt;
 use java::versions::JavaVersion;
 use log::error;
 use serde_json::json;
