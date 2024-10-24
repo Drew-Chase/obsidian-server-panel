@@ -1,6 +1,7 @@
-use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
+use loader_manager::{AsU8, FromU8};
 use log::error;
 use serde::Deserialize;
 use serde_json::json;
@@ -9,6 +10,7 @@ use servers::properties::Properties;
 use servers::server_db;
 use servers::server_db::{BasicHashedServer, HashedServer, Server};
 use std::path::Path;
+use std::str::FromStr;
 
 /// Retrieves servers owned by the authenticated user
 #[get("")]
@@ -75,7 +77,7 @@ struct CreateServerRequest {
     hardcore: bool,
     max_players: u16,
     minecraft_version: String,
-    loader: u8,
+    loader: loader_manager::Loaders,
     loader_version: Option<String>,
 }
 
@@ -122,20 +124,18 @@ pub async fn create_server(
 
         // Set the server's loader if provided
         if let Some(loader_version) = &body.loader_version {
-            if let Err(e) = server_db::set_loader(server.id, body.loader, loader_version.as_str()) {
+            if let Err(e) =
+                server_db::set_loader(server.id, body.loader.as_u8(), loader_version.as_str())
+            {
                 error!("{}", e);
                 return HttpResponse::BadRequest().json(json!({"error":e}));
             }
         }
 
-        // Install the server loader if it's not VANILLA
-        let loader = loader_manager::from_u8(body.loader)
-            .ok_or("Invalid loader")
-            .unwrap();
         let loader_version = body.loader_version.clone();
-        if loader != loader_manager::Loaders::VANILLA {
+        if body.loader != loader_manager::Loaders::VANILLA {
             let executable = loader_manager::install_loader(
-                loader,
+                body.loader,
                 &body.minecraft_version,
                 &dir,
                 loader_version,
@@ -183,12 +183,56 @@ pub async fn create_server(
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
+/// Deletes a server by its ID, ensuring the server is owned by the authenticated user
+#[delete("")]
+pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> impl Responder {
+    // Check if a user is authenticated from the request extensions
+    if let Some(user) = req.extensions().get::<User>() {
+        // Decode the given ID
+        let id_number: u32 = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0] as u32,
+            Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        };
+
+        // Fetch the server by the ID and user's ID
+        let server = match server_db::get_owned_server_by_id(id_number, user.id) {
+            Some(s) => s,
+            None => {
+                let msg = format!("Server with id: {} not found", id_number);
+                error!("{}", msg);
+                return HttpResponse::BadRequest().json(json!({"error":msg}));
+            }
+        };
+
+        match std::fs::remove_dir_all(server.directory.clone().unwrap()) {
+            Ok(_) => (),
+            Err(e) => {
+                error!("{}", e);
+                return HttpResponse::BadRequest()
+                    .json(json!({"error":"Failed to delete server directory"}));
+            }
+        }
+
+        // Delete the server directory
+        if let Err(e) = server_db::delete_server(server.id) {
+            error!("{}", e);
+            return HttpResponse::BadRequest().json(json!({"error":e}));
+        }
+
+        // Return the deleted server details as JSON response
+        return HttpResponse::Ok().json(HashedServer::from_server(server));
+    }
+
+    // Return Unauthorized if the user is not authenticated
+    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+}
+
 /// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
 pub async fn install_loader(
     id: web::Path<String>,
     version: web::Path<String>,
-    loader: web::Path<u8>,
+    loader: web::Path<String>,
     loader_version: web::Path<String>,
     req: HttpRequest,
 ) -> impl Responder {
@@ -211,9 +255,14 @@ pub async fn install_loader(
         };
 
         // Install the specified loader if it's not VANILLA
-        let loader = loader_manager::from_u8(*loader)
-            .ok_or("Invalid loader")
-            .unwrap();
+        let loader = match loader_manager::Loaders::from_str(loader.as_ref().as_str()) {
+            Ok(l) => l,
+            Err(_) => {
+                let msg = format!("Loader {} not found", loader);
+                error!("{}", msg);
+                return HttpResponse::BadRequest().json(json!({"error":msg}));
+            }
+        };
         if loader != loader_manager::Loaders::VANILLA {
             let executable = loader_manager::install_loader(
                 loader,
