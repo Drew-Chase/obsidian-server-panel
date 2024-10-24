@@ -3,6 +3,7 @@ use authentication::data::User;
 use crypto::hashids::decode;
 use loader_manager::{AsU8, FromU8};
 use log::error;
+use minecraft::minecraft_version::download_server_jar;
 use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server::create_server_directory;
@@ -144,6 +145,18 @@ pub async fn create_server(
             .unwrap();
             // Set the server executable in the database
             if let Err(e) = server_db::set_server_executable(server.id, &executable) {
+                error!("{}", e);
+                return HttpResponse::BadRequest().json(json!({"error":e}));
+            }
+        } else {
+            let path = match download_server_jar(&body.minecraft_version, &dir).await {
+                Ok(p) => p,
+                Err(e) => {
+                    error!("{}", e);
+                    return HttpResponse::BadRequest().json(json!({"error":e.to_string()}));
+                }
+            };
+            if let Err(e) = server_db::set_server_executable(server.id, path.to_str().unwrap()) {
                 error!("{}", e);
                 return HttpResponse::BadRequest().json(json!({"error":e}));
             }
