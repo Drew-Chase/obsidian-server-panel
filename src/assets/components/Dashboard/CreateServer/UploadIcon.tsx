@@ -1,12 +1,12 @@
 import {Button, Divider, Image} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUpload} from "@fortawesome/free-solid-svg-icons";
-import Resizer from "react-image-file-resizer";
 import $ from "jquery";
 import ImageCropModal from "./ImageCropModal.tsx";
 import {useState} from "react";
+import {resizeImage} from "../../../ts/image-resizer.ts";
 
-export default function UploadIcon()
+export default function UploadIcon({onUpload}: { onUpload: (file: File) => void })
 {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [file, setFile] = useState<File | null>(null);
@@ -33,35 +33,28 @@ export default function UploadIcon()
         setIsOpen(true);
     };
 
-    const resizeFile = (file: File): Promise<File> =>
+    const resizeFile = (file: File): Promise<File | null> =>
         new Promise((resolve) =>
         {
-            Resizer.imageFileResizer(
-                file,
-                64,
-                64,
-                "PNG",
-                100,
-                0,
-                (uri) =>
-                {
-                    resolve(uri as File);
-                },
-                "file"
-            );
+            resizeImage(file, 64, 64).then(resolve).catch(e =>
+            {
+                console.error(e);
+            });
         });
-
-    const handleFileUpload = async (file: File) =>
-    {
-        const result: File = await resizeFile(file);
-        setFile(result);
-    };
 
     return (
         <div className={"outline-2 outline-dotted outline-primary w-full min-h-[300px] rounded-2xl flex flex-row p-4 gap-8 items-center justify-center shadow-inner"}>
             <ImageCropModal image={file} isOpen={isOpen} onClose={file =>
             {
-                if (file) resizeFile(file).then(handleFileUpload);
+                if (file) resizeFile(file)
+                    .then(file =>
+                    {
+                        if (!file) return;
+                        setFile(file);
+                        setFile(file);
+                        setIsOpen(false);
+                        onUpload(file);
+                    });
                 setFile(file);
                 setIsOpen(false);
             }}/>
