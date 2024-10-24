@@ -1,7 +1,5 @@
 use java::versions::JavaVersion;
-use log::{debug, info};
-use std::fmt::format;
-use std::io;
+use log::debug;
 use std::io::Write;
 use std::path::Path;
 
