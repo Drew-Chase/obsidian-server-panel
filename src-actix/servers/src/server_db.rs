@@ -25,6 +25,9 @@ pub struct Server {
     pub directory: Option<String>,
     pub created_at: String,
     pub updated_at: String,
+    pub status: Option<String>,
+    #[serde(skip)]
+    pub pid: Option<u32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -45,6 +48,8 @@ pub struct HashedServer {
     pub loader: u8,
     pub loader_version: Option<String>,
     pub directory: Option<String>,
+    pub status: Option<String>,
+    pub pid: Option<u32>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -55,6 +60,7 @@ pub struct BasicHashedServer {
     pub name: String,
     pub owner: String,
     pub members: Vec<String>,
+    pub status: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -95,6 +101,8 @@ impl HashedServer {
             loader: server.loader,
             loader_version: server.loader_version,
             directory: server.directory,
+            status: server.status,
+            pid: server.pid,
             created_at: server.created_at,
             updated_at: server.updated_at,
         }
@@ -112,6 +120,7 @@ impl BasicHashedServer {
                 .iter()
                 .map(|m| encode(&[*m as u64]))
                 .collect(),
+            status: server.status,
             created_at: server.created_at,
             updated_at: server.updated_at,
         }
@@ -122,6 +131,7 @@ impl BasicHashedServer {
             name: server.name,
             owner: server.owner,
             members: server.members,
+            status: server.status,
             created_at: server.created_at,
             updated_at: server.updated_at,
         }
@@ -165,7 +175,9 @@ pub fn initialize() {
 			minecraft_version TEXT DEFAULT NULL,
 			loader INTEGER DEFAULT 0,
 			loader_version TEXT DEFAULT NULL,
-			directory TEXT DEFAULT NULL,
+			directory TEXT DEFAULT NULL,,
+            status TEXT DEFAULT NULL,
+            pid INTEGER DEFAULT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)
@@ -383,6 +395,14 @@ fn get_server_from_statement(statement: &Statement) -> Result<Server, String> {
         updated_at: statement
             .read::<String, _>("updated_at")
             .map_err(|e| format!("Failed to read 'updated_at': {}", e))?,
+        status: statement
+            .read::<Option<String>, _>("status")
+            .map_err(|e| format!("Failed to read 'status': {}", e))?,
+        pid: statement
+            .read::<Option<i64>, _>("pid")
+            .map_err(|e| format!("Failed to read 'pid': {}", e))
+            .ok()
+            .map(|v| v.unwrap() as u32),
     })
 }
 
