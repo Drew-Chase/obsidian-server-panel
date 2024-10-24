@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 const CURSEFORGE_API_KEY: &str = r#"$2a$10$qD2UJdpHaeDaQyGGaGS0QeoDnKq2EC7sX6YSjOxYHtDZSQRg04BCG"#;
 
 #[derive(Serialize, Deserialize)]
-struct Pagination {
+pub struct Pagination {
     pub index: i64,
     #[serde(rename = "pageSize")]
     pub page_size: i64,
@@ -16,7 +16,7 @@ struct Pagination {
 }
 
 #[derive(Serialize, Deserialize)]
-struct FileIndex {
+pub struct FileIndex {
     #[serde(rename = "gameVersion")]
     pub game_version: String,
     #[serde(rename = "fileId")]
@@ -31,13 +31,13 @@ struct FileIndex {
 }
 
 #[derive(Serialize, Deserialize)]
-struct ExtraFile {
+pub struct ExtraFile {
     pub name: String,
     pub fingerprint: i64,
 }
 
 #[derive(Serialize, Deserialize)]
-struct GameVersion {
+pub struct GameVersion {
     #[serde(rename = "gameVersionName")]
     pub game_version_name: String,
     #[serde(rename = "gameVersionPadded")]
@@ -51,13 +51,13 @@ struct GameVersion {
 }
 
 #[derive(Serialize, Deserialize)]
-struct FileHash {
+pub struct FileHash {
     pub value: String,
     pub algo: i64,
 }
 
 #[derive(Serialize, Deserialize)]
-struct FileItem {
+pub struct FileItem {
     pub id: i64,
     #[serde(rename = "gameId")]
     pub game_id: i64,
@@ -96,7 +96,7 @@ struct FileItem {
 }
 
 #[derive(Serialize, Deserialize)]
-struct ImageItem {
+pub struct ImageItem {
     pub id: i64,
     #[serde(rename = "modId")]
     pub mod_id: i64,
@@ -108,7 +108,7 @@ struct ImageItem {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Authors {
+pub struct Authors {
     pub id: i64,
     pub name: String,
     pub url: String,
@@ -117,7 +117,7 @@ struct Authors {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Categories {
+pub struct Categories {
     pub id: i64,
     #[serde(rename = "gameId")]
     pub game_id: i64,
@@ -137,7 +137,7 @@ struct Categories {
 }
 
 #[derive(Serialize, Deserialize)]
-struct Links {
+pub struct Links {
     #[serde(rename = "websiteUrl")]
     pub website_url: Option<String>,
     #[serde(rename = "wikiUrl")]
@@ -149,7 +149,7 @@ struct Links {
 }
 
 #[derive(Serialize, Deserialize)]
-struct CurseForgePackItem {
+pub struct CurseForgePackItem {
     pub id: i64,
     #[serde(rename = "gameId")]
     pub game_id: i64,
@@ -224,10 +224,7 @@ impl CurseForgePackSearchResults {
                     &line[start..end]
                 })
                 .unwrap_or("");
-            let error_message = format!(
-                "JSON parsing error: {}. Response text: {}",
-                e, part
-            );
+            let error_message = format!("JSON parsing error: {}. Response text: {}", e, part);
             Box::<dyn std::error::Error>::from(error_message)
         })?;
         Ok(parsed_response)
