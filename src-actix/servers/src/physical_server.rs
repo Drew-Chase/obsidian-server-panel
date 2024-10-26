@@ -18,6 +18,12 @@ pub struct FileSystemEntry {
     pub last_modified: SystemTime,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FileSystemEntries {
+    pub parent: Option<String>,
+    pub entries: Vec<FileSystemEntry>,
+}
+
 fn clean_file_path_string(name: &str) -> String {
     let clean = name
         .trim()
@@ -104,7 +110,7 @@ pub fn get_server_filesystem_entries(
 ) -> Vec<FileSystemEntry> {
     let mut entries: Vec<FileSystemEntry> = vec![];
 
-    if let Some(dir_iter) = get_server_directory_iterator(id, owner, sub_path) {
+    if let Some(dir_iter) = get_server_directory_iterator(id, owner, sub_path.clone()) {
         for file in dir_iter {
             let file = match file {
                 Ok(f) => f,
@@ -129,12 +135,8 @@ pub fn get_server_filesystem_entries(
                 path: file.path(),
                 is_dir: metadata.is_dir(),
                 size: metadata.len(),
-                created: metadata
-                    .created()
-                    .unwrap_or_else(|_| SystemTime::UNIX_EPOCH),
-                last_modified: metadata
-                    .modified()
-                    .unwrap_or_else(|_| SystemTime::UNIX_EPOCH),
+                created: metadata.created().unwrap_or(SystemTime::UNIX_EPOCH),
+                last_modified: metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH),
                 r#type: get_file_type(
                     file.path()
                         .extension()
@@ -146,7 +148,6 @@ pub fn get_server_filesystem_entries(
             });
         }
     }
-
     entries
 }
 fn get_server_directory_iterator(
