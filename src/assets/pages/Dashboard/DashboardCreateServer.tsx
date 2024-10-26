@@ -46,7 +46,7 @@ export default function DashboardCreateServer()
         try
         {
 
-            const newlyCreatedServer = await Server.create(serverName, +serverPort, serverDifficulty, serverGamemode, hardcoreMode, serverMaxPlayers, minecraftVersion, loader.toUpperCase(), loaderVersion);
+            const newlyCreatedServer = await Server.create(serverName, +serverPort, serverDifficulty, serverGamemode, hardcoreMode, serverMaxPlayers, minecraftVersion, loader, loaderVersion);
             if (newlyCreatedServer)
             {
                 console.log("Server created successfully!");
@@ -74,7 +74,7 @@ export default function DashboardCreateServer()
     };
 
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[calc(100dvh_-_60px)] h-dvh overflow-y-auto gap-4"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[calc(100dvh_-_130px)] h-dvh overflow-y-auto gap-4"}>
             <p className={"text-lg font-semibold"}>Create Server</p>
             <UploadIcon onUpload={setServerIcon}/>
             <ServerInfo
