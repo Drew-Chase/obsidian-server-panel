@@ -1,8 +1,8 @@
 import {Button, Listbox, ListboxItem, ScrollShadow, Spinner, Tooltip} from "@nextui-org/react";
-import ExtendedSwitch from "../Extends/ExtendedSwitch.tsx";
-import DownloadFile from "../../images/DownloadFile.svg.tsx";
+import ExtendedSwitch from "../../Extends/ExtendedSwitch.tsx";
+import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {useEffect, useState} from "react";
-import MinecraftVersions, {MinecraftVersion} from "../../ts/mincraft-versions.ts";
+import MinecraftVersions, {MinecraftVersion} from "../../../ts/mincraft-versions.ts";
 
 export default function MinecraftVersionsList()
 {
