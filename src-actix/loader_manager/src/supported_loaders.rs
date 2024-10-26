@@ -1,3 +1,4 @@
+use log::info;
 use serde_derive::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -48,6 +49,22 @@ impl Loader {
             Loader::NeoForge => 4,
             Loader::Spigot => 5,
             Loader::Paper => 6,
+        }
+    }
+    pub fn supported_by_minecraft_version(&self, version: &str, snapshot: bool) -> bool {
+        let major_version = match version.split('.').skip(1).take(1).next() {
+            Some(v) => v.parse::<u8>().unwrap_or(0),
+            None => return false,
+        };
+        info!("Major version: {}", major_version);
+        match self {
+            Loader::Fabric => major_version >= 14,
+            Loader::Forge => !snapshot,
+            Loader::Quilt => major_version >= 16,
+            Loader::NeoForge => major_version >= 16 && !snapshot,
+            Loader::Spigot => major_version >= 5 && !snapshot,
+            Loader::Paper => major_version >= 8 && !snapshot,
+            _ => true,
         }
     }
 }
