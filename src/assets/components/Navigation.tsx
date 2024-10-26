@@ -1,22 +1,30 @@
 import {Navbar, NavbarContent, NavbarItem} from "@nextui-org/navbar";
-import {Accordion, AccordionItem, cn, Link} from "@nextui-org/react";
+import {Accordion, AccordionItem, Avatar, cn, Link, Tooltip} from "@nextui-org/react";
 import Home from "../images/Home.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faChevronRight, faFileLines} from "@fortawesome/free-solid-svg-icons";
+import {faChevronRight} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useAuth} from "../providers/AuthProvider.tsx";
 import {useSelectedServer} from "../providers/SelectedServerProvider.tsx";
+import {useEffect, useState} from "react";
 
 export default function Navigation()
 {
     const navigate = useNavigate();
     const {pathname} = useLocation();
     const {isLoggedIn} = useAuth();
-    const {selectedServerId} = useSelectedServer();
+    const {selectedServerId, server} = useSelectedServer();
     const shouldRender = typeof window !== "undefined" && window.location.pathname.startsWith("/app") && isLoggedIn;
     const indicator = (<FontAwesomeIcon className={"ml-auto text-neutral-400"} icon={faChevronRight} width={6} height={6}/>);
     const sections = ["server", "discover", "users", "files", "settings", "profile"];
-    const section = sections.find((s) => pathname.startsWith(`/app/${s}/`)) || "";
+    const section = () => sections.find((s) => pathname.startsWith(`/app/${s}/`)) || "";
+    const [selected, setSelected] = useState(section);
+
+    useEffect(() =>
+    {
+        setSelected(section);
+
+    }, [pathname]);
 
     if (!shouldRender)
     {
@@ -43,6 +51,7 @@ export default function Navigation()
             >
 
                 <NavbarContent className={"flex flex-col items-start w-full h-auto gap-8"}>
+                    {/* @ts-ignore  */}
                     <Accordion
                         itemClasses={{
                             title: "data-[open=true]:text-primary",
@@ -53,6 +62,7 @@ export default function Navigation()
                         onSelectionChange={(selected) =>
                         {
                             const keys = [...selected];
+                            setSelected(keys[0] as string);
                             if (keys && keys.length > 0)
                             {
                                 navigate(`/app/${keys[0]}/`.replace(/\/\//g, "/"));
@@ -60,7 +70,7 @@ export default function Navigation()
                         }}
                         disallowEmptySelection
                         selectionMode={"single"}
-                        defaultExpandedKeys={[section]}
+                        selectedKeys={[selected]}
                     >
                         <AccordionItem key={""} startContent={<Home/>} title={"Dashboard"} indicator={indicator} aria-label="Dashboard">
                             <NavbarItem key={"overview"} as={Link} href={"/app/"} isActive={pathname === "/app/"} aria-label="Overview">Overview</NavbarItem>
@@ -69,15 +79,26 @@ export default function Navigation()
                             <NavbarItem key={"discover-all"} as={Link} href={"/app/instances/discover/"} isActive={pathname === "/app/instances/discover/"} aria-label="Instances">Discover</NavbarItem>
                             <NavbarItem key={"create-server"} as={Link} href={"/app/create-server/"} isActive={pathname === "/app/create-server/"} aria-label="Create Server">Create Server</NavbarItem>
                         </AccordionItem>
-                        <AccordionItem key={"server"} startContent={<FontAwesomeIcon icon={faFileLines}/>} title={"SMP Server"} indicator={indicator} aria-label="SMP Server" hidden={!selectedServerId}>
-                            <NavbarItem key={"server-profile"} as={Link} href={"/app/server/"} isActive={pathname === "/app/server/"} aria-label="Details">Details</NavbarItem>
-                            <NavbarItem key={"server-properties"} as={Link} href={"/app/server/properties/"} isActive={pathname === "/app/server/properties/"} aria-label="Properties">Properties</NavbarItem>
-                            <NavbarItem key={"server-mods"} as={Link} href={"/app/server/mods/"} isActive={pathname === "/app/server/mods/"} aria-label="Mods">Mods</NavbarItem>
-                            <NavbarItem key={"server-files"} as={Link} href={"/app/server/files/"} isActive={pathname === "/app/server/files/"} aria-label="Files">Files</NavbarItem>
-                            <NavbarItem key={"server-backups"} as={Link} href={"/app/server/backups/"} isActive={pathname === "/app/server/backups/"} aria-label="Backups">Backups</NavbarItem>
-                            <NavbarItem key={"server-console"} as={Link} href={"/app/server/console/"} isActive={pathname === "/app/server/console/"} aria-label="Console">Console</NavbarItem>
-                            <NavbarItem key={"server-players"} as={Link} href={"/app/server/players/"} isActive={pathname === "/app/server/players/"} aria-label="Players">Players</NavbarItem>
-                        </AccordionItem>
+                        {server &&
+                            <AccordionItem
+                                key={"server"}
+                                startContent={<Avatar src={`/api/server/${selectedServerId}/icon`}/>}
+                                title={server.name.length > 12 ? <Tooltip content={server.name}><span className={"truncate max-w-[120px]"}>{server.name}</span></Tooltip> : server.name}
+                                indicator={indicator}
+                                aria-label={server.name}
+                                classNames={{
+                                    title: "truncate max-w-[120px]"
+                                }}
+                                hidden={!selectedServerId}>
+                                <NavbarItem key={"server-profile"} as={Link} href={"/app/server/"} isActive={pathname === "/app/server/"} aria-label="Details">Details</NavbarItem>
+                                <NavbarItem key={"server-properties"} as={Link} href={"/app/server/properties/"} isActive={pathname === "/app/server/properties/"} aria-label="Properties">Properties</NavbarItem>
+                                <NavbarItem key={"server-mods"} as={Link} href={"/app/server/mods/"} isActive={pathname === "/app/server/mods/"} aria-label="Mods">Mods</NavbarItem>
+                                <NavbarItem key={"server-files"} as={Link} href={"/app/server/files/"} isActive={pathname === "/app/server/files/"} aria-label="Files">Files</NavbarItem>
+                                <NavbarItem key={"server-backups"} as={Link} href={"/app/server/backups/"} isActive={pathname === "/app/server/backups/"} aria-label="Backups">Backups</NavbarItem>
+                                <NavbarItem key={"server-console"} as={Link} href={"/app/server/console/"} isActive={pathname === "/app/server/console/"} aria-label="Console">Console</NavbarItem>
+                                <NavbarItem key={"server-players"} as={Link} href={"/app/server/players/"} isActive={pathname === "/app/server/players/"} aria-label="Players">Players</NavbarItem>
+                            </AccordionItem>
+                        }
                     </Accordion>
                 </NavbarContent>
             </Navbar>
