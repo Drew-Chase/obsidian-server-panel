@@ -1,7 +1,7 @@
 import {cn, SelectItem} from "@nextui-org/react";
-import DurationInput, {Duration} from "../Extends/DurationInput.tsx";
+import DurationInput, {Duration} from "../../Extends/DurationInput.tsx";
 import {useState} from "react";
-import OSelect from "../Extends/OSelect.tsx";
+import OSelect from "../../Extends/OSelect.tsx";
 
 
 export default function BackupIntervalSelector()
