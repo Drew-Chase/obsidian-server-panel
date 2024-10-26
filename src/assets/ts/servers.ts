@@ -1,14 +1,12 @@
 import $ from "jquery";
+import FileSystem, {FileItem} from "./file-system.ts";
 
 export enum ServerStatus
 {
-    OFFLINE = "offline",
-    ONLINE = "online",
-    STARTING = "starting",
-    STOPPING = "stopping",
-    RESTARTING = "restarting",
-    CRASHING = "crashing",
-    UNKNOWN = "unknown"
+    Running = "Running",
+    Offline = "Offline",
+    Restarting = "Restarting",
+    Crashed = "Crashed",
 }
 
 export default class Server
@@ -31,7 +29,7 @@ export default class Server
     loader: number;
     loader_version: string | null;
     directory: string | null;
-    status: ServerStatus = ServerStatus.UNKNOWN;
+    status: ServerStatus = ServerStatus.Offline;
     uptime: number = 0;
 
     constructor(
@@ -40,7 +38,7 @@ export default class Server
         auto_start: boolean = false, min_ram: number = 0, max_ram: number = 0, executable: string | null = null,
         minecraft_arguments: string | null = null, java_arguments: string | null = null, minecraft_version: string | null = null,
         loader: number = 0, loader_version: string | null = null, directory: string | null = null,
-        status: ServerStatus = ServerStatus.UNKNOWN, uptime: number = 0
+        status: ServerStatus = ServerStatus.Offline, uptime: number = 0
     )
     {
         this.id = id;
@@ -86,7 +84,7 @@ export default class Server
             json.loader ?? 0,
             json.loader_version ?? null,
             json.directory ?? null,
-            json.status ?? ServerStatus.UNKNOWN,
+            json.status ?? ServerStatus.Offline,
             json.uptime ?? 0
         );
     }
@@ -152,5 +150,23 @@ export default class Server
             })
         });
     }
+
+    static async get(id: string): Promise<Server | null>
+    {
+        return $.ajax({
+            url: `/api/server/${id}`,
+            method: "GET",
+            dataType: "json",
+            headers: {
+                "X-Authorization-Token": document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
+            }
+        });
+    }
+
+    async files(directory: string = ""): Promise<FileItem[]>
+    {
+        return new FileSystem(this.id).files(directory);
+    }
+
 
 }
