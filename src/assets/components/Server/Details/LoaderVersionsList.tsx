@@ -1,5 +1,5 @@
 import {Button, Listbox, ListboxItem, ScrollShadow, Tooltip} from "@nextui-org/react";
-import DownloadFile from "../../images/DownloadFile.svg.tsx";
+import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 
 export default function LoaderVersionsList()
 {
