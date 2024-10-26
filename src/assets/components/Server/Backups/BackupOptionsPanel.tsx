@@ -1,7 +1,7 @@
 import {SelectItem, Slider} from "@nextui-org/react";
-import ExtendedSwitch from "../Extends/ExtendedSwitch.tsx";
+import ExtendedSwitch from "../../Extends/ExtendedSwitch.tsx";
 import BackupIntervalSelector from "./BackupIntervalSelector.tsx";
-import OSelect from "../Extends/OSelect.tsx";
+import OSelect from "../../Extends/OSelect.tsx";
 
 export default function BackupOptionsPanel()
 {
