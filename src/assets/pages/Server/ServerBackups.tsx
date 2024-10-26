@@ -1,5 +1,5 @@
 import ExtendedBackupsList from "../../components/Server/ExtendedBackupsList.tsx";
-import BackupOptionsPanel from "../../components/Server/BackupOptionsPanel.tsx";
+import BackupOptionsPanel from "../../components/Server/Backups/BackupOptionsPanel.tsx";
 import {setTitle} from "../../../main.tsx";
 
 export default function ServerBackups()
