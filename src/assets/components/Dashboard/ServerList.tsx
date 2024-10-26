@@ -1,15 +1,26 @@
 import {Avatar, Button, Chip, cn, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCalendar, faCheckCircle, faCheckSquare, faCircle, faClock, faEllipsis, faLayerGroup, faPlay, faPlus, faStop, faUser} from "@fortawesome/free-solid-svg-icons";
-import testIcon from "../../images/demo/test-server.png";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 import {useScreenSize} from "../../providers/ScreenSizeProvider.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import Server, {ServerStatus} from "../../ts/servers.ts";
+import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 
 export default function ServerList()
 {
     const {width} = useScreenSize();
     const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [servers, setServers] = useState<Server[]>([]);
+
+    const {setSelectedServerId} = useSelectedServer();
+
+    useEffect(() =>
+    {
+        Server.list().then(setServers);
+    }, []);
+
+
     return (
         <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 h-[calc(100dvh_-_330px)] min-h-[300px] overflow-y-auto grow relative"}>
             <div className={"flex flex-row w-full items-center"}>
@@ -70,22 +81,22 @@ export default function ServerList()
                     <TableColumn className={"w-0"} aria-label="Actions">Actions</TableColumn>
                 </TableHeader>
                 <TableBody>
-                    {Array.from({length: 20}).map((_, index) =>
+                    {servers.map((server, index) =>
                     {
-                        const random = Math.floor(Math.random() * 3);
-                        const statusName = random === 0 ? "Online" : random === 1 ? "Offline" : "Restarting";
-                        const isRunning = random === 0;
-                        const statusColor = random === 0 ? "success" : random === 1 ? "danger" : "warning";
+                        const isRunning = server.status === ServerStatus.Running;
+                        const statusColor = server.status === ServerStatus.Running ? "success" : server.status === ServerStatus.Crashed || server.status === ServerStatus.Offline ? "danger" : "default";
                         return (
                             <TableRow key={index} className={"flex-nowrap"}>
                                 <TableCell>
-                                    <div className={"flex flex-row items-center gap-2"}><Avatar src={testIcon}/> SMP Server</div>
+                                    <Link href={"/app/server/"} onPressStart={() => setSelectedServerId(server.id)}>
+                                        <div className={"flex flex-row items-center gap-2"}><Avatar src={`/api/server/${server.id}/icon`}/> {server.name}</div>
+                                    </Link>
                                 </TableCell>
-                                <TableCell hidden={width < 1120}>Drew Chase</TableCell>
-                                <TableCell hidden={width < 1500}>Jan 27, 2024</TableCell>
+                                <TableCell hidden={width < 1120}>{server.owner}</TableCell>
+                                <TableCell hidden={width < 1500}>{server.created_at.toDateString()}</TableCell>
                                 <TableCell hidden={width < 1300}>1y 6m 24d 14h 30m</TableCell>
-                                <TableCell hidden={width < 1000}><Link className={"max-w-[120px] truncate"}>All the Mods 6</Link></TableCell>
-                                <TableCell><Chip color={statusColor} variant={"flat"}> <FontAwesomeIcon icon={faCircle} width={5}/> {statusName}</Chip></TableCell>
+                                <TableCell hidden={width < 1000}>{server.instance ? <Link className={"max-w-[120px] truncate"}>{server.instance}</Link> : "Custom"}</TableCell>
+                                <TableCell><Chip color={statusColor} variant={"flat"}> <FontAwesomeIcon icon={faCircle} width={5}/> {server.status}</Chip></TableCell>
                                 <TableCell>
                                     {(width < 900) ?
                                         (
@@ -100,7 +111,7 @@ export default function ServerList()
                                         ) : (
                                             <div className={"flex flex-row items-center"}>
                                                 <Tooltip content={"Select Server"}>
-                                                    <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <FontAwesomeIcon icon={faCheckCircle}/> </Button>
+                                                    <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} onClick={() => setSelectedServerId(server.id)}> <FontAwesomeIcon icon={faCheckCircle}/> </Button>
                                                 </Tooltip>
                                                 <Tooltip content={`${isRunning ? "Start" : "Stop"} the Server`} color={isRunning ? "default" : "danger"}>
                                                     <Button variant={"light"} className={cn("min-w-0 w-2 data-[hover]:text-foreground", isRunning ? "text-neutral-400" : "text-danger")}> <FontAwesomeIcon icon={isRunning ? faPlay : faStop}/> </Button>
