@@ -400,7 +400,7 @@ fn get_server_from_statement(statement: &Statement) -> Result<Server, String> {
         status: statement
             .read::<Option<String>, _>("status")
             .map_err(|e| format!("Failed to read 'status': {}", e))?
-            .map(|s| ServerStatus::from_str(&s).unwrap_or(ServerStatus::Stopped)),
+            .map(|s| ServerStatus::from_str(&s).unwrap_or(ServerStatus::Offline)),
         pid: statement
             .read::<Option<i64>, _>("pid")
             .map_err(|e| format!("Failed to read 'pid': {}", e))
