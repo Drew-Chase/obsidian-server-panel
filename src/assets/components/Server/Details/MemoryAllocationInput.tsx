@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Slider} from "@nextui-org/react";
-import OInput from "../Extends/OInput.tsx";
+import OInput from "../../Extends/OInput.tsx";
 
 export default function MemoryAllocationInput()
 {
