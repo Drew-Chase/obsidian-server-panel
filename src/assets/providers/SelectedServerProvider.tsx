@@ -1,9 +1,11 @@
 import {createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState} from "react";
+import Server from "../ts/servers.ts";
 
 interface SelectedServerContextType
 {
     selectedServerId: string | null;
     setSelectedServerId: Dispatch<SetStateAction<string | null>>;
+    server: Server | null;
 }
 
 const SelectedServerContext = createContext<SelectedServerContextType | undefined>(undefined);
@@ -11,14 +13,29 @@ const SelectedServerContext = createContext<SelectedServerContextType | undefine
 export function SelectedServerProvider({children}: { children: ReactNode })
 {
     const [selectedServerId, setSelectedServerId] = useState<string | null>(localStorage.getItem("selectedServer"));
+    const [server, setServer] = useState<Server | null>(null);
     useEffect(() =>
     {
-        if (selectedServerId) localStorage.setItem("selectedServer", selectedServerId);
-        else localStorage.removeItem("selectedServer");
+        if (selectedServerId)
+        {
+            localStorage.setItem("selectedServer", selectedServerId);
+            Server.get(selectedServerId).then(server =>
+            {
+                if (!server)
+                {
+                    localStorage.removeItem("selectedServer");
+                    setSelectedServerId(null);
+                    return;
+                }
+                setServer(server);
+            });
+        } else localStorage.removeItem("selectedServer");
+
 
     }, [selectedServerId]);
+
     return (
-        <SelectedServerContext.Provider value={{selectedServerId, setSelectedServerId}}>
+        <SelectedServerContext.Provider value={{selectedServerId, setSelectedServerId, server}}>
             {children}
         </SelectedServerContext.Provider>
     );
