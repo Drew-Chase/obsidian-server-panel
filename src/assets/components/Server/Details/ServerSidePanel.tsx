@@ -1,11 +1,11 @@
 import MemoryAllocationInput from "./MemoryAllocationInput.tsx";
 import StopButton from "./StopButton.tsx";
 import {AutocompleteItem, Button, Link, Tooltip} from "@nextui-org/react";
-import DownloadFile from "../../images/DownloadFile.svg.tsx";
+import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArchive, faLayerGroup} from "@fortawesome/free-solid-svg-icons";
-import OInput from "../Extends/OInput.tsx";
-import OAutocomplete from "../Extends/OAutocomplete.tsx";
+import OInput from "../../Extends/OInput.tsx";
+import OAutocomplete from "../../Extends/OAutocomplete.tsx";
 
 export default function ServerSidePanel()
 {
