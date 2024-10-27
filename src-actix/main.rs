@@ -6,6 +6,7 @@ mod file_system_endpoint;
 mod instance_endpoint;
 mod java_endpoint;
 mod loader_endpoint;
+mod macros;
 mod minecraft_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
@@ -154,12 +155,13 @@ async fn main() -> std::io::Result<()> {
                                             .service(file_system_endpoint::get_server_files)
                                             .service(file_system_endpoint::upload_file_to_server),
                                     )
-                                    .service(server_endpoint::get_server_by_id)
                                     .service(
                                         web::scope("backups")
                                             .service(backups_endpoint::get_backups)
                                             .service(backups_endpoint::create_manual_backup),
-                                    ),
+                                    )
+                                    .service(server_endpoint::get_server_by_id)
+                                    .service(server_endpoint::get_server_icon),
                             )
                             .service(server_endpoint::get_servers)
                             .service(server_endpoint::create_server),
@@ -213,7 +215,7 @@ const MAX_PAYLOAD_SIZE: usize = 1024 * 1024 * 1024; // 1 GB
 ///
 /// This static directory is used to embed files into the binary at compile time.
 /// The `WWWROOT` directory will be used to serve static files such as `index.html`.
-static WWWROOT: Dir = include_dir!("target/wwwroot");
+pub static WWWROOT: Dir = include_dir!("target/wwwroot");
 /// Handles the request for the index.html file.
 ///
 /// This function serves the `index.html` file from the embedded directory
