@@ -1,6 +1,6 @@
 import {Badge, BreadcrumbItem, Breadcrumbs, Button, Divider, Tooltip} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faFileArchive, faFileDownload, faFolderPlus, faTrashAlt, faUpload} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle, faFileArchive, faFileDownload, faFolderPlus, faTrashAlt, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
 import {useEffect, useState} from "react";
 import {FileItem} from "../../ts/file-system.ts";
@@ -14,6 +14,7 @@ export default function ServerFiles()
     const {server} = useSelectedServer();
     const [loading, setLoading] = useState(false);
     const [selectedItems, setSelectedItems] = useState<FileItem[]>([]);
+    const [selectionMode, setSelectionMode] = useState<boolean>(false);
     setTitle("Server Files");
 
     useEffect(() =>
@@ -46,6 +47,16 @@ export default function ServerFiles()
                     ))}
                 </Breadcrumbs>
                 <div className={"ml-auto flex flex-row gap-2"}>
+                    <Tooltip content={`${selectionMode ? "Disable" : "Enable"} Selection Mode`}>
+                        <Button
+                            className={"min-w-0"}
+                            aria-label={`${selectionMode ? "Disable" : "Enable"} Selection Mode`}
+                            color={selectionMode ? "primary" : "default"}
+                            onClick={() => setSelectionMode(prev => !prev)}
+                        >
+                            <FontAwesomeIcon icon={faCheckCircle}/>
+                        </Button>
+                    </Tooltip>
                     <Tooltip content={"Upload a file or directory."}>
                         <Button className={"min-w-0"} aria-label="Upload a file or directory."><FontAwesomeIcon icon={faUpload}/></Button>
                     </Tooltip>
@@ -83,6 +94,7 @@ export default function ServerFiles()
                 path={path}
                 onPathChange={setPath}
                 loading={loading}
+                selectionMode={selectionMode}
             />
         </div>
     );
