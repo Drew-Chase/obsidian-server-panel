@@ -63,7 +63,23 @@ where
         let service = Rc::clone(&self.service);
 
         let fut = async move {
-            if let Some(auth_header) = headers.get("X-Authorization-Token") {
+            // get the auth token from the cookies
+            if let Some(auth_cookie) = req.cookie("token") {
+                let auth_token = auth_cookie.value();
+                info!("Received auth token: {}", auth_token);
+                match authentication::validation::validate_token(auth_token, &addr) {
+                    Ok(user) => {
+                        info!("Token is valid");
+                        req.extensions_mut().insert(user);
+                    }
+                    Err(e) => {
+                        error!(
+                            "Connection attempted with invalid token: {} - '{}'\n{:?}",
+                            addr, auth_token, e
+                        );
+                    }
+                }
+            } else if let Some(auth_header) = headers.get("X-Authorization-Token") {
                 match auth_header.to_str() {
                     Ok(auth_token) => {
                         info!("Received auth token: {}", auth_token);
