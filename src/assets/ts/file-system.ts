@@ -20,7 +20,7 @@ export default class FileSystem
         this.serverId = serverId;
     }
 
-    async files(subPath: String): Promise<FileItem[]>
+    async files(subPath: string): Promise<FileItem[]>
     {
         return $.ajax({
             url: `/api/server/${this.serverId}/files`,
