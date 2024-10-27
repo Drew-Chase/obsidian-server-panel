@@ -18,23 +18,16 @@ export default function CopyMoveFileModal(props: CopyMoveFileModalProps)
     const {server} = useSelectedServer();
     const [loading, setLoading] = useState(false);
     const [selectedItems, setSelectedItems] = useState<FileItem | null>(null);
-    console.log(props.file);
-
     useEffect(() =>
     {
         setLoading(true);
         if (server == null) return;
-        setSelectedItems(null)
+        setSelectedItems(null);
         new FileSystem(server.id)
             .files(path)
             .then(files => setFiles(files.filter(file => file.is_dir)))
             .finally(() => setLoading(false));
     }, [path, server]);
-
-    useEffect(() =>
-    {
-        console.log(selectedItems);
-    }, [selectedItems]);
 
     return (
         <Modal size={"5xl"} isOpen={props.isOpen} onClose={props.onClose}>
