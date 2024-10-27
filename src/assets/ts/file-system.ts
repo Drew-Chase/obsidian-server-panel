@@ -1,4 +1,5 @@
 import $ from "jquery";
+import {toast} from "sonner";
 
 export type FileItem = {
     name: string;
@@ -45,10 +46,25 @@ export default class FileSystem
 
     async download(file: FileItem): Promise<void>
     {
-        return $.ajax({
-            url: `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`,
+        toast("Downloading file...", {description: `Started downloading ${file.name}`});
+        const response = await fetch(`/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`, {
             method: "GET"
         });
+
+        if (!response.ok)
+        {
+            throw new Error("Network response was not ok");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
     }
 
 }
