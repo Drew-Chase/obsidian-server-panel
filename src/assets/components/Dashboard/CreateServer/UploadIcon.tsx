@@ -1,15 +1,17 @@
-import {Button, Divider, Image} from "@nextui-org/react";
+import {Button, cn, Divider, Image} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUpload} from "@fortawesome/free-solid-svg-icons";
 import $ from "jquery";
 import ImageCropModal from "./ImageCropModal.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {resizeImage} from "../../../ts/image-resizer.ts";
 
 export default function UploadIcon({onUpload}: { onUpload: (file: File) => void })
 {
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [file, setFile] = useState<File | null>(null);
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const key = `upload-icon-${Math.random().toString(36).substring(7)}`;
 
     const handleOpen = () =>
     {
@@ -42,8 +44,49 @@ export default function UploadIcon({onUpload}: { onUpload: (file: File) => void 
             });
         });
 
+    useEffect(() =>
+    {
+        $(`#${key}`)
+            .off("dragleave")
+            .off("dragover")
+            .off("drop")
+            .on("dragover", e =>
+            {
+                if(isDraggingOver)return;
+                e.preventDefault();
+                setIsDraggingOver(true);
+                console.log("dragover");
+            })
+            .on("dragleave", e =>
+            {
+                e.preventDefault();
+                setIsDraggingOver(false);
+                console.log("dragleave");
+            })
+            .on("drop", e=>{
+                e.preventDefault();
+                setIsDraggingOver(false);
+                console.log("drop");
+                const files = e.originalEvent?.dataTransfer?.files;
+                if(files && files.length > 0)
+                {
+                    cropper(files[0]);
+                }
+            })
+    }, []);
+
     return (
-        <div className={"outline-2 outline-dotted outline-primary w-full min-h-[300px] rounded-2xl flex flex-row p-4 gap-8 items-center justify-center shadow-inner"}>
+        <div
+            id={key}
+            className={
+                cn(
+                    "min-h-[200px] rounded-2xl flex flex-row p-4 gap-8 items-center justify-center shadow-inner",
+                    "outline-2 outline-dotted outline-primary w-full",
+                    "data-[dragging=true]:outline-double data-[dragging=true]:bg-primary/10"
+                )
+            }
+            data-dragging={isDraggingOver}
+        >
             <ImageCropModal image={file} isOpen={isOpen} onClose={file =>
             {
                 if (file) resizeFile(file)
@@ -58,7 +101,7 @@ export default function UploadIcon({onUpload}: { onUpload: (file: File) => void 
                 setFile(file);
                 setIsOpen(false);
             }}/>
-            <div className={"text-4xl font-bold text-center p-4 "}>
+            <div className={"text-4xl font-bold text-center p-4 pointer-events-none"}>
                 {
                     file ?
                         (
