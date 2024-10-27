@@ -13,12 +13,10 @@ export type FileItem = {
 export default class FileSystem
 {
     private readonly serverId: string;
-    private readonly token: string;
 
     constructor(serverId: string)
     {
         this.serverId = serverId;
-        this.token = document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1] as string;
     }
 
     async files(subPath: String): Promise<FileItem[]>
@@ -26,9 +24,6 @@ export default class FileSystem
         return $.ajax({
             url: `/api/server/${this.serverId}/files`,
             method: "POST",
-            headers: {
-                "X-Authorization-Token": this.token
-            },
             data: subPath,
             contentType: "text/plain"
         });
@@ -42,12 +37,17 @@ export default class FileSystem
         return $.ajax({
             url: `/api/server/${this.serverId}/files/upload`,
             method: "POST",
-            headers: {
-                "X-Authorization-Token": this.token
-            },
             data: formData,
             contentType: false,
             processData: false
+        });
+    }
+
+    async download(file: FileItem): Promise<void>
+    {
+        return $.ajax({
+            url: `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`,
+            method: "GET"
         });
     }
 
