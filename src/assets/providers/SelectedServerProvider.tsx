@@ -28,6 +28,9 @@ export function SelectedServerProvider({children}: { children: ReactNode })
                     return;
                 }
                 setServer(server);
+            }).catch(()=>{
+                localStorage.removeItem("selectedServer");
+                setSelectedServerId(null);
             });
         } else localStorage.removeItem("selectedServer");
 
