@@ -1,3 +1,4 @@
+use crate::WWWROOT;
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
@@ -28,9 +29,9 @@ pub async fn get_servers(req: HttpRequest) -> impl Responder {
         };
 
         // Convert the servers to BasicHashedServer format for response
-        let servers: Vec<BasicHashedServer> = servers
+        let servers: Vec<HashedServer> = servers
             .iter()
-            .map(|s| BasicHashedServer::from_server(s.clone()))
+            .map(|s| HashedServer::from_server(s.clone()))
             .collect();
 
         // Return the list of servers as JSON response
@@ -67,6 +68,32 @@ pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl R
 
     // Return Unauthorized if the user is not authenticated
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+}
+
+#[get("icon")]
+pub async fn get_server_icon(id: web::Path<String>) -> impl Responder {
+    let id_number: u32 = match decode(id.as_str()) {
+        Ok(id_number) => id_number[0] as u32,
+        Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+    };
+
+    let server = match server_db::get_server_by_id(id_number) {
+        Some(s) => s,
+        None => {
+            let msg = format!("Server with id: {} not found", id_number);
+            error!("{}", msg);
+            return HttpResponse::BadRequest().json(json!({"error":msg}));
+        }
+    };
+
+    let icon_path = Path::join(
+        server.directory.unwrap().as_ref(),
+        Path::new("server-icon.png"),
+    );
+    if icon_path.exists() {
+        return HttpResponse::Ok().body(web::Bytes::from(std::fs::read(icon_path).unwrap()));
+    }
+    HttpResponse::NotFound().finish()
 }
 
 #[derive(Deserialize)]
