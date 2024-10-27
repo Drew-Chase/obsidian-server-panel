@@ -3,7 +3,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faFileArchive, faFileDownload, faFolderPlus, faTrashAlt, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
 import {useEffect, useState} from "react";
-import FileSystem, {FileItem} from "../../ts/file-system.ts";
+import {FileItem} from "../../ts/file-system.ts";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 import ServerFilesList from "../../components/Server/Files/ServerFilesList.tsx";
 
@@ -20,7 +20,8 @@ export default function ServerFiles()
     {
         setLoading(true);
         if (server == null) return;
-        new FileSystem(server.id)
+        server
+            .filesystem()
             .files(path)
             .then(setFiles)
             .finally(() => setLoading(false));
