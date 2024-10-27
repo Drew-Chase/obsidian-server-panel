@@ -5,6 +5,9 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy, faEllipsis, faEye, faFileDownload, faPencil, faTrash, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import ODropdown from "../../Extends/ODropdown.tsx";
 import {FileItem} from "../../../ts/file-system.ts";
+import {useState} from "react";
+import RenameModal from "./RenameModal.tsx";
+import CopyMoveFileModal from "./CopyMoveFileModal.tsx";
 
 interface ServerFilesListProps
 {
@@ -18,8 +21,24 @@ interface ServerFilesListProps
 
 export default function ServerFilesList(props: ServerFilesListProps)
 {
+    const [renameFile, setRenameFile] = useState<FileItem | null>(null);
+    const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
+
     return (
         <>
+            <RenameModal
+                file={renameFile}
+                onClose={name =>
+                {
+                    if (name !== null)
+                    {
+                        console.log(name);
+                    }
+                    setRenameFile(null);
+
+                }}
+            />
+            <CopyMoveFileModal isOpen={copyMoveFile !== null} file={copyMoveFile} onClose={() => setCopyMoveFile(null)}/>
             <Table
                 isStriped
                 removeWrapper
@@ -27,7 +46,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
                 className={"h-full overflow-y-auto"}
                 color={"primary"}
                 classNames={{
-                    tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700",
+                    tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700 data-[odd=true]:!bg-neutral-700",
                     th: "bg-neutral-700/50 backdrop-blur-lg",
                     thead: "bg-neutral-700/50 backdrop-blur-lg"
                 }}
@@ -58,9 +77,11 @@ export default function ServerFilesList(props: ServerFilesListProps)
                             onDoubleClick={() =>
                             {
                                 if (file.is_dir)
-                                    props.onPathChange(props.path + (props.path.endsWith("/") ? "" : "/") + file.name);
+                                    props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
                             }}>
-                            <TableCell>{file.name}</TableCell>
+                            <TableCell>
+                                <p className={"max-w-[30vw] truncate"}>{file.name}</p>
+                            </TableCell>
                             <TableCell>
                                 <div className={"flex flex-row min-w-[100px]"}>
                                     <Chip variant={"flat"} color={"default"}>{Conversions.bytesToSize(file.size)}</Chip>
@@ -96,10 +117,34 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                         </DropdownTrigger>
                                         <DropdownMenu>
                                             <DropdownSection showDivider>
-                                                <DropdownItem endContent={<FontAwesomeIcon icon={faPencil}/>}>Rename</DropdownItem>
-                                                <DropdownItem endContent={<FontAwesomeIcon icon={faCopy}/>}>Copy/Move</DropdownItem>
-                                                <DropdownItem endContent={<FontAwesomeIcon icon={faEye}/>}>Edit/View</DropdownItem>
-                                                <DropdownItem endContent={<FontAwesomeIcon icon={faFileDownload}/>}>Download</DropdownItem>
+                                                <DropdownItem
+                                                    endContent={<FontAwesomeIcon icon={faPencil}/>}
+                                                    onClick={() =>
+                                                    {
+                                                        setRenameFile(file);
+                                                    }}
+                                                >
+                                                    Rename
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    endContent={<FontAwesomeIcon icon={faCopy}/>}
+                                                    onClick={() =>
+                                                    {
+                                                        setCopyMoveFile(file);
+                                                    }}
+                                                >
+                                                    Copy/Move
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    endContent={<FontAwesomeIcon icon={faEye}/>}
+                                                >
+                                                    Edit/View
+                                                </DropdownItem>
+                                                <DropdownItem
+                                                    endContent={<FontAwesomeIcon icon={faFileDownload}/>}
+                                                >
+                                                    Download
+                                                </DropdownItem>
                                             </DropdownSection>
                                             <DropdownSection title={"Danger Zone"}>
                                                 <DropdownItem className={"text-danger"} endContent={<FontAwesomeIcon icon={faTrashAlt}/>} color={"danger"}>Delete</DropdownItem>
