@@ -171,7 +171,7 @@ fn get_server_directory_iterator(
     None
 }
 
-fn get_file_type(extension: String) -> String {
+pub fn get_file_type(extension: String) -> String {
     let types: HashMap<&str, &str> = HashMap::from([
         ("zip", "Zip Archive"),
         ("tar", "Tar Archive"),
