@@ -1,14 +1,35 @@
+use actix_web::web::Query;
 use actix_web::{get, web, HttpResponse, Responder};
 use loader_manager::supported_loaders::Loader;
 use log::error;
 use serde_json::json;
+use std::collections::HashMap;
 use std::str::FromStr;
 
 /// Retrieves all supported server loaders
-#[get("/supported_loaders")]
-pub async fn get_supported_loaders() -> impl Responder {
+#[get("/supported_loaders/{minecraft_version}")]
+pub async fn get_supported_loaders(
+    minecraft_version: web::Path<String>,
+    query: Query<HashMap<String, String>>,
+) -> impl Responder {
+    let minecraft_version = minecraft_version.into_inner();
+    let is_snapshot = query
+        .get("snapshot")
+        .map(|v| v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
     // Return the list of all supported loaders as JSON response
-    HttpResponse::Ok().json(Loader::all())
+    if minecraft_version.eq_ignore_ascii_case("all") {
+        HttpResponse::Ok().json(Loader::all())
+    } else {
+        HttpResponse::Ok().json(
+            Loader::all()
+                .iter()
+                .filter(|loader| {
+                    loader.supported_by_minecraft_version(minecraft_version.as_str(), is_snapshot)
+                })
+                .collect::<Vec<&Loader>>(),
+        )
+    }
 }
 #[get("/{loader_id}/{minecraft_version}")]
 pub async fn get_loader_by_id(params: web::Path<(String, String)>) -> impl Responder {
@@ -34,6 +55,6 @@ pub async fn get_loader_by_id(params: web::Path<(String, String)>) -> impl Respo
                 .json(json!({"message":"Failed to fetch versions"})),
         },
 
-        _ => HttpResponse::Ok().json(json!({"message":"Loader not supported"})),
+        _ => HttpResponse::Ok().json(json!([])),
     }
 }
