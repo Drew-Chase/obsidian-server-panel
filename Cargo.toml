@@ -61,6 +61,7 @@ futures = "0.3.30"
 parking_lot = "0.12.1"
 time = "0.3.36"
 awc = "3.5.1"
+percent-encoding = "2.3.1"
 
 [build-dependencies]
 cargo-watch = "8.5.2"
