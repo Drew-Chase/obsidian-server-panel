@@ -110,42 +110,50 @@ pub fn get_server_filesystem_entries(
 ) -> Vec<FileSystemEntry> {
     let mut entries: Vec<FileSystemEntry> = vec![];
 
-    if let Some(dir_iter) = get_server_directory_iterator(id, owner, sub_path.clone()) {
-        for file in dir_iter {
-            let file = match file {
-                Ok(f) => f,
-                Err(e) => {
-                    error!(
-                        "Unable to read path from directory iterator: {}",
-                        e.to_string()
-                    );
-                    continue;
-                }
-            };
-            let metadata = match file.metadata() {
-                Ok(m) => m,
-                Err(e) => {
-                    error!("Unable to get file metadata: {}", e.to_string());
-                    continue;
-                }
-            };
+    if let Some(server) = server_db::get_owned_server_by_id(id, owner) {
+        let server_directory = server.directory.unwrap();
+        if let Some(dir_iter) = get_server_directory_iterator(id, owner, sub_path.clone()) {
+            for file in dir_iter {
+                let file = match file {
+                    Ok(f) => f,
+                    Err(e) => {
+                        error!(
+                            "Unable to read path from directory iterator: {}",
+                            e.to_string()
+                        );
+                        continue;
+                    }
+                };
+                let metadata = match file.metadata() {
+                    Ok(m) => m,
+                    Err(e) => {
+                        error!("Unable to get file metadata: {}", e.to_string());
+                        continue;
+                    }
+                };
+                let filepath = file.path();
+                let path_relative_to_server_root =
+                    filepath.strip_prefix(&server_directory).unwrap();
+                let path_relative_to_server_root = format!("/{}", path_relative_to_server_root.to_str().unwrap());
+                let path_relative_to_server_root = PathBuf::from(path_relative_to_server_root);
 
-            entries.push(FileSystemEntry {
-                name: file.file_name().to_str().unwrap().to_string(),
-                path: file.path(),
-                is_dir: metadata.is_dir(),
-                size: metadata.len(),
-                created: metadata.created().unwrap_or(SystemTime::UNIX_EPOCH),
-                last_modified: metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH),
-                r#type: get_file_type(
-                    file.path()
-                        .extension()
-                        .unwrap_or_default()
-                        .to_str()
-                        .unwrap_or_default()
-                        .to_string(),
-                ),
-            });
+                entries.push(FileSystemEntry {
+                    name: file.file_name().to_str().unwrap().to_string(),
+                    path: path_relative_to_server_root,
+                    is_dir: metadata.is_dir(),
+                    size: metadata.len(),
+                    created: metadata.created().unwrap_or(SystemTime::UNIX_EPOCH),
+                    last_modified: metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH),
+                    r#type: get_file_type(
+                        file.path()
+                            .extension()
+                            .unwrap_or_default()
+                            .to_str()
+                            .unwrap_or_default()
+                            .to_string(),
+                    ),
+                });
+            }
         }
     }
     entries
