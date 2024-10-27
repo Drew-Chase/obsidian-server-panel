@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import MagnifyGlass from "../../images/MagnifyGlass.svg.tsx";
 import OInput from "../../components/Extends/OInput.tsx";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
+import {toast} from "sonner";
 
 export interface ServerPropertiesItem
 {
@@ -60,7 +61,15 @@ export default function ServerProperties()
                                         defaultValue={value}
                                         onValueChange={value =>
                                         {
-                                            server?.updateProperty(name, value);
+                                            setProperties(properties.map(p => p.name === name ? {...p, value} : p));
+                                        }}
+                                        onFocusChange={focused =>
+                                        {
+                                            if (!focused)
+                                            {
+                                                toast("Property updated", {description: `Property ${name} has been set to ${value}`});
+                                                server?.updateProperty(name, value);
+                                            }
                                         }}
                                     />
                                 ) : (
@@ -70,6 +79,7 @@ export default function ServerProperties()
                                         toggle={value === "true"}
                                         onToggle={async (toggle) =>
                                         {
+                                            toast("Property updated", {description: `Property ${name} has been set to ${toggle}`});
                                             await server?.updateProperty(name, toggle);
                                         }}
                                         className={"max-w-full shrink-0"}
