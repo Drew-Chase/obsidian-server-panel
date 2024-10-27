@@ -1,8 +1,8 @@
-import {Button, Chip, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, cn, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import Conversions from "../../../ts/conversions.ts";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCopy, faEllipsis, faEye, faFileDownload, faPencil, faTrash, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import {faCopy, faEllipsis, faEye, faFile, faFileDownload, faFolder, faPencil, faTrash, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import ODropdown from "../../Extends/ODropdown.tsx";
 import {FileItem} from "../../../ts/file-system.ts";
 import {useState} from "react";
@@ -18,6 +18,7 @@ interface ServerFilesListProps
     path: string;
     onPathChange: (path: string) => void;
     loading: boolean;
+    selectionMode: boolean;
 }
 
 export default function ServerFilesList(props: ServerFilesListProps)
@@ -48,14 +49,17 @@ export default function ServerFilesList(props: ServerFilesListProps)
                 className={"h-full overflow-y-auto"}
                 color={"primary"}
                 classNames={{
-                    tr: "data-[odd=true]:bg-neutral-800 data-[hover]:bg-neutral-700 data-[odd=true]:!bg-neutral-700/10",
+                    tr: cn(
+                        "data-[odd]:!bg-neutral-700/50 data-[selected]:data-[odd]:!bg-primary/10 hover:!bg-neutral-700  transition-colors",
+                        "data-[odd=true]:hover:!bg-neutral-700 data-[odd=true]:data-[hover]:!bg-neutral-700 data-[hover]:!bg-neutral-700"
+                    ),
                     th: "bg-neutral-700/50 backdrop-blur-lg",
                     thead: "bg-neutral-700/50 backdrop-blur-lg"
                 }}
                 checkboxesProps={{
                     className: "w-10"
                 }}
-                selectionMode={"multiple"}
+                selectionMode={props.selectionMode ? "multiple" : "none"}
                 aria-label="Server Files Table"
                 onSelectionChange={(selected) =>
                 {
@@ -78,11 +82,16 @@ export default function ServerFilesList(props: ServerFilesListProps)
                             key={file.name}
                             onDoubleClick={() =>
                             {
-                                if (file.is_dir)
+                                if (!props.selectionMode && file.is_dir)
                                     props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
                             }}>
                             <TableCell>
-                                <p className={"max-w-[30vw] truncate"}>{file.name}</p>
+                                <div className={"inline-flex items-center"}>
+                                    <div className={"text-lg w-5"}>
+                                        {file.is_dir ? <FontAwesomeIcon icon={faFolder} className={"text-purple-500"}/> : <FontAwesomeIcon className={"text-blue-400"} icon={faFile}/>}
+                                    </div>
+                                    <p className={"ml-4 max-w-[30vw] truncate"}>{file.name}</p>
+                                </div>
                             </TableCell>
                             <TableCell>
                                 <div className={"flex flex-row min-w-[100px]"}>
@@ -97,7 +106,12 @@ export default function ServerFilesList(props: ServerFilesListProps)
                             <TableCell>
                                 <div className={"flex flex-row"}>
                                     <Tooltip content={"Download File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
-                                        <Button className={"min-w-0"} variant={"light"} aria-label="Download File"><DownloadFile/></Button>
+                                        <Button
+                                            className={"min-w-0"}
+                                            variant={"light"}
+                                            aria-label="Download File"
+                                            onClick={() =>{server?.filesystem().download(file);}}
+                                        ><DownloadFile/></Button>
                                     </Tooltip>
                                     <Tooltip content={"Delete File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
                                         <Button className={"min-w-0"} variant={"light"} color={"danger"} aria-label="Delete File"><FontAwesomeIcon icon={faTrash}/></Button>
@@ -144,10 +158,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                                 </DropdownItem>
                                                 <DropdownItem
                                                     endContent={<FontAwesomeIcon icon={faFileDownload}/>}
-                                                    onClick={() =>
-                                                    {
-                                                        server?.filesystem().download(file);
-                                                    }}
+                                                    onClick={() =>{server?.filesystem().download(file);}}
                                                 >
                                                     Download
                                                 </DropdownItem>
