@@ -6,7 +6,6 @@ mod file_system_endpoint;
 mod instance_endpoint;
 mod java_endpoint;
 mod loader_endpoint;
-mod macros;
 mod minecraft_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
@@ -128,6 +127,12 @@ async fn main() -> std::io::Result<()> {
                     .service(
                         web::scope("server")
                             .service(
+                                web::scope("files")
+                                    .service(file_system_endpoint::get_files)
+                            )
+                            .service(server_endpoint::get_servers)
+                            .service(server_endpoint::create_server)
+                            .service(
                                 web::scope("{id}")
                                     .service(
                                         web::scope("properties")
@@ -162,9 +167,7 @@ async fn main() -> std::io::Result<()> {
                                     )
                                     .service(server_endpoint::get_server_by_id)
                                     .service(server_endpoint::get_server_icon),
-                            )
-                            .service(server_endpoint::get_servers)
-                            .service(server_endpoint::create_server),
+                            ),
                     )
                     .service(web::scope("instances").service(instance_endpoint::discover_modpacks))
                     .service(
