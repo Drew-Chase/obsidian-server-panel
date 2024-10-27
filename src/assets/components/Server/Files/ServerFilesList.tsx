@@ -8,6 +8,7 @@ import {FileItem} from "../../../ts/file-system.ts";
 import {useState} from "react";
 import RenameModal from "./RenameModal.tsx";
 import CopyMoveFileModal from "./CopyMoveFileModal.tsx";
+import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
 
 interface ServerFilesListProps
 {
@@ -23,6 +24,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
 {
     const [renameFile, setRenameFile] = useState<FileItem | null>(null);
     const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
+    const {server} = useSelectedServer();
 
     return (
         <>
@@ -46,7 +48,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
                 className={"h-full overflow-y-auto"}
                 color={"primary"}
                 classNames={{
-                    tr: "data-[odd]:bg-neutral-800 data-[hover]:bg-neutral-700 data-[odd=true]:!bg-neutral-700",
+                    tr: "data-[odd=true]:bg-neutral-800 data-[hover]:bg-neutral-700 data-[odd=true]:!bg-neutral-700/10",
                     th: "bg-neutral-700/50 backdrop-blur-lg",
                     thead: "bg-neutral-700/50 backdrop-blur-lg"
                 }}
@@ -142,6 +144,10 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                                 </DropdownItem>
                                                 <DropdownItem
                                                     endContent={<FontAwesomeIcon icon={faFileDownload}/>}
+                                                    onClick={() =>
+                                                    {
+                                                        server?.filesystem().download(file);
+                                                    }}
                                                 >
                                                     Download
                                                 </DropdownItem>
