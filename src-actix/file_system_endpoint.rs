@@ -1,5 +1,6 @@
 use actix_multipart::form::{json::Json as MPJson, tempfile::TempFile, MultipartForm};
-use actix_web::{post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::dev::Path;
+use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
 use log::{debug, error};
@@ -158,4 +159,56 @@ pub async fn get_files(body: Option<String>, req: HttpRequest) -> impl Responder
             HttpResponse::InternalServerError().json(json!({"error": "Error reading directory"}))
         }
     }
+}
+
+#[get("/download/{file}")]
+pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) -> impl Responder {
+    let (id, file) = path.into_inner();
+
+    // decode the uri encoded file path
+    let file: String = match percent_encoding::percent_decode(file.as_bytes()).decode_utf8() {
+        Ok(file) => file.to_string(),
+        Err(e) => {
+            error!("Error decoding file path: {:?}", e);
+            return HttpResponse::BadRequest().json(json!({"error": "Error decoding file path"}));
+        }
+    };
+
+    if let Some(user) = req.extensions().get::<User>() {
+        let id_number = match decode(&id) {
+            Ok(id) => id,
+            Err(_) => {
+                error!("Invalid id: {}", id);
+                return HttpResponse::BadRequest()
+                    .json(json!({"error": format!("Invalid id: {}", id)}));
+            }
+        };
+        if id_number.is_empty() {
+            return HttpResponse::BadRequest()
+                .json(json!({"error": format!("Invalid id: {}", id)}));
+        }
+        let id_number = id_number[0] as u32;
+        if let Some(server) = servers::server_db::get_owned_server_by_id(id_number, user.id) {
+            let path = format!("{}{}", server.directory.unwrap_or_default(), file);
+            debug!("Downloading file: {:?}", path);
+            return match File::open(&path) {
+                Ok(mut file) => {
+                    let mut bytes: Vec<u8> = Vec::new();
+                    if let Err(e) = file.read_to_end(&mut bytes) {
+                        error!("Error reading file: {:?}", e);
+                        return HttpResponse::InternalServerError()
+                            .json(json!({"error": "Error reading file"}));
+                    }
+                    HttpResponse::Ok()
+                        .content_type("application/octet-stream")
+                        .body(bytes)
+                }
+                Err(e) => {
+                    error!("Error opening file: {:?}", e);
+                    HttpResponse::InternalServerError().json(json!({"error": "Error opening file"}))
+                }
+            };
+        }
+    }
+    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
 }
