@@ -1,5 +1,6 @@
 import $ from "jquery";
-import FileSystem, {FileItem} from "./file-system.ts";
+import FileSystem from "./file-system.ts";
+import {ServerPropertiesItem} from "../pages/Server/ServerProperties.tsx";
 
 export enum ServerStatus
 {
@@ -153,19 +154,51 @@ export default class Server
 
     static async get(id: string): Promise<Server | null>
     {
-        return $.ajax({
+        const response = await $.ajax({
             url: `/api/server/${id}`,
             method: "GET",
-            dataType: "json",
-            headers: {
-                "X-Authorization-Token": document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
-            }
+            dataType: "json"
         });
+        return response ? Server.fromJson(response) : null;
     }
 
-    async files(directory: string = ""): Promise<FileItem[]>
+    filesystem(): FileSystem
     {
-        return new FileSystem(this.id).files(directory);
+        return new FileSystem(this.id);
+    }
+
+    async properties(): Promise<ServerPropertiesItem[]>
+    {
+        let response: any = await $.ajax({
+            url: `/api/server/${this.id}/properties`,
+            method: "GET",
+            dataType: "json"
+        });
+
+        let properties: ServerPropertiesItem[] = [];
+        let keys = Object.keys(response);
+        let values = Object.values(response);
+
+        for (let i = 0; i < keys.length; i++)
+        {
+            let key: string = keys[i];
+            let value: string = values[i] as string;
+            let type: "string" | "number" | "boolean" = value === "true" || value === "false" ? "boolean" : isNaN(Number(value)) ? "string" : "number";
+            properties.push({name: key, value: value, type: type});
+        }
+
+        return properties;
+    }
+
+    async updateProperty(name: string, value: string | boolean | number): Promise<void>
+    {
+        console.log("Value: ", value);
+        await $.ajax({
+            url: `/api/server/${this.id}/properties/${name}`,
+            method: "POST",
+            contentType: "text/plain",
+            data: value.toString()
+        });
     }
 
 
