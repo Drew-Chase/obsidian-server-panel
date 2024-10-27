@@ -6,6 +6,7 @@ use log::{debug, error};
 use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server;
+use servers::physical_server::{get_file_type, FileSystemEntry};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -112,4 +113,49 @@ pub async fn upload_file_to_server(
     }
 
     HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+}
+
+#[post("")]
+pub async fn get_files(body: Option<String>, req: HttpRequest) -> impl Responder {
+    if req.extensions().get::<User>().is_none() {
+        return HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}));
+    }
+    let path = body.unwrap_or_default();
+    let path = std::env::current_dir().unwrap().join(path);
+    match std::fs::read_dir(&path) {
+        Ok(entries) => {
+            let mut file_system_entries: Vec<FileSystemEntry> = Vec::new();
+            for entry in entries {
+                let entry = entry.unwrap();
+                let metadata = entry.metadata().unwrap();
+                let file_system_entry = FileSystemEntry {
+                    name: entry.file_name().into_string().unwrap(),
+                    path: entry.path(),
+                    size: metadata.len(),
+                    r#type: get_file_type(
+                        entry
+                            .path()
+                            .extension()
+                            .unwrap_or_default()
+                            .to_str()
+                            .unwrap_or_default()
+                            .to_string(),
+                    ),
+                    created: metadata
+                        .created()
+                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
+                    is_dir: metadata.is_dir(),
+                    last_modified: metadata
+                        .modified()
+                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
+                };
+                file_system_entries.push(file_system_entry);
+            }
+            HttpResponse::Ok().json(file_system_entries)
+        }
+        Err(e) => {
+            error!("Error reading directory: {:?}", e);
+            HttpResponse::InternalServerError().json(json!({"error": "Error reading directory"}))
+        }
+    }
 }
