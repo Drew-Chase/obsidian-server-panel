@@ -33,16 +33,16 @@ export default function ExtendedOnlinePlayersStat(props: HTMLAttributes<any>)
                     <Divider/>
                     {
 
-                        Array.from(payload).map(i =>
+                        Array.from(payload).map((i, n) =>
                         {
                             return (
-                                <>
+                                <div key={`${i.name}-${i.value}-${n}`}>
                                     <p className={"flex flex-row"}>
                                         <span className="font-light mr-auto italic">{i.name}:</span>
                                         <span className="font-bold">{i.value} <span className="font-light">/ {total}</span></span>
                                     </p>
                                     <Divider/>
-                                </>
+                                </div>
                             );
                         })
                     }
