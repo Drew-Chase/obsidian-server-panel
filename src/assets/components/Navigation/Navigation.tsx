@@ -1,11 +1,11 @@
 import {Navbar, NavbarContent, NavbarItem} from "@nextui-org/navbar";
 import {Accordion, AccordionItem, Avatar, cn, Link, Tooltip} from "@nextui-org/react";
-import Home from "../images/Home.svg.tsx";
+import Home from "../../images/Home.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight} from "@fortawesome/free-solid-svg-icons";
 import {useLocation, useNavigate} from "react-router-dom";
-import {useAuth} from "../providers/AuthProvider.tsx";
-import {useSelectedServer} from "../providers/SelectedServerProvider.tsx";
+import {useAuth} from "../../providers/AuthProvider.tsx";
+import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 import {useEffect, useState} from "react";
 
 export default function Navigation()
