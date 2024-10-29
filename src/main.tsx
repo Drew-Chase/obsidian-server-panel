@@ -5,7 +5,7 @@ import {NextUIProvider} from "@nextui-org/react";
 
 import "./assets/scss/index.scss";
 import DashboardOverview from "./assets/pages/Dashboard/DashboardOverview.tsx";
-import Navigation from "./assets/components/Navigation.tsx";
+import Navigation from "./assets/components/Navigation/Navigation.tsx";
 import Login from "./assets/pages/Login.tsx";
 import DashboardServers from "./assets/pages/Dashboard/DashboardServers.tsx";
 import DashboardInstances from "./assets/pages/Dashboard/DashboardInstances.tsx";
@@ -29,7 +29,7 @@ import React from "react";
 import {ScreenSizeProvider} from "./assets/providers/ScreenSizeProvider.tsx";
 import {SelectedServerProvider} from "./assets/providers/SelectedServerProvider.tsx";
 import {AlertModalProvider} from "./assets/providers/AlertModalProvider.tsx";
-import ActionBar from "./assets/components/ActionBar.tsx";
+import ActionBar from "./assets/components/Navigation/Actionbar/ActionBar.tsx";
 
 export const setTitle = (title: string) =>
 {
