@@ -12,6 +12,7 @@ mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
 mod configuration_endpoint;
+mod notifications_endpoint;
 
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
