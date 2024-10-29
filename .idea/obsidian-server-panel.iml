@@ -20,6 +20,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src-actix/loader_manager/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/process_utility/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/common_lib/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/event_system/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-actix/notifications/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/crypto/target" />
@@ -37,6 +39,8 @@
       <excludeFolder url="file://$MODULE_DIR$/src-actix/loader_manager/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/process_utility/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/common_lib/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src-actix/event_system/target" />
+      <excludeFolder url="file://$MODULE_DIR$/src-actix/notifications/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
