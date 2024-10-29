@@ -4,6 +4,8 @@ import path from "path";
 
 const devEnvPath = path.resolve("./target/dev-env");
 if (!existsSync(devEnvPath)) mkdirSync(devEnvPath, {recursive: true});
+const wwwrootPath = path.resolve("./target/wwwroot");
+if (!existsSync(wwwrootPath)) mkdirSync(wwwrootPath, {recursive: true});
 
 
 /**
