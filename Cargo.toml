@@ -19,7 +19,6 @@ members = [
 name = "obsidian-server-panel"
 version = "0.0.0"
 edition = "2021"
-build = "src-actix/build.rs"
 
 [[bin]]
 name = "obsidian-server-panel"
@@ -40,6 +39,7 @@ backups = { path = "src-actix/backups" }
 database = { path = "src-actix/database" }
 java = { path = "src-actix/java" }
 archive_utility = { path = "src-actix/archive_utility" }
+notifications = { path = "src-actix/notifications" }
 
 # External Libraries
 actix-web = { version = "4.9.0" }
