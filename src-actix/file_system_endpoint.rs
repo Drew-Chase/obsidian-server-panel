@@ -1,5 +1,5 @@
+use common_lib::traits::TransformPath;
 use actix_multipart::form::{json::Json as MPJson, tempfile::TempFile, MultipartForm};
-use actix_web::dev::Path;
 use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
@@ -79,7 +79,7 @@ pub async fn upload_file_to_server(
         let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
         if let Some(server) = server {
             if let Some(server_dir) = server.directory {
-                let path = PathBuf::from(format!("{}{}{}", server_dir, directory, filename));
+                let path = format!("{}{}{}", server_dir, directory, filename);
                 debug!("Uploading file to: {:?}", path);
                 debug!(
                     "Server Directory: {:?}, Directory: {:?}, Filename: {:?}",
