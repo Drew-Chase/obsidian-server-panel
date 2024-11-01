@@ -30,6 +30,8 @@ export default function ServerList()
                         color={"primary"}
                         endContent={<FontAwesomeIcon icon={faPlus}/>}
                         className={"ml-auto"}
+                        as={Link}
+                        href={"/app/create-server/"}
                     >
                         Create server
                     </Button>
