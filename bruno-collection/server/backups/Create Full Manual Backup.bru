@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/:id/backups/create/full
+  url: {{baseUrl}}/server/:id/backups/create/full
   body: none
   auth: none
 }
@@ -14,6 +14,4 @@ params:path {
   id: gYnxpl9aBABWrZ7N
 }
 
-headers {
-  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JFd5LmNOQlRCQ0luaGJ2TjcvQUNPYU9Mb1VZVnlMNXgyb3NubjFkNEFxQ2kzTzVhcUJMUXhPIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-}
+
