@@ -65,4 +65,9 @@ export default class Java
     {
         return (await $.get("/api/java/versions")).map((data: any) => new JavaVersion(data));
     }
+
+    static async installed(): Promise<JavaVersion[]>
+    {
+        return (await Java.versions()).filter(i => i.installed);
+    }
 }
