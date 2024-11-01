@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/:id/files/upload
+  url: {{baseUrl}}/server/:id/files/upload
   body: multipartForm
   auth: none
 }
@@ -14,9 +14,6 @@ params:path {
   id: B5X0D6oXMgOLYG4b
 }
 
-headers {
-  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JGg1YWcybktjSi5RR0xKTWFrZmhwZU9RczJNTlRwdzBnVDJpeDMxRG1WRjZ4MEZLWU8ydnFlIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-}
 
 body:multipart-form {
   json: {"directory":"", "filename: "test.json"};type=application/json
