@@ -13,6 +13,7 @@ use servers::server_db;
 use servers::server_db::{BasicHashedServer, HashedServer, Server};
 use std::path::Path;
 use std::str::FromStr;
+use common_lib::traits::TransformPath;
 
 /// Retrieves servers owned by the authenticated user
 #[get("")]
@@ -136,7 +137,7 @@ pub async fn create_server(
         };
 
         // Set the server's directory in the database
-        match server_db::set_server_directory(server.id, dir.to_str().unwrap()) {
+        match server_db::set_server_directory(server.id, dir.normalize().to_str().unwrap()) {
             Ok(_) => (),
             Err(e) => {
                 error!("Failed to set the servers directory to {:?}, {}", &dir, e);
