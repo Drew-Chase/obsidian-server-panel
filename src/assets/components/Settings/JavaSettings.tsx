@@ -28,7 +28,7 @@ export default function JavaSettings()
     return (
         <>
             {<JavaInstallModal isOpen={installVersion !== null} onClose={() => setInstallVersion(null)} version={installVersion!} onCompleted={() => Java.versions().then(setVersions)}/>}
-            <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 overflow-y-auto"}>
+            <div id={"java-settings"} className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 overflow-y-auto"}>
                 <p className={"text-lg font-semibold mr-auto mb-8"}>Java Settings</p>
                 <div className={"flex flex-col gap-3"}>
                     <p className={"text-danger"}>{error}</p>
