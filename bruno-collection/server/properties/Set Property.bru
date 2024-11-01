@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/:id/properties/:key
+  url: {{baseUrl}}/server/:id/properties/:key
   body: text
   auth: none
 }
@@ -15,9 +15,6 @@ params:path {
   id: bWB6qDAL4AGz8N9x
 }
 
-headers {
-  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JEY2ejhUZy5pT1BBOGpUUUFVcHRkUy5sTzhqVmVjTlRTa3l0WHQuTFdoaUNvSG4vVEd5SkllIiwidXNlcm5hbWUiOiJhZG1pbiJ9
-}
 
 body:text {
   true
