@@ -5,15 +5,11 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:1420/api/server/:id/files
+  url: {{baseUrl}}/server/:id/files
   body: text
   auth: none
 }
 
 params:path {
   id: bWB6qDAL4AGz8N9x
-}
-
-headers {
-  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JGg1YWcybktjSi5RR0xKTWFrZmhwZU9RczJNTlRwdzBnVDJpeDMxRG1WRjZ4MEZLWU8ydnFlIiwidXNlcm5hbWUiOiJhZG1pbiJ9
 }
