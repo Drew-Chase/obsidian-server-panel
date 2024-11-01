@@ -1,6 +1,5 @@
-use common_lib::traits::TransformPath;
 use actix_multipart::form::{json::Json as MPJson, tempfile::TempFile, MultipartForm};
-use actix_web::{get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
 use crypto::hashids::decode;
 use log::{debug, error};
@@ -10,7 +9,6 @@ use servers::physical_server;
 use servers::physical_server::{get_file_type, FileSystemEntry};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::path::PathBuf;
 
 #[post("")]
 pub async fn get_server_files(
@@ -208,6 +206,133 @@ pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) 
                     HttpResponse::InternalServerError().json(json!({"error": "Error opening file"}))
                 }
             };
+        }
+    }
+    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+}
+
+#[post("/create/file")]
+pub async fn create_file(
+    id: web::Path<String>,
+    body: Option<String>,
+    req: HttpRequest,
+) -> impl Responder {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id_number = match decode(&id) {
+            Ok(id) => id,
+            Err(_) => {
+                error!("Invalid id: {}", id);
+                return HttpResponse::BadRequest()
+                    .json(json!({"error": format!("Invalid id: {}", id)}));
+            }
+        };
+        if id_number.is_empty() {
+            return HttpResponse::BadRequest()
+                .json(json!({"error": format!("Invalid id: {}", id)}));
+        }
+        let id_number = id_number[0] as u32;
+        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
+        if let Some(server) = server {
+            if let Some(server_dir) = server.directory {
+                let path = format!("{}{}", server_dir, body.unwrap_or_default());
+                debug!("Creating file: {:?}", path);
+                return match File::create(&path) {
+                    Ok(_) => HttpResponse::Ok().json(json!({"success": "File created"})),
+                    Err(e) => {
+                        error!("Error creating file: {:?}", e);
+                        HttpResponse::InternalServerError()
+                            .json(json!({"error": "Error creating file"}))
+                    }
+                };
+            }
+        }
+    }
+    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+}
+
+#[post("/create/directory")]
+pub async fn create_directory(
+    id: web::Path<String>,
+    body: Option<String>,
+    req: HttpRequest,
+) -> impl Responder {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id_number = match decode(&id) {
+            Ok(id) => id,
+            Err(_) => {
+                error!("Invalid id: {}", id);
+                return HttpResponse::BadRequest()
+                    .json(json!({"error": format!("Invalid id: {}", id)}));
+            }
+        };
+        if id_number.is_empty() {
+            return HttpResponse::BadRequest()
+                .json(json!({"error": format!("Invalid id: {}", id)}));
+        }
+        let id_number = id_number[0] as u32;
+        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
+        if let Some(server) = server {
+            if let Some(server_dir) = server.directory {
+                let path = format!("{}{}", server_dir, body.unwrap_or_default());
+                debug!("Creating directory: {:?}", path);
+                return match std::fs::create_dir(&path) {
+                    Ok(_) => HttpResponse::Ok().json(json!({"success": "Directory created"})),
+                    Err(e) => {
+                        error!("Error creating directory: {:?}", e);
+                        HttpResponse::InternalServerError()
+                            .json(json!({"error": "Error creating directory"}))
+                    }
+                };
+            }
+        }
+    }
+    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+}
+
+#[delete("")]
+pub async fn delete_path(id: web::Path<String>, body: String, req: HttpRequest) -> impl Responder {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id_number = match decode(&id) {
+            Ok(id) => id,
+            Err(_) => {
+                error!("Invalid id: {}", id);
+                return HttpResponse::BadRequest()
+                    .json(json!({"error": format!("Invalid id: {}", id)}));
+            }
+        };
+        if id_number.is_empty() {
+            return HttpResponse::BadRequest()
+                .json(json!({"error": format!("Invalid id: {}", id)}));
+        }
+        let id_number = id_number[0] as u32;
+        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
+        if let Some(server) = server {
+            if let Some(server_dir) = server.directory {
+                let path = format!("{}{}", server_dir, body);
+                debug!("Deleting path: {:?}", path);
+                // check if the path is a file or directory
+                if let Ok(metadata) = std::fs::metadata(&path) {
+                    return if metadata.is_file() {
+                        match std::fs::remove_file(&path) {
+                            Ok(_) => HttpResponse::Ok().json(json!({"success": "File deleted"})),
+                            Err(e) => {
+                                error!("Error deleting file: {:?}", e);
+                                HttpResponse::InternalServerError()
+                                    .json(json!({"error": "Error deleting file"}))
+                            }
+                        }
+                    } else {
+                        match std::fs::remove_dir_all(&path) {
+                            Ok(_) => HttpResponse::Ok().json(json!({"success": "Path deleted"})),
+                            Err(e) => {
+                                error!("Error deleting path: {:?}", e);
+                                HttpResponse::InternalServerError()
+                                    .json(json!({"error": "Error deleting path"}))
+                            }
+                        }
+                    };
+                }
+            }
         }
     }
     HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
