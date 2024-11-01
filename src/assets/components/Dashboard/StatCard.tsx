@@ -31,7 +31,6 @@ export default function StatCard(props: StatCardProps)
             }
             setValues([...tmp, props.value]);
         }
-        console.log(props.title, values);
     }, [props.value]);
 
     useEffect(() =>
