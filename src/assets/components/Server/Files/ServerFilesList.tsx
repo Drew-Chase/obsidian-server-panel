@@ -9,6 +9,8 @@ import {useState} from "react";
 import RenameModal from "./RenameModal.tsx";
 import CopyMoveFileModal from "./CopyMoveFileModal.tsx";
 import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
+import {useAlertModal} from "../../../providers/AlertModalProvider.tsx";
+import {useSearchParams} from "react-router-dom";
 
 interface ServerFilesListProps
 {
@@ -19,6 +21,7 @@ interface ServerFilesListProps
     onPathChange: (path: string) => void;
     loading: boolean;
     selectionMode: boolean;
+    refresh: () => void;
 }
 
 export default function ServerFilesList(props: ServerFilesListProps)
@@ -26,6 +29,9 @@ export default function ServerFilesList(props: ServerFilesListProps)
     const [renameFile, setRenameFile] = useState<FileItem | null>(null);
     const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
     const {server} = useSelectedServer();
+    const {alert} = useAlertModal();
+    const [params] = useSearchParams();
+    const [filter] = useState<string[]>((params.get("filter") ?? "").split(","));
 
     return (
         <>
@@ -77,102 +83,175 @@ export default function ServerFilesList(props: ServerFilesListProps)
                 </TableHeader>
 
                 <TableBody emptyContent={"No items found"} isLoading={props.loading} loadingContent={<Spinner size={"lg"}/>}>
-                    {props.files.map(file => (
-                        <TableRow
-                            key={file.name}
-                            onDoubleClick={() =>
-                            {
-                                if (!props.selectionMode && file.is_dir)
-                                    props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
-                            }}>
-                            <TableCell>
-                                <div className={"inline-flex items-center"}>
-                                    <div className={"text-lg w-5"}>
-                                        {file.is_dir ? <FontAwesomeIcon icon={faFolder} className={"text-purple-500"}/> : <FontAwesomeIcon className={"text-blue-400"} icon={faFile}/>}
+                    {props.files
+                        .filter(i =>
+                        {
+                            if (filter.length === 0) return true;
+                            return filter.some(filterItem => i.name.includes(filterItem) || i.is_dir);
+                        })
+                        .map(file => (
+                            <TableRow
+                                key={file.name}
+                                onDoubleClick={() =>
+                                {
+                                    if (!props.selectionMode && file.is_dir)
+                                        props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
+                                }}>
+                                <TableCell>
+                                    <div className={"inline-flex items-center"}>
+                                        <div className={"text-lg w-5"}>
+                                            {file.is_dir ? <FontAwesomeIcon icon={faFolder} className={"text-purple-500"}/> : <FontAwesomeIcon className={"text-blue-400"} icon={faFile}/>}
+                                        </div>
+                                        <p className={"ml-4 max-w-[30vw] truncate"}>{file.name}</p>
                                     </div>
-                                    <p className={"ml-4 max-w-[30vw] truncate"}>{file.name}</p>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className={"flex flex-row min-w-[100px]"}>
-                                    <Chip variant={"flat"} color={"default"}>{Conversions.bytesToSize(file.size)}</Chip>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className={"flex flex-row min-w-[100px]"}>
-                                    <Chip variant={"flat"} color={"default"}>{file.is_dir ? "Directory" : file.type}</Chip>
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className={"flex flex-row"}>
-                                    <Tooltip content={"Download File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
-                                        <Button
-                                            className={"min-w-0"}
-                                            variant={"light"}
-                                            aria-label="Download File"
-                                            onClick={() =>{server?.filesystem().download(file);}}
-                                        ><DownloadFile/></Button>
-                                    </Tooltip>
-                                    <Tooltip content={"Delete File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
-                                        <Button className={"min-w-0"} variant={"light"} color={"danger"} aria-label="Delete File"><FontAwesomeIcon icon={faTrash}/></Button>
-                                    </Tooltip>
-                                    <ODropdown>
-                                        <DropdownTrigger>
-                                            <div>
-                                                <Tooltip content={"More options..."} closeDelay={0} classNames={{base: "pointer-events-none"}}>
-                                                    <Button
-                                                        className={"min-w-0"}
-                                                        variant={"light"}
-                                                        aria-label="More options"
-                                                        onPressStart={e => e.continuePropagation()}
+                                </TableCell>
+                                <TableCell>
+                                    <div className={"flex flex-row min-w-[100px]"}>
+                                        <Chip variant={"flat"} color={"default"}>{Conversions.bytesToSize(file.size)}</Chip>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className={"flex flex-row min-w-[100px]"}>
+                                        <Chip variant={"flat"} color={"default"}>{file.is_dir ? "Directory" : file.type}</Chip>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className={"flex flex-row"}>
+                                        <Tooltip content={"Download File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                            <Button
+                                                className={"min-w-0"}
+                                                variant={"light"}
+                                                aria-label="Download File"
+                                                onClick={() =>
+                                                {
+                                                    server?.filesystem().download(file);
+                                                }}
+                                            ><DownloadFile/></Button>
+                                        </Tooltip>
+                                        <Tooltip content={"Delete File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                            <Button
+                                                className={"min-w-0"}
+                                                variant={"light"}
+                                                color={"danger"}
+                                                aria-label="Delete File"
+                                                onClick={() =>
+                                                {
+                                                    alert({
+                                                        title: "Delete File",
+                                                        message: `Are you sure you want to delete ${file.name}?`,
+                                                        type: "warning",
+                                                        actions: [
+                                                            {
+                                                                label: "Delete",
+                                                                color: "danger",
+                                                                onClick: () =>
+                                                                {
+                                                                    server?.filesystem().delete(file);
+                                                                    props.refresh();
+                                                                }
+                                                            },
+                                                            {
+                                                                label: "Cancel",
+                                                                color: "default",
+                                                                variant: "light"
+                                                            }
+                                                        ]
+                                                    });
+                                                }}
+                                            >
+                                                <FontAwesomeIcon icon={faTrash}/>
+                                            </Button>
+                                        </Tooltip>
+                                        <ODropdown>
+                                            <DropdownTrigger>
+                                                <div>
+                                                    <Tooltip content={"More options..."} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                                        <Button
+                                                            className={"min-w-0"}
+                                                            variant={"light"}
+                                                            aria-label="More options"
+                                                            onPressStart={e => e.continuePropagation()}
+                                                        >
+                                                            <FontAwesomeIcon icon={faEllipsis}/>
+                                                        </Button>
+                                                    </Tooltip>
+                                                </div>
+                                            </DropdownTrigger>
+                                            <DropdownMenu>
+                                                <DropdownSection showDivider>
+                                                    <DropdownItem
+                                                        endContent={<FontAwesomeIcon icon={faPencil}/>}
+                                                        onClick={() =>
+                                                        {
+                                                            setRenameFile(file);
+                                                        }}
                                                     >
-                                                        <FontAwesomeIcon icon={faEllipsis}/>
-                                                    </Button>
-                                                </Tooltip>
-                                            </div>
-                                        </DropdownTrigger>
-                                        <DropdownMenu>
-                                            <DropdownSection showDivider>
-                                                <DropdownItem
-                                                    endContent={<FontAwesomeIcon icon={faPencil}/>}
-                                                    onClick={() =>
-                                                    {
-                                                        setRenameFile(file);
-                                                    }}
-                                                >
-                                                    Rename
-                                                </DropdownItem>
-                                                <DropdownItem
-                                                    endContent={<FontAwesomeIcon icon={faCopy}/>}
-                                                    onClick={() =>
-                                                    {
-                                                        setCopyMoveFile(file);
-                                                    }}
-                                                >
-                                                    Copy/Move
-                                                </DropdownItem>
-                                                <DropdownItem
-                                                    endContent={<FontAwesomeIcon icon={faEye}/>}
-                                                >
-                                                    Edit/View
-                                                </DropdownItem>
-                                                <DropdownItem
-                                                    endContent={<FontAwesomeIcon icon={faFileDownload}/>}
-                                                    onClick={() =>{server?.filesystem().download(file);}}
-                                                >
-                                                    Download
-                                                </DropdownItem>
-                                            </DropdownSection>
-                                            <DropdownSection title={"Danger Zone"}>
-                                                <DropdownItem className={"text-danger"} endContent={<FontAwesomeIcon icon={faTrashAlt}/>} color={"danger"}>Delete</DropdownItem>
-                                            </DropdownSection>
+                                                        Rename
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        endContent={<FontAwesomeIcon icon={faCopy}/>}
+                                                        onClick={() =>
+                                                        {
+                                                            setCopyMoveFile(file);
+                                                        }}
+                                                    >
+                                                        Copy/Move
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        endContent={<FontAwesomeIcon icon={faEye}/>}
+                                                    >
+                                                        Edit/View
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        endContent={<FontAwesomeIcon icon={faFileDownload}/>}
+                                                        onClick={() =>
+                                                        {
+                                                            server?.filesystem().download(file);
+                                                        }}
+                                                    >
+                                                        Download
+                                                    </DropdownItem>
+                                                </DropdownSection>
+                                                <DropdownSection title={"Danger Zone"}>
+                                                    <DropdownItem
+                                                        className={"text-danger"}
+                                                        endContent={<FontAwesomeIcon icon={faTrashAlt}/>}
+                                                        color={"danger"}
+                                                        onClick={() =>
+                                                        {
+                                                            alert({
+                                                                title: "Delete File",
+                                                                message: `Are you sure you want to delete ${file.name}?`,
+                                                                type: "warning",
+                                                                actions: [
+                                                                    {
+                                                                        label: "Delete",
+                                                                        color: "danger",
+                                                                        onClick: () =>
+                                                                        {
+                                                                            server?.filesystem().delete(file);
+                                                                            props.refresh();
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        label: "Cancel",
+                                                                        color: "default",
+                                                                        variant: "light"
+                                                                    }
+                                                                ]
+                                                            });
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </DropdownItem>
+                                                </DropdownSection>
 
-                                        </DropdownMenu>
-                                    </ODropdown>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                                            </DropdownMenu>
+                                        </ODropdown>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                 </TableBody>
 
             </Table>
