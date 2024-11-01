@@ -40,6 +40,7 @@ database = { path = "src-actix/database" }
 java = { path = "src-actix/java" }
 archive_utility = { path = "src-actix/archive_utility" }
 notifications = { path = "src-actix/notifications" }
+common_lib = { path = "src-actix/common_lib" }
 
 # External Libraries
 actix-web = { version = "4.9.0" }
