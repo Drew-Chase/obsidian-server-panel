@@ -1,0 +1,19 @@
+meta {
+  name: Create Directory
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/server/:id/files/create/directory
+  body: text
+  auth: none
+}
+
+params:path {
+  id: eGg3qbwoplkKApzM
+}
+
+body:text {
+  /test
+}
