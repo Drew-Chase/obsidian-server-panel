@@ -78,7 +78,7 @@ impl ObsidianConfig {
     pub fn get_default_config() -> Result<Self, Box<dyn Error>> {
         let servers = PathBuf::from("servers");
         let backups = PathBuf::from("backups");
-        let java = PathBuf::from("java");
+        let java = PathBuf::from("meta/java");
 
         // create directories
         if !servers.exists() {
