@@ -2,6 +2,7 @@ use java::versions::JavaVersion;
 use log::debug;
 use std::io::Write;
 use std::path::Path;
+use common_lib::traits::TransformPath;
 
 const FABRIC_LOADER_API: &str = "https://meta.fabricmc.net/v2/versions/loader";
 const FABRIC_INSTALLER_API: &str = "https://meta.fabricmc.net/v2/versions/installer";
@@ -72,7 +73,7 @@ pub async fn install(
     java.execute_command(
         format!(
             "-jar {:?} server -mcversion {} -dir {:?} -loader {} -downloadMinecraft",
-            path.canonicalize().unwrap(),
+            path.to_path_buf().normalize(),
             mc_version,
             dir.as_ref().canonicalize().unwrap(),
             loader_version
