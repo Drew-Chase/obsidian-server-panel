@@ -162,6 +162,13 @@ export default class Server
         return response ? Server.fromJson(response) : null;
     }
 
+    async delete(){
+        await $.ajax({
+            url: `/api/server/${this.id}`,
+            method: "DELETE"
+        });
+    }
+
     filesystem(): FileSystem
     {
         return new FileSystem(this.id);
