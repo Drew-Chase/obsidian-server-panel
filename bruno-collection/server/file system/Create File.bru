@@ -1,0 +1,19 @@
+meta {
+  name: Create File
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/server/:id/files/create/file
+  body: text
+  auth: none
+}
+
+params:path {
+  id: eGg3qbwoplkKApzM
+}
+
+body:text {
+  /test.txt
+}
