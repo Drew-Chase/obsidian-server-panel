@@ -7,7 +7,7 @@ export default function NotificationDropdown()
 {
     return (
 
-        <OPopover isOpen={true}>
+        <OPopover>
             <PopoverTrigger>
                 <div>
                     <Badge content={"12"} showOutline={false} variant={"shadow"} hidden={false}>
@@ -34,9 +34,9 @@ export default function NotificationDropdown()
                         </Button>
                     </div>
                     <Tabs variant={"underlined"} color={"primary"}>
-                        <Tab title={<><span className={"mr-2"}>All</span> <Chip>9</Chip></>} />
-                        <Tab title={<><span className={"mr-2"}>Unread</span> <Chip>3</Chip></>} />
-                        <Tab title={<><span className={"mr-2"}>Archived</span> <Chip hidden>0</Chip></>} />
+                        <Tab title={<><span className={"mr-2"}>All</span> <Chip>9</Chip></>}/>
+                        <Tab title={<><span className={"mr-2"}>Unread</span> <Chip>3</Chip></>}/>
+                        <Tab title={<><span className={"mr-2"}>Archived</span> <Chip hidden>0</Chip></>}/>
                     </Tabs>
                 </div>
             </PopoverContent>
