@@ -67,4 +67,42 @@ export default class FileSystem
         window.URL.revokeObjectURL(url);
     }
 
+    async getFileContents(file: FileItem): Promise<string>
+    {
+        return $.ajax({
+            url: `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`,
+            method: "GET"
+        });
+    }
+
+    async createDirectory(path: string, name: string): Promise<void>
+    {
+        return $.ajax({
+            url: `/api/server/${this.serverId}/files/create/directory`,
+            method: "POST",
+            data: `${path}/${name}`,
+            contentType: "text/plain"
+        });
+    }
+
+    async createFile(path: string, name: string): Promise<void>
+    {
+        return $.ajax({
+            url: `/api/server/${this.serverId}/files/create/file`,
+            method: "POST",
+            data: `${path}/${name}`,
+            contentType: "text/plain"
+        });
+    }
+
+    async delete(file: FileItem): Promise<void>
+    {
+        return $.ajax({
+            url: `/api/server/${this.serverId}/files`,
+            method: "DELETE",
+            data: file.path,
+            contentType: "text/plain"
+        });
+    }
+
 }
