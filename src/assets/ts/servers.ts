@@ -1,6 +1,7 @@
 import $ from "jquery";
 import FileSystem from "./file-system.ts";
 import {ServerPropertiesItem} from "../pages/Server/ServerProperties.tsx";
+import ServerSettings from "./server-settings.ts";
 
 export enum ServerStatus
 {
@@ -195,6 +196,11 @@ export default class Server
         }
 
         return properties;
+    }
+
+    async settings(): Promise<ServerSettings>
+    {
+        return ServerSettings.getServerSettings(this.id);
     }
 
     async updateProperty(name: string, value: string | boolean | number): Promise<void>
