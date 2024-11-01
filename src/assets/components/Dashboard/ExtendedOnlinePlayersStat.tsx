@@ -109,7 +109,7 @@ export default function ExtendedOnlinePlayersStat(props: HTMLAttributes<any>)
                     <XAxis dataKey={"month"} tick={{fontSize: 12}}/>
                     <YAxis/>
                     {/* @ts-ignore */}
-                    <ChartTooltip content={<CustomTooltip/>} animationDuration={200}/>
+                    <ChartTooltip content={(props: CustomTooltipProps) => <CustomTooltip {...props}/>} animationDuration={200}/>
                     <Bar dataKey={"SMP Server"} fill={"#CB3CFF"} stackId={"a"} barSize={15}/>
                     <Bar dataKey={"All The Mods 6"} fill={"#0E43FB"} stackId={"a"} barSize={15}/>
                     <Bar dataKey={"Other"} fill={"#00C2FF"} radius={[20, 20, 0, 0]} stackId={"a"} barSize={15}/>
