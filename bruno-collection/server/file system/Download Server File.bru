@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: http://127.0.0.1:1420/api/server/:id/files/download/:file
+  url: {{baseUrl}}/server/:id/files/download/:file
   body: none
   auth: none
 }
@@ -13,8 +13,4 @@ get {
 params:path {
   file: server-icon.png
   id: bWB6qDAL4AGz8N9x
-}
-
-headers {
-  X-Authorization-Token: eyJoYXNoIjoiJDJiJDA0JGg1YWcybktjSi5RR0xKTWFrZmhwZU9RczJNTlRwdzBnVDJpeDMxRG1WRjZ4MEZLWU8ydnFlIiwidXNlcm5hbWUiOiJhZG1pbiJ9
 }
