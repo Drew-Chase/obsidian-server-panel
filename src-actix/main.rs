@@ -158,7 +158,10 @@ async fn main() -> std::io::Result<()> {
                                         web::scope("files")
                                             .service(file_system_endpoint::get_server_files)
                                             .service(file_system_endpoint::upload_file_to_server)
-                                            .service(file_system_endpoint::download_file),
+                                            .service(file_system_endpoint::download_file)
+                                            .service(file_system_endpoint::create_directory)
+                                            .service(file_system_endpoint::create_file)
+                                            .service(file_system_endpoint::delete_path),
                                     )
                                     .service(
                                         web::scope("backups")
