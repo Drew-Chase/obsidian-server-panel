@@ -11,6 +11,7 @@ import FileSystem from "../../ts/file-system.ts";
 import {useAlertModal} from "../../providers/AlertModalProvider.tsx";
 import Java from "../../ts/java.ts";
 import {useNavigate} from "react-router-dom";
+import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 
 export default function DashboardCreateServer()
 {
@@ -29,6 +30,7 @@ export default function DashboardCreateServer()
     const [isValid, setIsValid] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const {alert} = useAlertModal();
+    const {setSelectedServerId} = useSelectedServer();
     const navigate = useNavigate();
 
 
@@ -79,11 +81,29 @@ export default function DashboardCreateServer()
             if (newlyCreatedServer)
             {
                 console.log("Server created successfully!");
+                setSelectedServerId(newlyCreatedServer.id);
                 if (serverIcon)
                 {
-                    const fileSystem = new FileSystem(newlyCreatedServer.id);
-                    await fileSystem.upload(serverIcon, "/", "server-icon.png");
+                    try
+                    {
+                        const fileSystem = new FileSystem(newlyCreatedServer.id);
+                        await fileSystem.upload(serverIcon, "/", "server-icon.png");
+                    } catch (e)
+                    {
+                        console.error(e);
+                        alert({
+                            title: "Create Server",
+                            message: "An error occurred while uploading the server icon.",
+                            type: "error",
+                            actions: [
+                                {
+                                    label: "Close"
+                                }
+                            ]
+                        });
+                    }
                 }
+                navigate(`/app/server/`);
             }
         } catch (e)
         {
