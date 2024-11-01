@@ -14,6 +14,7 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
+use common_lib::traits::TransformPath;
 
 #[derive(Serialize, Deserialize)]
 pub struct JavaVersion {
@@ -176,7 +177,7 @@ impl JavaVersion {
     where
         F: Fn(String) + Send + 'static,
     {
-        let executable = self.get_executable().canonicalize().unwrap();
+        let executable = self.get_executable().to_path_buf().normalize();
         if !executable.exists() {
             return Err("Java executable not found".into());
         }
