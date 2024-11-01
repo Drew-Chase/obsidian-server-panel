@@ -2,17 +2,17 @@ use actix_web::dev::Service;
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
+mod configuration_endpoint;
 mod file_system_endpoint;
 mod instance_endpoint;
 mod java_endpoint;
 mod loader_endpoint;
 mod minecraft_endpoint;
+mod notifications_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
 mod server_settings_endpoint;
 mod system_stats_endpoint;
-mod configuration_endpoint;
-mod notifications_endpoint;
 
 use actix_files::file_extension_to_mime;
 use actix_web::error::ErrorInternalServerError;
@@ -166,6 +166,7 @@ async fn main() -> std::io::Result<()> {
                                             .service(backups_endpoint::create_manual_backup),
                                     )
                                     .service(server_endpoint::get_server_by_id)
+                                    .service(server_endpoint::delete_server)
                                     .service(server_endpoint::get_server_icon),
                             ),
                     )
