@@ -1,0 +1,19 @@
+meta {
+  name: Delete Path
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/server/:id/files
+  body: text
+  auth: none
+}
+
+params:path {
+  id: eGg3qbwoplkKApzM
+}
+
+body:text {
+  /test
+}
