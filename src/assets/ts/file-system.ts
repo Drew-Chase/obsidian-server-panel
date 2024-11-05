@@ -7,8 +7,20 @@ export type FileItem = {
     is_dir: boolean;
     size: number;
     type: string;
+    mime: string;
+    category: FileMimeCategory;
     last_modified: Date;
     created: Date;
+}
+
+export enum FileMimeCategory
+{
+    TEXT = "TEXT",
+    IMAGE = "IMAGE",
+    AUDIO = "AUDIO",
+    ARCHIVE = "ARCHIVE",
+    VIDEO = "VIDEO",
+    UNKNOWN = "UNKNOWN",
 }
 
 export default class FileSystem
@@ -47,32 +59,26 @@ export default class FileSystem
     async download(file: FileItem): Promise<void>
     {
         toast("Downloading file...", {description: `Started downloading ${file.name}`});
-        const response = await fetch(`/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`, {
-            method: "GET"
-        });
-
-        if (!response.ok)
-        {
-            throw new Error("Network response was not ok");
-        }
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        const url = `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`;
         const a = document.createElement("a");
         a.style.display = "none";
         a.href = url;
         a.download = file.name;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
     }
 
     async getFileContents(file: FileItem): Promise<string>
     {
         return $.ajax({
-            url: `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`,
+            url: this.getFileUrl(file),
             method: "GET"
         });
+    }
+
+    getFileUrl(file: FileItem): string
+    {
+        return `/api/server/${this.serverId}/files/download/${encodeURIComponent(file.path)}`;
     }
 
     async createDirectory(path: string, name: string): Promise<void>
