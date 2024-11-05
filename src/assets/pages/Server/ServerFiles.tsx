@@ -35,6 +35,14 @@ export default function ServerFiles()
         refresh();
     }, [path, server]);
 
+    useEffect(() =>
+    {
+        if (!selectionMode)
+        {
+            setSelectedItems([]);
+        }
+    }, [selectionMode]);
+
     if (server == null) return null;
     return (
         <>
@@ -47,7 +55,7 @@ export default function ServerFiles()
                 }}
                 currentPath={path}
             />
-            <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4 max-h-[calc(100dvh_-_60px)]"}>
+            <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4 h-dvh max-h-[calc(100dvh_-_125px)]"}>
                 <div className={"flex flex-row gap-2"}>
                     <p className={"text-xl font-semibold mr-2"}>Server Files</p>
                     <Breadcrumbs variant={"solid"} classNames={{
