@@ -1,16 +1,14 @@
-import {Button, Chip, cn, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, cn, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
 import Conversions from "../../../ts/conversions.ts";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCopy, faEllipsis, faEye, faFile, faFileDownload, faFolder, faPencil, faTrash, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
-import ODropdown from "../../Extends/ODropdown.tsx";
+import {faEllipsis, faFile, faFolder, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {FileItem} from "../../../ts/file-system.ts";
 import {useState} from "react";
-import RenameModal from "./RenameModal.tsx";
-import CopyMoveFileModal from "./CopyMoveFileModal.tsx";
 import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
 import {useAlertModal} from "../../../providers/AlertModalProvider.tsx";
 import {useSearchParams} from "react-router-dom";
+import FileEntryContextDropdown from "./FileEntryContextDropdown.tsx";
 
 interface ServerFilesListProps
 {
@@ -26,28 +24,17 @@ interface ServerFilesListProps
 
 export default function ServerFilesList(props: ServerFilesListProps)
 {
-    const [renameFile, setRenameFile] = useState<FileItem | null>(null);
-    const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
     const {server} = useSelectedServer();
     const {alert} = useAlertModal();
     const [params] = useSearchParams();
     const [filter] = useState<string[]>((params.get("filter") ?? "").split(","));
+    const [currentFile, setCurrentFile] = useState<FileItem | null>(null);
+    const [contextPosition, setContextPosition] = useState<{ x: number, y: number }>({x: 0, y: 0});
+
 
     return (
         <>
-            <RenameModal
-                file={renameFile}
-                onClose={name =>
-                {
-                    if (name !== null)
-                    {
-                        console.log(name);
-                    }
-                    setRenameFile(null);
-
-                }}
-            />
-            <CopyMoveFileModal isOpen={copyMoveFile !== null} file={copyMoveFile} onClose={() => setCopyMoveFile(null)}/>
+            <FileEntryContextDropdown file={currentFile} position={contextPosition} onClose={() => setCurrentFile(null)} refresh={props.refresh}/>
             <Table
                 isStriped
                 removeWrapper
@@ -57,7 +44,8 @@ export default function ServerFilesList(props: ServerFilesListProps)
                 classNames={{
                     tr: cn(
                         "data-[odd]:!bg-neutral-700/50 data-[selected]:data-[odd]:!bg-primary/10 hover:!bg-neutral-700  transition-colors",
-                        "data-[odd=true]:hover:!bg-neutral-700 data-[odd=true]:data-[hover]:!bg-neutral-700 data-[hover]:!bg-neutral-700"
+                        "data-[odd=true]:hover:!bg-neutral-700 data-[odd=true]:data-[hover]:!bg-neutral-700 data-[hover]:!bg-neutral-700",
+                        "data-[has-open-context-menu=true]:!bg-primary/10 data-[has-open-context-menu=true]:data-[odd=true]:hover:!bg-primary/10"
                     ),
                     th: "bg-neutral-700/50 backdrop-blur-lg",
                     thead: "bg-neutral-700/50 backdrop-blur-lg"
@@ -92,11 +80,19 @@ export default function ServerFilesList(props: ServerFilesListProps)
                         .map(file => (
                             <TableRow
                                 key={file.name}
+                                onContextMenu={e =>
+                                {
+                                    e.preventDefault();
+                                    setCurrentFile(file);
+                                    setContextPosition({x: e.pageX - 75, y: e.pageY});
+                                }}
                                 onDoubleClick={() =>
                                 {
                                     if (!props.selectionMode && file.is_dir)
                                         props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
-                                }}>
+                                }}
+                                data-has-open-context-menu={currentFile === file}
+                            >
                                 <TableCell>
                                     <div className={"inline-flex items-center"}>
                                         <div className={"text-lg w-5"}>
@@ -162,92 +158,28 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                                 <FontAwesomeIcon icon={faTrash}/>
                                             </Button>
                                         </Tooltip>
-                                        <ODropdown>
-                                            <DropdownTrigger>
-                                                <div>
-                                                    <Tooltip content={"More options..."} closeDelay={0} classNames={{base: "pointer-events-none"}}>
-                                                        <Button
-                                                            className={"min-w-0"}
-                                                            variant={"light"}
-                                                            aria-label="More options"
-                                                            onPressStart={e => e.continuePropagation()}
-                                                        >
-                                                            <FontAwesomeIcon icon={faEllipsis}/>
-                                                        </Button>
-                                                    </Tooltip>
-                                                </div>
-                                            </DropdownTrigger>
-                                            <DropdownMenu>
-                                                <DropdownSection showDivider>
-                                                    <DropdownItem
-                                                        endContent={<FontAwesomeIcon icon={faPencil}/>}
-                                                        onClick={() =>
-                                                        {
-                                                            setRenameFile(file);
-                                                        }}
-                                                    >
-                                                        Rename
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        endContent={<FontAwesomeIcon icon={faCopy}/>}
-                                                        onClick={() =>
-                                                        {
-                                                            setCopyMoveFile(file);
-                                                        }}
-                                                    >
-                                                        Copy/Move
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        endContent={<FontAwesomeIcon icon={faEye}/>}
-                                                    >
-                                                        Edit/View
-                                                    </DropdownItem>
-                                                    <DropdownItem
-                                                        endContent={<FontAwesomeIcon icon={faFileDownload}/>}
-                                                        onClick={() =>
-                                                        {
-                                                            server?.filesystem().download(file);
-                                                        }}
-                                                    >
-                                                        Download
-                                                    </DropdownItem>
-                                                </DropdownSection>
-                                                <DropdownSection title={"Danger Zone"}>
-                                                    <DropdownItem
-                                                        className={"text-danger"}
-                                                        endContent={<FontAwesomeIcon icon={faTrashAlt}/>}
-                                                        color={"danger"}
-                                                        onClick={() =>
-                                                        {
-                                                            alert({
-                                                                title: "Delete File",
-                                                                message: `Are you sure you want to delete ${file.name}?`,
-                                                                type: "warning",
-                                                                actions: [
-                                                                    {
-                                                                        label: "Delete",
-                                                                        color: "danger",
-                                                                        onClick: () =>
-                                                                        {
-                                                                            server?.filesystem().delete(file);
-                                                                            props.refresh();
-                                                                        }
-                                                                    },
-                                                                    {
-                                                                        label: "Cancel",
-                                                                        color: "default",
-                                                                        variant: "light"
-                                                                    }
-                                                                ]
-                                                            });
-                                                        }}
-                                                    >
-                                                        Delete
-                                                    </DropdownItem>
-                                                </DropdownSection>
+                                        <div>
+                                            <Tooltip content={"More options..."} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                                <Button
+                                                    className={"min-w-0"}
+                                                    variant={"light"}
+                                                    aria-label="More options"
+                                                    onPressStart={e => e.continuePropagation()}
+                                                    onClick={e =>
+                                                    {
+                                                        e.preventDefault();
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        const x = rect.left + rect.width;
+                                                        const y = rect.top + rect.height;
 
-                                            </DropdownMenu>
-                                        </ODropdown>
+                                                        setCurrentFile(file);
+                                                        setContextPosition({x, y});
+                                                    }}
+                                                >
+                                                    <FontAwesomeIcon icon={faEllipsis}/>
+                                                </Button>
+                                            </Tooltip>
+                                        </div>
                                     </div>
                                 </TableCell>
                             </TableRow>
