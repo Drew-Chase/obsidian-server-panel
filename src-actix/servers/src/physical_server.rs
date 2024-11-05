@@ -1,11 +1,14 @@
 use crate::server_db;
 use crate::server_db::{get_server_by_id, Server};
 use log::{debug, error, info};
+use mime_guess::Mime;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::create_dir;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
+use tokio::fs::File;
+use tokio::io::AsyncReadExt;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileSystemEntry {
@@ -14,6 +17,8 @@ pub struct FileSystemEntry {
     pub is_dir: bool,
     pub size: u64,
     pub r#type: String,
+    pub mime: Option<String>,
+    pub category: FileMimeCategory,
     pub created: SystemTime,
     pub last_modified: SystemTime,
 }
@@ -22,6 +27,16 @@ pub struct FileSystemEntry {
 pub struct FileSystemEntries {
     pub parent: Option<String>,
     pub entries: Vec<FileSystemEntry>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum FileMimeCategory {
+    TEXT,
+    IMAGE,
+    AUDIO,
+    ARCHIVE,
+    VIDEO,
+    UNKNOWN,
 }
 
 fn clean_file_path_string(name: &str) -> String {
@@ -103,7 +118,7 @@ pub fn get_servers_directory() -> PathBuf {
     path
 }
 
-pub fn get_server_filesystem_entries(
+pub async fn get_server_filesystem_entries(
     id: u32,
     owner: u32,
     sub_path: Option<String>,
@@ -134,7 +149,8 @@ pub fn get_server_filesystem_entries(
                 let filepath = file.path();
                 let path_relative_to_server_root =
                     filepath.strip_prefix(&server_directory).unwrap();
-                let path_relative_to_server_root = format!("/{}", path_relative_to_server_root.to_str().unwrap());
+                let path_relative_to_server_root =
+                    format!("/{}", path_relative_to_server_root.to_str().unwrap());
                 let path_relative_to_server_root = PathBuf::from(path_relative_to_server_root);
 
                 entries.push(FileSystemEntry {
@@ -142,6 +158,8 @@ pub fn get_server_filesystem_entries(
                     path: path_relative_to_server_root,
                     is_dir: metadata.is_dir(),
                     size: metadata.len(),
+                    mime: get_mime(&filepath),
+                    category: get_mime_category(&filepath).await,
                     created: metadata.created().unwrap_or(SystemTime::UNIX_EPOCH),
                     last_modified: metadata.modified().unwrap_or(SystemTime::UNIX_EPOCH),
                     r#type: get_file_type(
@@ -297,4 +315,52 @@ pub fn get_file_type(extension: String) -> String {
         .get(&extension[..])
         .unwrap_or(&extension.as_str())
         .to_string()
+}
+
+pub async fn get_mime_category(path: impl AsRef<Path>) -> FileMimeCategory {
+    if !path.as_ref().exists() || path.as_ref().is_dir() {
+        return FileMimeCategory::UNKNOWN;
+    }
+
+    let mime = mime_guess::from_path(&path).first();
+    if let Some(mime) = mime {
+        let mime = mime.type_().as_str();
+        match mime {
+            "text" => FileMimeCategory::TEXT,
+            "image" => FileMimeCategory::IMAGE,
+            "audio" => FileMimeCategory::AUDIO,
+            "video" => FileMimeCategory::VIDEO,
+            "application" => FileMimeCategory::ARCHIVE,
+            _ => FileMimeCategory::UNKNOWN,
+        }
+    } else {
+        if is_text_file(path).await {
+            return FileMimeCategory::TEXT;
+        }
+        FileMimeCategory::UNKNOWN
+    }
+}
+
+pub async fn is_text_file(file_path: impl AsRef<Path>) -> bool {
+    const BUFFER_SIZE: usize = 1024;
+    let path = file_path.as_ref();
+
+    if let Ok(mut file) = File::open(path).await {
+        let mut buffer = [0; BUFFER_SIZE];
+
+        if let Ok(bytes_read) = file.read(&mut buffer).await {
+            for &byte in &buffer[..bytes_read] {
+                if byte != 0x09 && byte != 0x0A && byte != 0x0D && !(0x20..=0x7E).contains(&byte) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    false
+}
+
+pub fn get_mime(path: impl AsRef<Path>) -> Option<String> {
+    mime_guess::from_path(path).first().map(|m| m.to_string())
 }
