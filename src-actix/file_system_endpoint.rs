@@ -29,11 +29,10 @@ pub async fn get_server_files(
             return HttpResponse::BadRequest()
                 .json(json!({"error": format!("Invalid id: {}", id)}));
         }
-        return HttpResponse::Ok().json(physical_server::get_server_filesystem_entries(
-            id_number[0] as u32,
-            user.id,
-            body,
-        ));
+        return HttpResponse::Ok().json(
+            physical_server::get_server_filesystem_entries(id_number[0] as u32, user.id, body)
+                .await,
+        );
     }
 
     HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
@@ -140,6 +139,8 @@ pub async fn get_files(body: Option<String>, req: HttpRequest) -> impl Responder
                             .unwrap_or_default()
                             .to_string(),
                     ),
+                    mime: physical_server::get_mime(&entry.path()),
+                    category: physical_server::get_mime_category(&entry.path()).await,
                     created: metadata
                         .created()
                         .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
