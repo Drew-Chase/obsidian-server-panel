@@ -6,23 +6,35 @@ import "../scss/editor.scss";
 import {Prism as SyntaxHighlighter} from "react-syntax-highlighter";
 // @ts-ignore
 import {duotoneDark} from "react-syntax-highlighter/dist/esm/styles/prism";
+import {FileItem} from "../ts/file-system.ts";
+import {useEffect, useState} from "react";
+import {useSelectedServer} from "../providers/SelectedServerProvider.tsx";
 
 interface EditorModalProps
 {
     isOpen: boolean;
-    onClose: () => void;
+    onClose: (content: string | null) => void;
     title?: string;
     isReadonly?: boolean;
     content?: string;
     language?: string;
+    file?: FileItem;
 }
 
 export default function EditorModal(props: EditorModalProps)
 {
+    const [contents, setContents] = useState<string | null>(props.content ?? "");
+    const {server} = useSelectedServer();
+    useEffect(() =>
+    {
+        if (props.file) server?.filesystem().getFileContents(props.file).then(setContents);
+
+    }, [props.file, props.isOpen]);
+
     return (
         <Modal
             isOpen={props.isOpen}
-            onClose={props.onClose}
+            onClose={() => props.onClose(contents)}
             size={"5xl"}
             scrollBehavior={"inside"}
             classNames={{
@@ -43,7 +55,9 @@ export default function EditorModal(props: EditorModalProps)
                                 <Editor
                                     height="70vh"
                                     defaultLanguage={props.language ?? "text"}
-                                    defaultValue={props.content?.trim() ?? ""}
+                                    defaultValue={contents ?? ""}
+                                    value={contents ?? ""}
+                                    onChange={value => setContents(value ?? "")}
                                     theme={"vs-dark"}
                                 />
                             )}
@@ -61,7 +75,11 @@ export default function EditorModal(props: EditorModalProps)
                                     >
                                         Save
                                     </Button>
-                                    <Button onClick={onClose} color={"danger"} variant={"light"}>Cancel</Button>
+                                    <Button onClick={() =>
+                                    {
+                                        setContents(null);
+                                        onClose();
+                                    }} color={"danger"} variant={"light"}>Cancel</Button>
                                 </>
                             )}
                         </ModalFooter>
