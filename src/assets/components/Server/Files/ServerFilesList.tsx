@@ -3,12 +3,17 @@ import Conversions from "../../../ts/conversions.ts";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEllipsis, faFile, faFolder, faTrash} from "@fortawesome/free-solid-svg-icons";
-import {FileItem} from "../../../ts/file-system.ts";
+import {FileItem, FileMimeCategory} from "../../../ts/file-system.ts";
 import {useState} from "react";
 import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
 import {useAlertModal} from "../../../providers/AlertModalProvider.tsx";
 import {useSearchParams} from "react-router-dom";
 import FileEntryContextDropdown from "./FileEntryContextDropdown.tsx";
+import RenameModal from "./RenameModal";
+import CopyMoveFileModal from "./CopyMoveFileModal";
+import ImageModal from "./ImageModal";
+import EditorModal from "../../EditorModal";
+import DownloadFileModal from "./DownloadFileModal";
 
 interface ServerFilesListProps
 {
@@ -31,10 +36,52 @@ export default function ServerFilesList(props: ServerFilesListProps)
     const [currentFile, setCurrentFile] = useState<FileItem | null>(null);
     const [contextPosition, setContextPosition] = useState<{ x: number, y: number }>({x: 0, y: 0});
 
+    const [renameFile, setRenameFile] = useState<FileItem | null>(null);
+    const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
+    const [viewFile, setViewFile] = useState<FileItem | null>(null);
+
 
     return (
         <>
-            <FileEntryContextDropdown file={currentFile} position={contextPosition} onClose={() => setCurrentFile(null)} refresh={props.refresh}/>
+            <RenameModal
+                file={renameFile}
+                onClose={name =>
+                {
+                    if (name !== null)
+                    {
+                        console.log(name);
+                    }
+                    setRenameFile(null);
+
+                }}
+            />
+            <CopyMoveFileModal isOpen={copyMoveFile !== null} file={copyMoveFile} onClose={() => setCopyMoveFile(null)}/>
+
+            {viewFile !== null &&
+                (() =>
+                {
+                    const type = viewFile.category;
+                    console.log(type == FileMimeCategory.TEXT);
+                    switch (type)
+                    {
+                        case FileMimeCategory.IMAGE:
+                            return <ImageModal image={server?.filesystem().getFileUrl(viewFile)} onClose={() => setViewFile(null)}/>;
+                        case FileMimeCategory.TEXT:
+                            return <EditorModal isOpen={true} onClose={() => setViewFile(null)} title={viewFile.name} file={viewFile}/>;
+                        default:
+                            return <DownloadFileModal file={viewFile} onClose={() => setViewFile(null)}/>;
+                    }
+                })()
+            }
+            <FileEntryContextDropdown
+                file={currentFile}
+                position={contextPosition}
+                onClose={() => setCurrentFile(null)}
+                refresh={props.refresh}
+                onCopyMove={setCopyMoveFile}
+                onRename={setRenameFile}
+                onView={setViewFile}
+            />
             <Table
                 isStriped
                 removeWrapper
@@ -90,6 +137,10 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                 {
                                     if (!props.selectionMode && file.is_dir)
                                         props.onPathChange(`${props.path}${props.path.endsWith("/") ? "" : "/"}${file.name}`);
+                                    else if (!props.selectionMode && !file.is_dir)
+                                    {
+                                        setViewFile(file);
+                                    }
                                 }}
                                 data-has-open-context-menu={currentFile === file}
                             >
