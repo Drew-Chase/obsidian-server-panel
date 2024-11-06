@@ -1,15 +1,10 @@
-import {FileItem, FileMimeCategory} from "../../../ts/file-system.ts";
+import {FileItem} from "../../../ts/file-system.ts";
 import {cn, Listbox, ListboxItem, ListboxSection} from "@nextui-org/react";
 import {useEffect, useState} from "react";
 import $ from "jquery";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCopy, faEye, faFileDownload, faPencil, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
-import RenameModal from "./RenameModal.tsx";
-import CopyMoveFileModal from "./CopyMoveFileModal.tsx";
-import DownloadFileModal from "./DownloadFileModal.tsx";
-import EditorModal from "../../EditorModal.tsx";
-import ImageModal from "./ImageModal.tsx";
 
 interface FileEntryContextDropdownProps
 {
@@ -17,15 +12,15 @@ interface FileEntryContextDropdownProps
     onClose: () => void;
     position: { x: number, y: number };
     refresh: () => void;
+    onView?: (file: FileItem) => void;
+    onRename?: (file: FileItem) => void;
+    onCopyMove?: (file: FileItem) => void;
 }
 
 export default function FileEntryContextDropdown(props: FileEntryContextDropdownProps)
 {
 
     const [id, setId] = useState("");
-    const [renameFile, setRenameFile] = useState<FileItem | null>(null);
-    const [copyMoveFile, setCopyMoveFile] = useState<FileItem | null>(null);
-    const [viewFile, setViewFile] = useState<FileItem | null>(null);
     const {server} = useSelectedServer();
 
 
@@ -76,37 +71,6 @@ export default function FileEntryContextDropdown(props: FileEntryContextDropdown
 
     return (
         <>
-            <RenameModal
-                file={renameFile}
-                onClose={name =>
-                {
-                    if (name !== null)
-                    {
-                        console.log(name);
-                    }
-                    setRenameFile(null);
-
-                }}
-            />
-            <CopyMoveFileModal isOpen={copyMoveFile !== null} file={copyMoveFile} onClose={() => setCopyMoveFile(null)}/>
-
-            {viewFile !== null &&
-                (() =>
-                {
-                    const type = viewFile.category;
-                    console.log(type == FileMimeCategory.TEXT);
-                    switch (type)
-                    {
-                        case FileMimeCategory.IMAGE:
-                            return <ImageModal image={server?.filesystem().getFileUrl(viewFile)} onClose={() => setViewFile(null)}/>;
-                        case FileMimeCategory.TEXT:
-                            return <EditorModal isOpen={true} onClose={() => setViewFile(null)} title={viewFile.name} file={viewFile}/>;
-                        default:
-                            return <DownloadFileModal file={viewFile} onClose={() => setViewFile(null)}/>;
-                    }
-                })()
-            }
-
             <div id={`file-entry-context-dropdown-${id}`} className={
                 cn(
                     "flex flex-col fixed z-10",
@@ -125,7 +89,7 @@ export default function FileEntryContextDropdown(props: FileEntryContextDropdown
                             endContent={<FontAwesomeIcon icon={faPencil}/>}
                             onClick={() =>
                             {
-                                setRenameFile(props.file);
+                                props.onRename?.(props.file!);
                                 props.onClose();
                             }}
                         >
@@ -136,7 +100,7 @@ export default function FileEntryContextDropdown(props: FileEntryContextDropdown
                             endContent={<FontAwesomeIcon icon={faCopy}/>}
                             onClick={() =>
                             {
-                                setCopyMoveFile(props.file);
+                                props.onCopyMove?.(props.file!);
                                 props.onClose();
                             }}
                         >
@@ -148,7 +112,7 @@ export default function FileEntryContextDropdown(props: FileEntryContextDropdown
                             hidden={props.file?.is_dir}
                             onClick={() =>
                             {
-                                setViewFile(props.file);
+                                props.onView?.(props.file!);
                                 props.onClose();
                             }}
                         >
