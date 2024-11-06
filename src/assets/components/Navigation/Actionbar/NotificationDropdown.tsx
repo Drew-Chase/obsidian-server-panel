@@ -1,7 +1,8 @@
-import {Badge, Button, Chip, PopoverContent, PopoverTrigger, Tab, Tabs, Tooltip} from "@nextui-org/react";
+import {Badge, Button, Chip, PopoverContent, PopoverTrigger, Tab, Tabs} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBell} from "@fortawesome/free-solid-svg-icons";
 import OPopover from "../../Extends/OPopover.tsx";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function NotificationDropdown()
 {
@@ -12,9 +13,9 @@ export default function NotificationDropdown()
                 <div>
                     <Badge content={"12"} showOutline={false} variant={"shadow"} hidden={false}>
                         <div className={"p-1 cursor-pointer"}>
-                            <Tooltip content={"Notifications"}>
+                            <OTooltip content={"Notifications"}>
                                 <FontAwesomeIcon icon={faBell} fontSize={18} className={"cursor-pointer text-white opacity-50 hover:opacity-100 transition-all text-xl"}/>
-                            </Tooltip>
+                            </OTooltip>
                         </div>
                     </Badge>
                 </div>

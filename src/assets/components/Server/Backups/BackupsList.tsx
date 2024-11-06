@@ -1,6 +1,7 @@
-import {Button, Listbox, ListboxItem, ScrollShadow, Tooltip} from "@nextui-org/react";
+import {Button, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus} from "@fortawesome/free-solid-svg-icons";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function BackupsList()
 {
@@ -9,9 +10,9 @@ export default function BackupsList()
             <div className={"flex flex-row"}>
 
                 <p className={"text-lg font-semibold mr-auto"}>Backups</p>
-                <Tooltip content={"Create a manual backup"}>
+                <OTooltip content={"Create a manual backup"}>
                     <Button aria-label={"Create a manual backup"}><FontAwesomeIcon icon={faPlus}/></Button>
-                </Tooltip>
+                </OTooltip>
             </div>
 
             <div className={"flex flex-row w-full text-tiny my-4"}>

@@ -50,9 +50,9 @@ export default function BanPlayersList()
                                     <TableCell>Shroototem</TableCell>
                                     <TableCell>
                                         <div className={"flex flex-row items-center"}>
-                                            <Tooltip content={"Unban Player"}>
+                                            <OTooltip content={"Unban Player"}>
                                                 <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faUserCheck}/></Button>
-                                            </Tooltip>
+                                            </OTooltip>
                                         </div>
                                     </TableCell>
                                 </TableRow>

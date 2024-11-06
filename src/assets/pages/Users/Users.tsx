@@ -1,8 +1,9 @@
-import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faTrash, faUserEdit} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
 import OInput from "../../components/Extends/OInput.tsx";
+import OTooltip from "../../components/Extends/OTooltip.tsx";
 
 export default function Users()
 {
@@ -53,12 +54,12 @@ export default function Users()
                                         <TableCell><Chip color={"primary"} variant={"flat"}>Administrator</Chip></TableCell>
                                         <TableCell>
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Edit users group"}>
+                                                <OTooltip content={"Edit users group"}>
                                                     <Button className={"min-w-0"} variant={"light"}><FontAwesomeIcon icon={faUserEdit}/></Button>
-                                                </Tooltip>
-                                                <Tooltip content={"Delete user"}>
+                                                </OTooltip>
+                                                <OTooltip content={"Delete user"}>
                                                     <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faTrash}/></Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         </TableCell>
                                     </TableRow>

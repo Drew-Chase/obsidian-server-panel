@@ -1,9 +1,10 @@
 import ExtendedSwitch from "../Extends/ExtendedSwitch.tsx";
-import {Button, Tooltip} from "@nextui-org/react";
+import {Button} from "@nextui-org/react";
 import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faFolderOpen} from "@fortawesome/free-solid-svg-icons";
 import OInput from "../Extends/OInput.tsx";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function ApplicationSettings()
 {
@@ -66,9 +67,9 @@ export default function ApplicationSettings()
                 isRequired
                 description={"The directory where server instances are stored."}
                 endContent={
-                    <Tooltip content={"Select Directory"}>
+                    <OTooltip content={"Select Directory"}>
                         <Button size={"sm"} className={"min-w-0"}><FontAwesomeIcon icon={faFolderOpen}/></Button>
-                    </Tooltip>
+                    </OTooltip>
                 }
             />
             <OInput
@@ -78,9 +79,9 @@ export default function ApplicationSettings()
                 isRequired
                 description={"The directory where server backups are stored."}
                 endContent={
-                    <Tooltip content={"Select Directory"}>
+                    <OTooltip content={"Select Directory"}>
                         <Button size={"sm"} className={"min-w-0"}><FontAwesomeIcon icon={faFolderOpen}/></Button>
-                    </Tooltip>
+                    </OTooltip>
                 }
             />
             <OInput
@@ -90,9 +91,9 @@ export default function ApplicationSettings()
                 isRequired
                 description={"The directory where the Java installations are located."}
                 endContent={
-                    <Tooltip content={"Select Directory"}>
+                    <OTooltip content={"Select Directory"}>
                         <Button size={"sm"} className={"min-w-0"}><FontAwesomeIcon icon={faFolderOpen}/></Button>
-                    </Tooltip>
+                    </OTooltip>
                 }
             />
         </div>

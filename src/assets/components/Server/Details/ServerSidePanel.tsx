@@ -1,6 +1,6 @@
 import MemoryAllocationInput from "./MemoryAllocationInput.tsx";
 import StopButton from "./StopButton.tsx";
-import {AutocompleteItem, Button, Link, Tooltip} from "@nextui-org/react";
+import {AutocompleteItem, Button, Link} from "@nextui-org/react";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArchive, faEdit, faLayerGroup} from "@fortawesome/free-solid-svg-icons";
@@ -8,6 +8,7 @@ import OInput from "../../Extends/OInput.tsx";
 import {useEffect, useState} from "react";
 import ServerSettings from "../../../ts/server-settings.ts";
 import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function ServerSidePanel()
 {
@@ -54,26 +55,26 @@ export default function ServerSidePanel()
                 value={settings?.executable}
                 isReadOnly
                 endContent={
-                    <Tooltip content={"Set the servers start executable."}>
+                    <OTooltip content={"Set the servers start executable."}>
                         <Button variant={"light"} className={"min-w-0"} as={Link} href={`/app/server/files/?filter=${encodeURIComponent(".jar,.sh,.bat")}`}>
                             <FontAwesomeIcon icon={faEdit}/>
                         </Button>
-                    </Tooltip>
+                    </OTooltip>
                 }
             >
                 <AutocompleteItem key={"server.jar"} value={"server.jar"}>server.jar</AutocompleteItem>
 
             </OInput>
 
-            <Tooltip content={"This will zip the entire server and download it."}>
+            <OTooltip content={"This will zip the entire server and download it."}>
                 <Button endContent={<DownloadFile/>}><span className={"w-full"}>Download Server</span></Button>
-            </Tooltip>
-            <Tooltip content={"This will archive the server and remove it from the server list."}>
+            </OTooltip>
+            <OTooltip content={"This will archive the server and remove it from the server list."}>
                 <Button endContent={<FontAwesomeIcon icon={faArchive}/>}><span className={"w-full"}>Archive Server</span></Button>
-            </Tooltip>
-            <Tooltip content={"This will create a new server instance from the current server."}>
+            </OTooltip>
+            <OTooltip content={"This will create a new server instance from the current server."}>
                 <Button endContent={<FontAwesomeIcon icon={faLayerGroup}/>}><span className={"w-full"}>Create Instance from Server</span></Button>
-            </Tooltip>
+            </OTooltip>
 
 
         </div>

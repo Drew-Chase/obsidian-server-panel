@@ -1,8 +1,9 @@
-import {Button, Listbox, ListboxItem, ScrollShadow, Spinner, Tooltip} from "@nextui-org/react";
+import {Button, Listbox, ListboxItem, ScrollShadow, Spinner} from "@nextui-org/react";
 import ExtendedSwitch from "../../Extends/ExtendedSwitch.tsx";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {useEffect, useState} from "react";
 import MinecraftVersions, {MinecraftVersion} from "../../../ts/mincraft-versions.ts";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function MinecraftVersionsList()
 {
@@ -62,9 +63,9 @@ export default function MinecraftVersionsList()
                                 description={version.latest ? `latest ${version.type}` : version.type}
                                 endContent={
                                     <div className={"flex flex-row"}>
-                                        <Tooltip content={`Switch to ${version.id}`}>
+                                        <OTooltip content={`Switch to ${version.id}`}>
                                             <Button aria-label={`Switch to version ${version.id}`} variant={"light"} size={"sm"} className={"min-w-0"}><DownloadFile/></Button>
-                                        </Tooltip>
+                                        </OTooltip>
                                     </div>
                                 }
                                 textValue={`Version ${version.id}`}

@@ -1,8 +1,9 @@
 import {Bar, BarChart, ResponsiveContainer, Tooltip as ChartTooltip, XAxis, YAxis} from "recharts";
-import {Button, Divider, Tooltip} from "@nextui-org/react";
+import {Button, Divider} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowDown, faCircle} from "@fortawesome/free-solid-svg-icons";
 import {HTMLAttributes} from "react";
+import OTooltip from "../Extends/OTooltip";
 
 
 interface CustomTooltipProps
@@ -85,14 +86,14 @@ export default function ExtendedOnlinePlayersStat(props: HTMLAttributes<any>)
                     <FontAwesomeIcon icon={faCircle} width={8} color={"#00C2FF"}/>
                     <span className={"text-neutral-400 text-sm"}>Other</span>
                 </div>
-                <Tooltip content={"Export a CSV with a breakdown of online player stats."}>
+                <OTooltip content={"Export a CSV with a breakdown of online player stats."}>
                     <Button
                         endContent={<FontAwesomeIcon icon={faArrowDown}/>}
                         className={"ml-auto"}
                     >
                         Export
                     </Button>
-                </Tooltip>
+                </OTooltip>
             </div>
             <ResponsiveContainer width={"100%"} height={"100%"} className={"min-h-[200px]"}>
                 <BarChart

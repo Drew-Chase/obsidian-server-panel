@@ -1,4 +1,4 @@
-import {Button, Chip, cn, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, cn, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import Conversions from "../../../ts/conversions.ts";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -14,6 +14,7 @@ import CopyMoveFileModal from "./CopyMoveFileModal";
 import ImageModal from "./ImageModal";
 import EditorModal from "../../EditorModal";
 import DownloadFileModal from "./DownloadFileModal";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 interface ServerFilesListProps
 {
@@ -164,7 +165,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                 </TableCell>
                                 <TableCell>
                                     <div className={"flex flex-row"}>
-                                        <Tooltip content={"Download File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                        <OTooltip content={"Download File"}>
                                             <Button
                                                 className={"min-w-0"}
                                                 variant={"light"}
@@ -174,8 +175,8 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                                     server?.filesystem().download(file);
                                                 }}
                                             ><DownloadFile/></Button>
-                                        </Tooltip>
-                                        <Tooltip content={"Delete File"} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                        </OTooltip>
+                                        <OTooltip content={"Delete File"}>
                                             <Button
                                                 className={"min-w-0"}
                                                 variant={"light"}
@@ -208,9 +209,9 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                             >
                                                 <FontAwesomeIcon icon={faTrash}/>
                                             </Button>
-                                        </Tooltip>
+                                        </OTooltip>
                                         <div>
-                                            <Tooltip content={"More options..."} closeDelay={0} classNames={{base: "pointer-events-none"}}>
+                                            <OTooltip content={"More options..."}>
                                                 <Button
                                                     className={"min-w-0"}
                                                     variant={"light"}
@@ -229,7 +230,7 @@ export default function ServerFilesList(props: ServerFilesListProps)
                                                 >
                                                     <FontAwesomeIcon icon={faEllipsis}/>
                                                 </Button>
-                                            </Tooltip>
+                                            </OTooltip>
                                         </div>
                                     </div>
                                 </TableCell>

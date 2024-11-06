@@ -1,5 +1,5 @@
 import {Navbar, NavbarContent, NavbarItem} from "@nextui-org/navbar";
-import {Accordion, AccordionItem, Avatar, cn, Link, Tooltip} from "@nextui-org/react";
+import {Accordion, AccordionItem, Avatar, cn, Link} from "@nextui-org/react";
 import Home from "../../images/Home.svg.tsx";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faChevronRight} from "@fortawesome/free-solid-svg-icons";
@@ -7,6 +7,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {useAuth} from "../../providers/AuthProvider.tsx";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 import {useEffect, useState} from "react";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function Navigation()
 {
@@ -83,7 +84,7 @@ export default function Navigation()
                             <AccordionItem
                                 key={"server"}
                                 startContent={<Avatar src={`/api/server/${selectedServerId}/icon`}/>}
-                                title={server.name.length > 12 ? <Tooltip content={server.name}><span className={"truncate max-w-[120px]"}>{server.name}</span></Tooltip> : server.name}
+                                title={server.name.length > 12 ? <OTooltip content={server.name}><span className={"truncate max-w-[120px]"}>{server.name}</span></OTooltip> : server.name}
                                 indicator={indicator}
                                 aria-label={server.name}
                                 classNames={{

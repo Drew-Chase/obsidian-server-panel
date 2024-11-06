@@ -35,12 +35,12 @@ export default function InstalledModItem(props: ModItemProps)
             </div>
             <p className={"opacity-70"}>{props.version}</p>
             <div className={"flex flex-row items-center gap-4"}>
-                <Tooltip content={`Delete '${props.name}'`}>
+                <OTooltip content={`Delete '${props.name}'`}>
                     <Button color={"danger"} className={"min-w-0"}><FontAwesomeIcon icon={faTrash}/></Button>
-                </Tooltip>
-                <Tooltip content={`Update '${props.name}'`}>
+                </OTooltip>
+                <OTooltip content={`Update '${props.name}'`}>
                     <Button isDisabled={!requiresUpdate} className={"min-w-0"}><FontAwesomeIcon icon={requiresUpdate ? faArrowsRotate : faCheck}/></Button>
-                </Tooltip>
+                </OTooltip>
                 <Switch isSelected={!disabled} onValueChange={value => setDisabled(!value)}/>
             </div>
         </div>

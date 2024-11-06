@@ -1,9 +1,10 @@
-import {Button, Checkbox, CheckboxGroup, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ScrollShadow, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip, useDisclosure} from "@nextui-org/react";
+import {Button, Checkbox, CheckboxGroup, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ScrollShadow, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faTrash, faUserEdit} from "@fortawesome/free-solid-svg-icons";
 import {useState} from "react";
 import {setTitle} from "../../../main.tsx";
 import OInput from "../../components/Extends/OInput.tsx";
+import OTooltip from "../../components/Extends/OTooltip.tsx";
 
 export default function UserGroups()
 {
@@ -95,12 +96,12 @@ export default function UserGroups()
                                         <TableCell>Administrator</TableCell>
                                         <TableCell>
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Edit users group"}>
+                                                <OTooltip content={"Edit users group"}>
                                                     <Button className={"min-w-0"} variant={"light"}><FontAwesomeIcon icon={faUserEdit}/></Button>
-                                                </Tooltip>
-                                                <Tooltip content={"Delete user"}>
+                                                </OTooltip>
+                                                <OTooltip content={"Delete user"}>
                                                     <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faTrash}/></Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         </TableCell>
                                     </TableRow>

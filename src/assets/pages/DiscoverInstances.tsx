@@ -1,4 +1,4 @@
-import {Listbox, ListboxItem, SelectItem, Spinner, Tooltip} from "@nextui-org/react";
+import {Listbox, ListboxItem, SelectItem, Spinner} from "@nextui-org/react";
 import MagnifyGlass from "../images/MagnifyGlass.svg.tsx";
 import DiscoverModItem from "../components/Server/DiscoverModItem.tsx";
 import {setTitle} from "../../main.tsx";
@@ -6,6 +6,7 @@ import Instances, {Instance, Platforms, SortOptions} from "../ts/instances.ts";
 import {useEffect, useState} from "react";
 import OInput from "../components/Extends/OInput.tsx";
 import OSelect from "../components/Extends/OSelect.tsx";
+import OTooltip from "../components/Extends/OTooltip.tsx";
 
 export default function DiscoverInstances()
 {
@@ -64,7 +65,7 @@ export default function DiscoverInstances()
                                 <SelectItem key={platform}>{platform}</SelectItem>
                             ))}
                         </OSelect>
-                        <Tooltip content={"Sort options only work for Modrinth"} closeDelay={0}>
+                        <OTooltip content={"Sort options only work for Modrinth"} >
                             <OSelect
                                 label={"Sort By"}
                                 disallowEmptySelection
@@ -78,7 +79,7 @@ export default function DiscoverInstances()
                                     <SelectItem key={sort}>{sort}</SelectItem>
                                 ))}
                             </OSelect>
-                        </Tooltip>
+                        </OTooltip>
                     </div>
                 </div>
                 <div className={"flex flex-col gap-4 mt-4 rounded-lg bg-neutral-800 p-4 overflow-y-auto max-h-[calc(100dvh_-_270px)] h-screen"}>

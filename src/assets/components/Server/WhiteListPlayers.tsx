@@ -1,6 +1,7 @@
-import {Button, Input, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Input, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPlus, faX} from "@fortawesome/free-solid-svg-icons";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function WhiteListPlayers()
 {
@@ -50,9 +51,9 @@ export default function WhiteListPlayers()
                                     <TableCell>Shroototem</TableCell>
                                     <TableCell>
                                         <div className={"flex flex-row items-center"}>
-                                            <Tooltip content={"Remove from Whitelist"}>
+                                            <OTooltip content={"Remove from Whitelist"}>
                                                 <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faX}/></Button>
-                                            </Tooltip>
+                                            </OTooltip>
                                         </div>
                                     </TableCell>
                                 </TableRow>

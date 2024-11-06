@@ -1,4 +1,4 @@
-import {Avatar, Button, Chip, cn, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Avatar, Button, Chip, cn, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCalendar, faCheckCircle, faCheckSquare, faCircle, faClock, faEllipsis, faLayerGroup, faPlay, faPlus, faStop, faUser} from "@fortawesome/free-solid-svg-icons";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
@@ -6,6 +6,7 @@ import {useScreenSize} from "../../providers/ScreenSizeProvider.tsx";
 import {useEffect, useState} from "react";
 import Server, {ServerStatus} from "../../ts/servers.ts";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function ServerList()
 {
@@ -25,7 +26,7 @@ export default function ServerList()
         <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 h-[calc(100dvh_-_330px)] min-h-[300px] overflow-y-auto grow relative"}>
             <div className={"flex flex-row w-full items-center"}>
                 <p className={"text-lg font-semibold"}>Servers</p>
-                <Tooltip content={"Create a new server"}>
+                <OTooltip content={"Create a new server"}>
                     <Button
                         color={"primary"}
                         endContent={<FontAwesomeIcon icon={faPlus}/>}
@@ -35,7 +36,7 @@ export default function ServerList()
                     >
                         Create server
                     </Button>
-                </Tooltip>
+                </OTooltip>
             </div>
 
             <Modal size={"2xl"} isOpen={isActionModalOpen} onClose={() => setIsActionModalOpen(false)}>
@@ -112,15 +113,15 @@ export default function ServerList()
                                             </Button>
                                         ) : (
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Select Server"}>
+                                                <OTooltip content={"Select Server"}>
                                                     <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} onClick={() => setSelectedServerId(server.id)}> <FontAwesomeIcon icon={faCheckCircle}/> </Button>
-                                                </Tooltip>
-                                                <Tooltip content={`${isRunning ? "Start" : "Stop"} the Server`} color={isRunning ? "default" : "danger"}>
+                                                </OTooltip>
+                                                <OTooltip content={`${isRunning ? "Start" : "Stop"} the Server`} color={isRunning ? "default" : "danger"}>
                                                     <Button variant={"light"} className={cn("min-w-0 w-2 data-[hover]:text-foreground", isRunning ? "text-neutral-400" : "text-danger")}> <FontAwesomeIcon icon={isRunning ? faPlay : faStop}/> </Button>
-                                                </Tooltip>
-                                                <Tooltip content={"Download Server"}>
+                                                </OTooltip>
+                                                <OTooltip content={"Download Server"}>
                                                     <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"}> <DownloadFile/> </Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         )}
                                 </TableCell>

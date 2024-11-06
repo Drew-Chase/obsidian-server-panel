@@ -1,9 +1,10 @@
 import ODropdown from "../../Extends/ODropdown.tsx";
-import {Avatar, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Link, Tooltip} from "@nextui-org/react";
+import {Avatar, DropdownItem, DropdownMenu, DropdownSection, DropdownTrigger, Link} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExternalLink, faSignOut, faSliders, faUser, faUsersGear, faUserShield} from "@fortawesome/free-solid-svg-icons";
 import {useAuth} from "../../../providers/AuthProvider.tsx";
 import {useNavigate} from "react-router-dom";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function ProfileDropdown()
 {
@@ -14,9 +15,9 @@ export default function ProfileDropdown()
         <ODropdown>
             <DropdownTrigger>
                 <div>
-                    <Tooltip content={auth.getUserProfile().username}>
+                    <OTooltip content={auth.getUserProfile().username}>
                         <Avatar className={"cursor-pointer text-white bg-[#2c41aa] data-[hover]:bg-white data-[hover]:text-black transition-all"} name={auth.getUserProfile().username[0].toUpperCase()}/>
-                    </Tooltip>
+                    </OTooltip>
                 </div>
             </DropdownTrigger>
             <DropdownMenu>

@@ -1,7 +1,8 @@
-import {AutocompleteItem, Button, Tab, Tabs, Tooltip} from "@nextui-org/react";
+import {AutocompleteItem, Button, Tab, Tabs} from "@nextui-org/react";
 import OAutocomplete from "../../Extends/OAutocomplete.tsx";
 import {useEffect, useState} from "react";
 import {getLoaderVersions, getSupportedLoaders} from "../../../ts/loaders.ts";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 
 export default function LoaderSettings({minecraft_version, snapshots, onLoaderChange}: { minecraft_version: string, snapshots: boolean, onLoaderChange: (loader: string, version: string) => void })
@@ -40,9 +41,9 @@ export default function LoaderSettings({minecraft_version, snapshots, onLoaderCh
                                 ))}
                             </OAutocomplete>
                             {supportedLoader === "Fabric" &&
-                                <Tooltip content={"This is required for most fabric mods"}>
+                                <OTooltip content={"This is required for most fabric mods"}>
                                     <Button>Install Fabric API</Button>
-                                </Tooltip>
+                                </OTooltip>
                             }
                         </div>
                     </Tab>

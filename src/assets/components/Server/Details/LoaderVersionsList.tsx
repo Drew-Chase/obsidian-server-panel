@@ -1,5 +1,6 @@
-import {Button, Listbox, ListboxItem, ScrollShadow, Tooltip} from "@nextui-org/react";
+import {Button, Listbox, ListboxItem, ScrollShadow} from "@nextui-org/react";
 import DownloadFile from "../../../images/DownloadFile.svg.tsx";
+import OTooltip from "../../Extends/OTooltip.tsx";
 
 export default function LoaderVersionsList()
 {
@@ -25,9 +26,9 @@ export default function LoaderVersionsList()
                             description={i === 0 ? "latest release" : i === 1 ? "latest snapshot" : "release"}
                             endContent={
                                 <div className={"flex flex-row"}>
-                                    <Tooltip content={"Switch to this version."}>
+                                    <OTooltip content={"Switch to this version."}>
                                         <Button variant={"light"} size={"sm"} className={"min-w-0"} aria-label="Download version"><DownloadFile/></Button>
-                                    </Tooltip>
+                                    </OTooltip>
                                 </div>
                             }
                         />

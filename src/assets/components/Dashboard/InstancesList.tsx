@@ -1,9 +1,10 @@
-import {Button, Chip, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faAward, faBook, faCirclePlus, faCopy, faEllipsis, faHardDrive, faLayerGroup, faPlus} from "@fortawesome/free-solid-svg-icons";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
 import {useScreenSize} from "../../providers/ScreenSizeProvider.tsx";
 import {useState} from "react";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function InstancesList()
 {
@@ -31,7 +32,7 @@ export default function InstancesList()
             <div className={"flex flex-row w-full items-center"}>
                 <p className={"text-lg font-semibold"}>Instances</p>
 
-                <Tooltip content={"Create a new custom instance, this will be used to create new servers."}>
+                <OTooltip content={"Create a new custom instance, this will be used to create new servers."}>
                     <Button
                         color={"primary"}
                         endContent={<FontAwesomeIcon icon={faPlus}/>}
@@ -40,7 +41,7 @@ export default function InstancesList()
                     >
                         Custom Instance
                     </Button>
-                </Tooltip>
+                </OTooltip>
             </div>
 
             <Table
@@ -91,15 +92,15 @@ export default function InstancesList()
                                             </Button>
                                         ) : (
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Create Server"}>
+                                                <OTooltip content={"Create Server"}>
                                                     <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} aria-label={"Create Server"}> <FontAwesomeIcon icon={faCirclePlus}/> </Button>
-                                                </Tooltip>
-                                                <Tooltip content={`Duplicate Instance`}>
+                                                </OTooltip>
+                                                <OTooltip content={`Duplicate Instance`}>
                                                     <Button variant={"light"} className={"min-w-0 w-2 data-[hover]:text-foreground text-neutral-400"} aria-label={"Duplicate Instance"}> <FontAwesomeIcon icon={faCopy}/> </Button>
-                                                </Tooltip>
-                                                <Tooltip content={"Download Instance"}>
+                                                </OTooltip>
+                                                <OTooltip content={"Download Instance"}>
                                                     <Button variant={"light"} className={"min-w-0 w-2 text-neutral-400 data-[hover]:text-foreground"} aria-label={"Download Instance"}> <DownloadFile/> </Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         )}
                                 </TableCell>

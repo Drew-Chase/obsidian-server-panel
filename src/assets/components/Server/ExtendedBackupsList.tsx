@@ -1,7 +1,8 @@
-import {Button, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faFloppyDisk, faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
 import DownloadFile from "../../images/DownloadFile.svg.tsx";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function ExtendedBackupsList()
 {
@@ -10,9 +11,9 @@ export default function ExtendedBackupsList()
             <div className={"flex flex-row"}>
 
                 <p className={"text-lg font-semibold mr-auto"}>Backups</p>
-                <Tooltip content={"Create a manual backup"}>
+                <OTooltip content={"Create a manual backup"}>
                     <Button><FontAwesomeIcon icon={faPlus}/></Button>
-                </Tooltip>
+                </OTooltip>
             </div>
 
             <Table
@@ -47,15 +48,15 @@ export default function ExtendedBackupsList()
                             <TableCell>2:36:50 PM</TableCell>
                             <TableCell>
                                 <div className={"flex flex-row items-center"}>
-                                    <Tooltip content={"Restore from backup"}>
+                                    <OTooltip content={"Restore from backup"}>
                                         <Button className={"min-w-0"} variant={"light"}><FontAwesomeIcon icon={faFloppyDisk}/></Button>
-                                    </Tooltip>
-                                    <Tooltip content={"Download backup"}>
+                                    </OTooltip>
+                                    <OTooltip content={"Download backup"}>
                                         <Button className={"min-w-0"} variant={"light"}><DownloadFile/></Button>
-                                    </Tooltip>
-                                    <Tooltip content={"Delete backup"}>
+                                    </OTooltip>
+                                    <OTooltip content={"Delete backup"}>
                                         <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faTrash}/></Button>
-                                    </Tooltip>
+                                    </OTooltip>
                                 </div>
                             </TableCell>
                         </TableRow>

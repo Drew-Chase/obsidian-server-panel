@@ -1,6 +1,7 @@
-import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip} from "@nextui-org/react";
+import {Button, Chip, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUserCheck, faUserSlash, faX} from "@fortawesome/free-solid-svg-icons";
+import OTooltip from "../Extends/OTooltip";
 
 
 enum ResponseType
@@ -92,24 +93,24 @@ export default function ExtendedRecentConnectionsStat()
                                     <TableCell>
                                         {responseType === ResponseType.Success ? (
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Kick this Player"}>
+                                                <OTooltip content={"Kick this Player"}>
                                                     <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faX}/></Button>
-                                                </Tooltip>
-                                                <Tooltip content={"Ban this Player"}>
+                                                </OTooltip>
+                                                <OTooltip content={"Ban this Player"}>
                                                     <Button className={"min-w-0"} variant={"light"} color={"danger"}><FontAwesomeIcon icon={faUserSlash}/></Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         ) : responseType === ResponseType.WhitelistError ? (
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Add to whitelist"}>
+                                                <OTooltip content={"Add to whitelist"}>
                                                     <Button className={"min-w-0"} variant={"light"}><FontAwesomeIcon icon={faUserCheck}/></Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         ) : responseType === ResponseType.BanError ? (
                                             <div className={"flex flex-row items-center"}>
-                                                <Tooltip content={"Unban Player"}>
+                                                <OTooltip content={"Unban Player"}>
                                                     <Button className={"min-w-0"} variant={"light"}><FontAwesomeIcon icon={faUserCheck}/></Button>
-                                                </Tooltip>
+                                                </OTooltip>
                                             </div>
                                         ) : (<></>)}
                                     </TableCell>

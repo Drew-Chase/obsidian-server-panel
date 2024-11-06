@@ -1,4 +1,4 @@
-import {Badge, BreadcrumbItem, Breadcrumbs, Button, Divider, Tooltip} from "@nextui-org/react";
+import {Badge, BreadcrumbItem, Breadcrumbs, Button, Divider} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheckCircle, faFileArchive, faFileDownload, faFolderPlus, faRefresh, faTrashAlt, faUpload} from "@fortawesome/free-solid-svg-icons";
 import {setTitle} from "../../../main.tsx";
@@ -7,6 +7,7 @@ import {FileItem} from "../../ts/file-system.ts";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 import ServerFilesList from "../../components/Server/Files/ServerFilesList.tsx";
 import NewPathModal from "../../components/Server/Files/NewPathModal.tsx";
+import OTooltip from "../../components/Extends/OTooltip.tsx";
 
 export default function ServerFiles()
 {
@@ -72,7 +73,7 @@ export default function ServerFiles()
                         ))}
                     </Breadcrumbs>
                     <div className={"ml-auto flex flex-row gap-2"}>
-                        <Tooltip content={`${selectionMode ? "Disable" : "Enable"} Selection Mode`}>
+                        <OTooltip content={`${selectionMode ? "Disable" : "Enable"} Selection Mode`}>
                             <Button
                                 className={"min-w-0"}
                                 aria-label={`${selectionMode ? "Disable" : "Enable"} Selection Mode`}
@@ -81,34 +82,34 @@ export default function ServerFiles()
                             >
                                 <FontAwesomeIcon icon={faCheckCircle}/>
                             </Button>
-                        </Tooltip>
-                        <Tooltip content={"Upload a file or directory."}>
+                        </OTooltip>
+                        <OTooltip content={"Upload a file or directory."}>
                             <Button className={"min-w-0"} aria-label="Upload a file or directory."><FontAwesomeIcon icon={faUpload}/></Button>
-                        </Tooltip>
-                        <Tooltip content={"Create a new file or directory."}>
+                        </OTooltip>
+                        <OTooltip content={"Create a new file or directory."}>
                             <Button className={"min-w-0"} aria-label="Create a new directory." onClick={() => setIsNewPathModalOpen(true)}><FontAwesomeIcon icon={faFolderPlus}/></Button>
-                        </Tooltip>
-                        <Tooltip content={"Refresh current directory."}>
+                        </OTooltip>
+                        <OTooltip content={"Refresh current directory."}>
                             <Button className={"min-w-0"} aria-label="Refresh current directory." onClick={refresh}><FontAwesomeIcon icon={faRefresh}/></Button>
-                        </Tooltip>
+                        </OTooltip>
 
                         {selectedItems.length > 0 && (
                             <div className={"flex flex-row gap-4"}>
                                 <Divider orientation={"vertical"}/>
                                 <Badge content={selectedItems.length} showOutline={false} color={"primary"}>
-                                    <Tooltip content={`Archive and download ${selectedItems.length} files`}>
+                                    <OTooltip content={`Archive and download ${selectedItems.length} files`}>
                                         <Button className={"min-w-0"} aria-label="Archive and download files"><FontAwesomeIcon icon={faFileDownload}/></Button>
-                                    </Tooltip>
+                                    </OTooltip>
                                 </Badge>
                                 <Badge content={selectedItems.length} showOutline={false} color={"primary"}>
-                                    <Tooltip content={`Archive ${selectedItems.length} files`}>
+                                    <OTooltip content={`Archive ${selectedItems.length} files`}>
                                         <Button className={"min-w-0"} aria-label="Archive files"><FontAwesomeIcon icon={faFileArchive}/></Button>
-                                    </Tooltip>
+                                    </OTooltip>
                                 </Badge>
                                 <Badge content={selectedItems.length} showOutline={false} color={"primary"}>
-                                    <Tooltip content={`Delete ${selectedItems.length} files`}>
+                                    <OTooltip content={`Delete ${selectedItems.length} files`}>
                                         <Button className={"min-w-0"} aria-label={`Delete ${selectedItems.length} files`} color={"danger"}><FontAwesomeIcon icon={faTrashAlt}/></Button>
-                                    </Tooltip>
+                                    </OTooltip>
                                 </Badge>
                             </div>
                         )}

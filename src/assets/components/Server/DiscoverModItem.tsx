@@ -1,4 +1,4 @@
-import {Avatar, Button, Chip, Image, Link, Tooltip} from "@nextui-org/react";
+import {Avatar, Button, Chip, Image, Link} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCalendar, faDownload, faHeart} from "@fortawesome/free-solid-svg-icons";
 import {Instance, Modloader} from "../../ts/instances.ts";
@@ -6,6 +6,7 @@ import Conversions from "../../ts/conversions.ts";
 import ForgeIcon from "../../images/ForgeIcon.svg.tsx";
 import FabricIcon from "../../images/fabric-logo.png";
 import MinecraftIcon from "../../images/minecraft-chip-logo.png";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 
 export default function DiscoverModItem(instance: Instance)
@@ -24,14 +25,14 @@ export default function DiscoverModItem(instance: Instance)
             </div>
             <div className={"flex flex-row mt-4 gap-3 items-center"}>
                 <div className={"flex flex-row gap-3 mr-auto"}>
-                    <Tooltip content={`${instance.downloads.toLocaleString("en-us")} Downloads`} closeDelay={0}>
+                    <OTooltip content={`${instance.downloads.toLocaleString("en-us")} Downloads`}>
                         <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faDownload} className={"mr-3"}/> {Conversions.formatLargeNumber(instance.downloads, 1)}</Chip>
-                    </Tooltip>
+                    </OTooltip>
                     <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faHeart} className={"mr-3 text-red-600"}/>{Conversions.formatLargeNumber(instance.likes, 1)}</Chip>
                     {instance.last_updated && (
-                        <Tooltip content={instance.last_updated.toLocaleString()} closeDelay={0}>
+                        <OTooltip content={instance.last_updated.toLocaleString()}>
                             <Chip radius={"sm"} color={"default"} variant={"flat"}><FontAwesomeIcon icon={faCalendar} className={"mr-3"}/>{Conversions.formatTimeClosestRelative(instance.last_updated)}</Chip>
-                        </Tooltip>
+                        </OTooltip>
                     )}
                     <Chip radius={"sm"} color={"default"} variant={"flat"}>
                         <span className={"flex flex-row gap-1 items-center"}>

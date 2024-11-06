@@ -1,8 +1,9 @@
-import {Button, CircularProgress, Listbox, ListboxItem, Tooltip} from "@nextui-org/react";
+import {Button, CircularProgress, Listbox, ListboxItem} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowDown, faCircle, faCloudDownload} from "@fortawesome/free-solid-svg-icons";
 import {toast} from "sonner";
 import {HTMLAttributes} from "react";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 export default function ExtendedStorageStat(props: HTMLAttributes<any>)
 {
@@ -10,7 +11,7 @@ export default function ExtendedStorageStat(props: HTMLAttributes<any>)
         <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 xl:max-w-md w-full max-w-full grow shrink h-lg"} aria-label="Extended Storage Statistic" {...props}>
             <div className={"flex flex-row w-full items-center"}>
                 <p className={"text-lg font-semibold"}>Storage Usage</p>
-                <Tooltip content={"Export a spreadsheet csv with a breakdown of your storage consumption."} aria-label="Export Tooltip">
+                <OTooltip content={"Export a spreadsheet csv with a breakdown of your storage consumption."} aria-label="Export Tooltip">
                     <Button
                         endContent={<FontAwesomeIcon icon={faArrowDown}/>}
                         className={"ml-auto"}
@@ -19,7 +20,7 @@ export default function ExtendedStorageStat(props: HTMLAttributes<any>)
                     >
                         Export
                     </Button>
-                </Tooltip>
+                </OTooltip>
             </div>
             <div className={"relative w-[300px] h-[300px] mx-auto my-4"} aria-label="Storage Usage Circular Progress">
                 <p className={"absolute text-4xl font-semibold top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/6"}>800GB</p>
