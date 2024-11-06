@@ -11,7 +11,7 @@ interface ImageModalProps
 export default function ImageModal(props: ImageModalProps)
 {
     return (
-        <Modal isOpen={props.image !== null}>
+        <Modal isOpen={props.image !== null} onClose={props.onClose}>
             <ModalContent>
                 {onClose => (
                     <>
