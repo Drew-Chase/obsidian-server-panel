@@ -23,7 +23,7 @@ export default function ServerList()
 
 
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 h-[calc(100dvh_-_330px)] min-h-[300px] overflow-y-auto grow relative"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 h-[calc(100dvh_-_395px)] min-h-[300px] overflow-y-auto grow relative"}>
             <div className={"flex flex-row w-full items-center"}>
                 <p className={"text-lg font-semibold"}>Servers</p>
                 <OTooltip content={"Create a new server"}>
