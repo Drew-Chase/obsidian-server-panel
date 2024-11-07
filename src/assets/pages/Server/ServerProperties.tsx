@@ -34,7 +34,7 @@ export default function ServerProperties()
 
 
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full gap-4"}>
             <div className={"flex flex-row"}>
                 <p className={"text-xl font-semibold mr-auto"}>Server Properties</p>
             </div>
