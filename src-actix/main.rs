@@ -32,6 +32,8 @@ use serde_json::json;
 use std::sync::Mutex;
 use sysinfo::System;
 
+const DEBUG: bool = cfg!(debug_assertions);
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
@@ -46,12 +48,6 @@ async fn main() -> std::io::Result<()> {
 
     servers::server_db::initialize();
     backups::initialize();
-
-    let config = if cfg!(debug_assertions) {
-        "development"
-    } else {
-        "production"
-    };
 
     if CONFIG.port_forward_webui {
         // This will open the webui port on the router using upnp
@@ -181,7 +177,7 @@ async fn main() -> std::io::Result<()> {
                     ),
             );
         // Add conditional routing based on the config
-        if config == "development" {
+        if DEBUG {
             app.default_service(web::route().to(proxy_to_vite))
                 .service(web::resource("/assets/{file:.*}").route(web::get().to(proxy_to_vite)))
                 .service(
@@ -195,7 +191,11 @@ async fn main() -> std::io::Result<()> {
     .workers(4)
     .bind(format!("0.0.0.0:{port}", port = port))?
     .run();
-    info!("Starting {} server at http://127.0.0.1:{}...", config, port);
+    info!(
+        "Starting {} server at http://127.0.0.1:{}...",
+        if DEBUG { "development" } else { "production" },
+        port
+    );
     let stop_result = server.await;
     debug!("Server stopped");
 
