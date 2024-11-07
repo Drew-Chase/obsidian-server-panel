@@ -14,6 +14,7 @@ body {
   overflow: auto;
   scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-background-color);
   scrollbar-width: thin;
+  scrollbar-gutter: stable;
 }
 
 ::-webkit-scrollbar {
@@ -38,7 +39,6 @@ body {
   color: hsl(var(--nextui-neutral-800));
 }
 
-[hidden]
-{
-    display: none !important;
+[hidden] {
+  display: none !important;
 }
