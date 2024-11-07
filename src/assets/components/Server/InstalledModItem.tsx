@@ -1,7 +1,8 @@
-import {Avatar, Button, Switch, Tooltip} from "@nextui-org/react";
+import {Avatar, Button, Switch} from "@nextui-org/react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowsRotate, faCheck, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
+import OTooltip from "../Extends/OTooltip.tsx";
 
 interface ModItemProps
 {
