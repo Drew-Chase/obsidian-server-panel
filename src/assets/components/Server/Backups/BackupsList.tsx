@@ -6,7 +6,7 @@ import OTooltip from "../../Extends/OTooltip.tsx";
 export default function BackupsList()
 {
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 max-h-[400px] h-dvh overflow-y-auto grow"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full max-h-[400px] h-dvh overflow-y-auto grow"}>
             <div className={"flex flex-row"}>
 
                 <p className={"text-lg font-semibold mr-auto"}>Backups</p>
