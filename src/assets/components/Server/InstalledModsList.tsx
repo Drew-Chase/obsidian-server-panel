@@ -24,7 +24,7 @@ export default function InstalledModsList()
                 <Button startContent={<FontAwesomeIcon icon={faUpload}/>} className={"px-8"} aria-label={"Upload mod"}> Upload</Button>
                 <Button startContent={<FontAwesomeIcon icon={faDownload}/>} className={"px-8"} aria-label={"Update all mods"}> Update all</Button>
             </div>
-            <div className={"flex flex-col gap-4 mt-4 rounded-lg bg-neutral-800 p-4 overflow-y-auto max-h-[calc(100dvh_-_240px)] h-screen"}>
+            <div className={"flex flex-col gap-4 mt-4 rounded-lg bg-neutral-800 p-4 overflow-y-auto max-h-[calc(100dvh_-_310px)] h-screen"}>
                 <Listbox
                     aria-label={"Installed mod list"}
                     itemClasses={{
