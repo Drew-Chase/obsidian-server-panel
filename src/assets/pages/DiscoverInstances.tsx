@@ -37,7 +37,7 @@ export default function DiscoverInstances()
 
     setTitle("Discover Modpacks");
     return (
-        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full mx-2 gap-4"}>
+        <div className={"flex flex-col bg-neutral-600 rounded-2xl shadow-lg p-8 grow w-full gap-4"}>
             <div className={"flex flex-col"}>
                 <div className={"flex flex-row items-center gap-4"}>
                     <h2 className={"text-2xl font-semibold text-nowrap"}>Discover Instances</h2>
