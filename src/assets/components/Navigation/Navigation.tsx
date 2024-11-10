@@ -57,7 +57,8 @@ export default function Navigation()
                         itemClasses={{
                             title: "data-[open=true]:text-primary",
                             base: "data-[open=true]:text-primary",
-                            trigger: "p-4 rounded-lg hover:bg-black/40 data-[open=true]:bg-black/40",
+                            trigger: "p-4 rounded-lg hover:bg-black/40 data-[open=true]:bg-black/40 data-[open=true]:cursor-default",
+                            indicator: "data-[open=true]:opacity-0 transition-opacity",
                             content: "ml-0 flex flex-col gap-2"
                         }}
                         onSelectionChange={(selected) =>
