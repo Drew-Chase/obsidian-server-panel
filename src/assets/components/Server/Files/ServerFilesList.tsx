@@ -93,7 +93,8 @@ export default function ServerFilesList(props: ServerFilesListProps)
                     tr: cn(
                         "data-[odd]:!bg-neutral-700/50 data-[selected]:data-[odd]:!bg-primary/10 hover:!bg-neutral-700  transition-colors",
                         "data-[odd=true]:hover:!bg-neutral-700 data-[odd=true]:data-[hover]:!bg-neutral-700 data-[hover]:!bg-neutral-700",
-                        "data-[has-open-context-menu=true]:!bg-primary/10 data-[has-open-context-menu=true]:data-[odd=true]:hover:!bg-primary/10"
+                        "data-[has-open-context-menu=true]:!bg-primary/10 data-[has-open-context-menu=true]:data-[odd=true]:hover:!bg-primary/10",
+                        "select-none"
                     ),
                     th: "bg-neutral-700/50 backdrop-blur-lg",
                     thead: "bg-neutral-700/50 backdrop-blur-lg"
