@@ -1,4 +1,6 @@
 use actix_web::dev::Service;
+use std::path::PathBuf;
+use std::process::{Child, ExitStatus};
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -196,6 +198,11 @@ async fn main() -> std::io::Result<()> {
         if DEBUG { "development" } else { "production" },
         port
     );
+
+    if DEBUG {
+        start_vite_server().expect("Failed to start vite server");
+    }
+
     let stop_result = server.await;
     debug!("Server stopped");
 
@@ -208,6 +215,47 @@ async fn main() -> std::io::Result<()> {
     // Closes all open ports
     close_all_ports!();
     stop_result
+}
+
+fn start_vite_server() -> Result<Child, Box<dyn std::error::Error>> {
+    #[cfg(target_os = "windows")]
+    let find_cmd = "where";
+    #[cfg(not(target_os = "windows"))]
+    let find_cmd = "which";
+
+    let vite = std::process::Command::new(find_cmd)
+        .arg("vite")
+        .stdout(std::process::Stdio::piped())
+        .output()?
+        .stdout;
+
+    let vite = String::from_utf8(vite);
+    let vite = vite.unwrap();
+    let vite = vite.as_str().trim();
+
+    if vite.is_empty() {
+        error!("vite not found, make sure its installed with npm install -g vite");
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "vite not found",
+        ))?;
+    }
+
+    // Get the first occurrence
+    let vite = vite
+        .split("\n")
+        .collect::<Vec<_>>()
+        .last()
+        .expect("Failed to get vite executable")
+        .trim();
+
+    debug!("found vite at: {:?}", vite);
+
+    // Start the vite server
+    Ok(std::process::Command::new(vite)
+        .current_dir(r#"../../"#)
+        .spawn()
+        .expect("Failed to start vite server"))
 }
 
 /// The maximum payload size allowed for forwarding requests and responses.
