@@ -3,98 +3,6 @@ info:
   title: openapi
   version: 1.0.0
 paths:
-  /api/auth/register:
-    post:
-      summary: Create user
-      operationId: Create user
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/create_user'
-  /api/auth/users:
-    get:
-      summary: Get users
-      operationId: Get users
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/auth/login/token:
-    post:
-      summary: Login with Token
-      operationId: Login with Token
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/login_with_token'
-  /api/auth/login:
-    post:
-      summary: Login
-      operationId: Login
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/login'
-  /api/auth/exists:
-    get:
-      summary: Check if access token exists
-      operationId: Check if access token exists
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: token
-          in: query
-          description: ''
-          required: false
-          example: ''
-  /api/auth/register/generate-access-token:
-    post:
-      summary: Generate registration access token
-      operationId: Generate registration access token
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/auth/register/access-tokens:
-    get:
-      summary: Get all access tokens
-      operationId: Get all access tokens
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/auth/register/validate-access-token:
-    post:
-      summary: Validate access token
-      operationId: Validate access token
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
   /api/instances/discover:
     get:
       summary: Discover Instances
@@ -131,32 +39,6 @@ paths:
           description: ''
           required: true
           example: '0'
-  /api/loaders/fabric/1.20.4:
-    get:
-      summary: Get Loader Versions
-      operationId: Get Loader Versions
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/loaders/supported_loaders/1.12.2:
-    get:
-      summary: Get Supported Loaders
-      operationId: Get Supported Loaders
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: snapshot
-          in: query
-          description: ''
-          required: true
-          example: 'true'
   /api/java/versions/:version/files:
     get:
       summary: Get Java Installation Files
@@ -215,40 +97,20 @@ paths:
           description: ''
           required: true
           example: 17.0.1.12.1
-  /api/system/storage:
+  /api/loaders/fabric/1.20.4:
     get:
-      summary: Get storage information
-      operationId: Get storage information
+      summary: Get Loader Versions
+      operationId: Get Loader Versions
       description: ''
       tags:
         - ''
       responses:
         '200':
           description: ''
-  /api/system:
+  /api/loaders/supported_loaders/1.12.2:
     get:
-      summary: Get system information
-      operationId: Get system information
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/system/usage:
-    get:
-      summary: Get system usage
-      operationId: Get system usage
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/minecraft/:version/java:
-    get:
-      summary: Get Java from Minecraft
-      operationId: Get Java from Minecraft
+      summary: Get Supported Loaders
+      operationId: Get Supported Loaders
       description: ''
       tags:
         - ''
@@ -256,241 +118,11 @@ paths:
         '200':
           description: ''
       parameters:
-        - name: version
+        - name: snapshot
           in: query
           description: ''
           required: true
-          example: '1.17'
-  /api/minecraft/version/releases/latest:
-    get:
-      summary: Latest Release
-      operationId: Latest Release
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/minecraft/version/snapshots/latest:
-    get:
-      summary: Latest Snapshot
-      operationId: Latest Snapshot
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/minecraft/versions/releases:
-    get:
-      summary: Releases
-      operationId: Releases
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/minecraft/versions/snapshots:
-    get:
-      summary: Snapshots
-      operationId: Snapshots
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/minecraft/versions:
-    get:
-      summary: Versions
-      operationId: Versions
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/server/:id/backups/create/full:
-    post:
-      summary: Create Full Manual Backup
-      operationId: Create Full Manual Backup
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-  /api/server/:id/backups/create/incremental:
-    post:
-      summary: Create Incremental Manual Backup
-      operationId: Create Incremental Manual Backup
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-  /api/server/:id/backups:
-    get:
-      summary: Get Backups
-      operationId: Get Backups
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: gYnxpl9aBABWrZ7N
-  /api/server:
-    post:
-      summary: Create a new server
-      operationId: Create a new server
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      requestBody:
-        $ref: '#/components/requestBodies/create_a_new_server'
-    get:
-      summary: Get servers list
-      operationId: Get servers list
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-  /api/server/:id:
-    delete:
-      summary: Delete Server
-      operationId: Delete Server
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: goXzwVJ7YZx5BW4R
-    get:
-      summary: Get server by Id
-      operationId: Get server by Id
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: Aq7ryNZ0vJKVwQEW
-  /api/server/:id/icon:
-    get:
-      summary: Get server Icon
-      operationId: Get server Icon
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: PKdWgzJgv2bX70mG
-  /api/server/:id/properties:
-    get:
-      summary: Get Properties
-      operationId: Get Properties
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: bWB6qDAL4AGz8N9x
-  /api/server/:id/properties/:key:
-    post:
-      summary: Set Property
-      operationId: Set Property
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: key
-          in: query
-          description: ''
-          required: true
-          example: hardcore
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: bWB6qDAL4AGz8N9x
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-  /api/server/:id/files/download/:file:
-    get:
-      summary: Download Server File
-      operationId: Download Server File
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: file
-          in: query
-          description: ''
-          required: true
-          example: '%2Fserver.properties'
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: eGg3qbwoplkKApzM
-  undefined: {}
+          example: 'true'
   /api/server/:id/files/create/file:
     post:
       summary: Create File
@@ -554,6 +186,76 @@ paths:
           text/plain:
             schema:
               type: string
+  /api/server/:id/files/download/:file:
+    get:
+      summary: Download Server File
+      operationId: Download Server File
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: file
+          in: query
+          description: ''
+          required: true
+          example: '%2Fserver.properties'
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: eGg3qbwoplkKApzM
+  undefined: {}
+  /api/server/:id/backups/create/full:
+    post:
+      summary: Create Full Manual Backup
+      operationId: Create Full Manual Backup
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
+  /api/server/:id/backups:
+    get:
+      summary: Get Backups
+      operationId: Get Backups
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
+  /api/server/:id/backups/create/incremental:
+    post:
+      summary: Create Incremental Manual Backup
+      operationId: Create Incremental Manual Backup
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: gYnxpl9aBABWrZ7N
   /api/server/:id/settings:
     get:
       summary: Get Settings
@@ -595,48 +297,6 @@ paths:
     post:
       summary: Set Server Name
       operationId: Set Server Name
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: ''
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-  /api/server/:id/settings/args/java:
-    post:
-      summary: Set Java Arguments
-      operationId: Set Java Arguments
-      description: ''
-      tags:
-        - ''
-      responses:
-        '200':
-          description: ''
-      parameters:
-        - name: id
-          in: query
-          description: ''
-          required: true
-          example: ''
-      requestBody:
-        content:
-          text/plain:
-            schema:
-              type: string
-  /api/server/:id/settings/args/minecraft:
-    post:
-      summary: Set Minecraft Arguments
-      operationId: Set Minecraft Arguments
       description: ''
       tags:
         - ''
@@ -696,31 +356,362 @@ paths:
           text/plain:
             schema:
               type: string
+  /api/server/:id/settings/args/java:
+    post:
+      summary: Set Java Arguments
+      operationId: Set Java Arguments
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: ''
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/:id/settings/args/minecraft:
+    post:
+      summary: Set Minecraft Arguments
+      operationId: Set Minecraft Arguments
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: ''
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/:id/properties/:key:
+    post:
+      summary: Set Property
+      operationId: Set Property
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: key
+          in: query
+          description: ''
+          required: true
+          example: hardcore
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: bWB6qDAL4AGz8N9x
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+  /api/server/:id/properties:
+    get:
+      summary: Get Properties
+      operationId: Get Properties
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: bWB6qDAL4AGz8N9x
+  /api/server:
+    post:
+      summary: Create a new server
+      operationId: Create a new server
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/create_a_new_server'
+    get:
+      summary: Get servers list
+      operationId: Get servers list
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/server/:id:
+    get:
+      summary: Get server by Id
+      operationId: Get server by Id
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: Aq7ryNZ0vJKVwQEW
+    delete:
+      summary: Delete Server
+      operationId: Delete Server
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: goXzwVJ7YZx5BW4R
+  /api/server/:id/icon:
+    get:
+      summary: Get server Icon
+      operationId: Get server Icon
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: id
+          in: query
+          description: ''
+          required: true
+          example: PKdWgzJgv2bX70mG
+  /api/auth/register:
+    post:
+      summary: Create user
+      operationId: Create user
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/create_user'
+  /api/auth/users:
+    get:
+      summary: Get users
+      operationId: Get users
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/login/token:
+    post:
+      summary: Login with Token
+      operationId: Login with Token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login_with_token'
+  /api/auth/login:
+    post:
+      summary: Login
+      operationId: Login
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      requestBody:
+        $ref: '#/components/requestBodies/login'
+  /api/auth/exists:
+    get:
+      summary: Check if access token exists
+      operationId: Check if access token exists
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: token
+          in: query
+          description: ''
+          required: false
+          example: ''
+  /api/auth/register/access-tokens:
+    get:
+      summary: Get all access tokens
+      operationId: Get all access tokens
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/register/generate-access-token:
+    post:
+      summary: Generate registration access token
+      operationId: Generate registration access token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/auth/register/validate-access-token:
+    post:
+      summary: Validate access token
+      operationId: Validate access token
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/version/releases/latest:
+    get:
+      summary: Latest Release
+      operationId: Latest Release
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions/releases:
+    get:
+      summary: Releases
+      operationId: Releases
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/version/snapshots/latest:
+    get:
+      summary: Latest Snapshot
+      operationId: Latest Snapshot
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions:
+    get:
+      summary: Versions
+      operationId: Versions
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/versions/snapshots:
+    get:
+      summary: Snapshots
+      operationId: Snapshots
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/minecraft/:version/java:
+    get:
+      summary: Get Java from Minecraft
+      operationId: Get Java from Minecraft
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+      parameters:
+        - name: version
+          in: query
+          description: ''
+          required: true
+          example: '1.17'
+  /api/system/storage:
+    get:
+      summary: Get storage information
+      operationId: Get storage information
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system:
+    get:
+      summary: Get system information
+      operationId: Get system information
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
+  /api/system/usage:
+    get:
+      summary: Get system usage
+      operationId: Get system usage
+      description: ''
+      tags:
+        - ''
+      responses:
+        '200':
+          description: ''
 servers:
   - url: http://127.0.0.1:45560
 components:
   schemas:
-    create_user:
+    upload_file:
       type: object
       properties:
-        username:
+        json:
           type: string
-        password:
-          type: string
-        email:
-          type: string
-    login_with_token:
-      type: object
-      properties:
-        token:
-          type: string
-    login:
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
+        file:
+          type: array
+          items:
+            type: string
+          properties:
+            '0':
+              type: string
     create_a_new_server:
       type: object
       properties:
@@ -742,19 +733,42 @@ components:
           type: string
         loader_version:
           type: string
-    upload_file:
+    create_user:
       type: object
       properties:
-        json:
+        username:
           type: string
-        file:
-          type: array
-          items:
-            type: string
-          properties:
-            '0':
-              type: string
+        password:
+          type: string
+        email:
+          type: string
+    login_with_token:
+      type: object
+      properties:
+        token:
+          type: string
+    login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
   requestBodies:
+    upload_file:
+      content:
+        'multipart/form-data:':
+          schema:
+            $ref: '#/components/schemas/upload_file'
+      description: ''
+      required: true
+    create_a_new_server:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/create_a_new_server'
+      description: ''
+      required: true
     create_user:
       content:
         application/json:
@@ -774,20 +788,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/login'
-      description: ''
-      required: true
-    create_a_new_server:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/create_a_new_server'
-      description: ''
-      required: true
-    upload_file:
-      content:
-        'multipart/form-data:':
-          schema:
-            $ref: '#/components/schemas/upload_file'
       description: ''
       required: true
   securitySchemes: {}
