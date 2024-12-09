@@ -1,4 +1,4 @@
-use crate::server_process::ServerStatus;
+use crate::server_status::ServerStatus;
 use crypto::hashids::encode;
 use database::create_appdb_connection;
 use log::{error, info};
@@ -28,8 +28,6 @@ pub struct Server {
     pub created_at: String,
     pub updated_at: String,
     pub status: Option<ServerStatus>,
-    #[serde(skip)]
-    pub pid: Option<u32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -51,7 +49,6 @@ pub struct HashedServer {
     pub loader_version: Option<String>,
     pub directory: Option<String>,
     pub status: Option<ServerStatus>,
-    pub pid: Option<u32>,
     pub created_at: String,
     pub updated_at: String,
 }
