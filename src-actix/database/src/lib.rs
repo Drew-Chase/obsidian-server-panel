@@ -1,4 +1,10 @@
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+#![deny(clippy::panic)]
+#![deny(unused_must_use)]
+
 use log::error;
+use std::error::Error;
 
 /// Establishes a connection to the app's SQLite database.
 ///
@@ -17,10 +23,7 @@ use log::error;
 /// The error is logged with the `log` crate's `error!` macro.
 pub fn create_appdb_connection() -> Result<sqlite::Connection, sqlite::Error> {
     match sqlite::Connection::open("app.db").map_err(|e| {
-        error!(
-            "Failed to open apps database connection: {}",
-            e
-        );
+        error!("Failed to open apps database connection: {}", e);
         e
     }) {
         Ok(conn) => {
@@ -38,10 +41,7 @@ pub fn create_appdb_connection() -> Result<sqlite::Connection, sqlite::Error> {
 }
 pub fn create_cachedb_connection() -> Result<sqlite::Connection, sqlite::Error> {
     match sqlite::Connection::open("cache.db").map_err(|e| {
-        error!(
-            "Failed to open cache database connection: {}",
-            e
-        );
+        error!("Failed to open cache database connection: {}", e);
         e
     }) {
         Ok(conn) => {
@@ -56,4 +56,15 @@ pub fn create_cachedb_connection() -> Result<sqlite::Connection, sqlite::Error> 
         }
         Err(e) => Err(e),
     }
+}
+
+pub fn last_inserted_id(table: impl AsRef<str>) -> Result<u64, Box<dyn Error>> {
+    let conn = create_appdb_connection()?;
+    let id: i64 = conn
+        .prepare(format!("SELECT seq FROM sqlite_sequence WHERE name = '{}'", table.as_ref()))
+        .and_then(|mut s| s.next().map(|_| s.read("seq")))
+        .map_err(|e| format!("Failed to get inserted id: {}", e))?
+        .map_err(|e| format!("Failed to read inserted id: {}", e))?;
+
+    Ok(id as u64)
 }
