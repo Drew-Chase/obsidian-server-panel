@@ -1,0 +1,14 @@
+[package]
+name = "start_minecraft_server_with_piped_process_test"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.40.0", features = ["full"] }
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3.9", features = ["namedpipeapi", "processthreadsapi", "handleapi", "fileapi", "winnt"] }
+miow = { version = "0.6.0" }
+
+[target.'cfg(linux)'.dependencies]
+nix = "0.29.0"
