@@ -128,6 +128,8 @@ pub struct Server<T: Identifier> {
     pub updated_at: String,
     /// Represents the current operational status of the server, using the `ServerStatus` enum.
     pub status: Option<ServerStatus>,
+    /// If the server is running, this will be the process id, otherwise it will be none.
+    pub pid: Option<u64>,
     /// Configuration related to the server's standard input stream.
     pub stdin: Option<Stdin>,
     /// Configuration related to the server's standard output stream.
@@ -159,7 +161,7 @@ impl Default for Server<u64> {
     /// - `status`: `None`.
     /// - `stdin`: `None`.
     /// - `stdout`: `None`.
-    /// 
+    ///
     /// # Returns
     /// * `Self` - An instance of `Server<u64>` with default values.
     fn default() -> Self {
@@ -180,8 +182,9 @@ impl Default for Server<u64> {
             created_at: String::from("1970-01-01T00:00:00Z"), // Default epoch start time in ISO 8601.
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default epoch update time in ISO 8601.
             status: None,                                     // Server status is undefined by default.
-            stdin: None,                                      // Standard input stream configuration is absent.
-            stdout: None,                                     // Standard output stream configuration is absent.
+            pid: None,
+            stdin: None,  // Standard input stream configuration is absent.
+            stdout: None, // Standard output stream configuration is absent.
         }
     }
 }
@@ -234,6 +237,7 @@ impl Default for Server<String> {
             created_at: String::from("1970-01-01T00:00:00Z"), // Default creation timestamp
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default updated timestamp
             status: None,                                     // Default status to None
+            pid: None,
             stdin: None,                                      // Default standard input to None
             stdout: None,                                     // Default standard output to None
         }
@@ -517,6 +521,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
                     created_at,
                     updated_at,
                     status,
+                    pid: None,
                     stdin: None,
                     stdout: None,
                 })
