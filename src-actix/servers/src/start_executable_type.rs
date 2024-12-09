@@ -2,6 +2,7 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::path::Path;
 
+#[derive(PartialEq, Eq)]
 /// Enum representing the types of executables that can be started.
 pub enum StartExecutableType {
     Jar,
@@ -48,7 +49,7 @@ impl<'de> Deserialize<'de> for StartExecutableType {
 }
 
 /// Trait extension to determine `StartExecutableType` from a file path.
-trait StartExecutableTypeExt {
+pub trait StartExecutableTypeExt {
     /// Determines the `StartExecutableType` from the file's extension.
     ///
     /// # Arguments
