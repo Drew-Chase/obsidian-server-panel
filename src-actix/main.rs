@@ -1,6 +1,11 @@
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+#![deny(clippy::panic)]
+#![deny(unused_must_use)]
+
 use actix_web::dev::Service;
 use std::path::PathBuf;
-use std::process::{Child, ExitStatus};
+use std::process::{exit, Child, ExitStatus};
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -48,7 +53,13 @@ async fn main() -> std::io::Result<()> {
         Err(e) => error!("Failed to initialize authentication: {}", e),
     }
 
-    servers::server_db::initialize();
+    match servers::server_database::initialize_server_database() {
+        Ok(_) => debug!("Server database initialized"),
+        Err(e) => {
+            error!("Failed to initialize the servers database: {}", e);
+            exit(1);
+        }
+    }
     backups::initialize();
 
     if CONFIG.port_forward_webui {
