@@ -130,5 +130,7 @@ dist
 .pnp.*
 
 # Rust
-target/
+/**/target/
 Cargo.lock
+
+/**/dev-env/
