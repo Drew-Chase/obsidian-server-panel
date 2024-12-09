@@ -4,10 +4,9 @@ use serde::de::{self, Deserializer, MapAccess, Visitor};
 use serde::{Deserialize, Serialize, Serializer};
 use std::any::Any;
 use std::fmt;
-use std::io::Stdin;
 use std::path::PathBuf;
+use std::process::{ChildStdin, ChildStdout};
 use std::str::FromStr;
-use tokio::io::Stdout;
 
 /// The `SimpleHashedIdentifier` structure is used to represent
 /// an identifier in a hashed form, using the `serde_derive::Serialize` trait to enable serialization.
@@ -116,6 +115,8 @@ pub struct Server<T: Identifier> {
     pub minecraft_arguments: Option<String>,
     /// Optional Java arguments, influencing the Java Virtual Machine's behavior.
     pub java_arguments: Option<String>,
+    /// The java runtime path, this is used to start the jar binary.
+    pub java_runtime: Option<PathBuf>,
     /// Represents the type of server loader being utilized, often an internal configuration value.
     pub loader_type: u8,
     /// An optional string indicating the version of the server loader in use.
@@ -131,9 +132,9 @@ pub struct Server<T: Identifier> {
     /// If the server is running, this will be the process id, otherwise it will be none.
     pub pid: Option<u64>,
     /// Configuration related to the server's standard input stream.
-    pub stdin: Option<Stdin>,
+    pub stdin: Option<ChildStdin>,
     /// Configuration related to the server's standard output stream.
-    pub stdout: Option<Stdout>,
+    pub stdout: Option<ChildStdout>,
 }
 
 // Default implementation for `Server<u64>`.
@@ -182,6 +183,7 @@ impl Default for Server<u64> {
             created_at: String::from("1970-01-01T00:00:00Z"), // Default epoch start time in ISO 8601.
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default epoch update time in ISO 8601.
             status: None,                                     // Server status is undefined by default.
+            java_runtime: None,
             pid: None,
             stdin: None,  // Standard input stream configuration is absent.
             stdout: None, // Standard output stream configuration is absent.
@@ -237,9 +239,10 @@ impl Default for Server<String> {
             created_at: String::from("1970-01-01T00:00:00Z"), // Default creation timestamp
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default updated timestamp
             status: None,                                     // Default status to None
+            java_runtime: None,
             pid: None,
-            stdin: None,                                      // Default standard input to None
-            stdout: None,                                     // Default standard output to None
+            stdin: None,  // Default standard input to None
+            stdout: None, // Default standard output to None
         }
     }
 }
@@ -318,6 +321,8 @@ impl Serialize for Server<u64> {
         // Serializes the `status` field; reflects the current status of the server
         state.serialize_field("status", &self.status)?;
 
+        state.serialize_field("java_runtime", &self.java_runtime)?;
+
         // Ends the serialization process for the `Server` struct
         state.end()
     }
@@ -346,6 +351,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
             CreatedAt,
             UpdatedAt,
             Status,
+            JavaRuntime,
         }
 
         struct ServerVisitor;
@@ -378,6 +384,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
                 let mut created_at = None;
                 let mut updated_at = None;
                 let mut status = None;
+                let mut java_runtime = None;
 
                 // Iterate over each key-value pair in the map
                 while let Some(key) = map.next_key()? {
@@ -482,6 +489,12 @@ impl<'de> Deserialize<'de> for Server<u64> {
                             }
                             status = Some(map.next_value()?);
                         }
+                        Field::JavaRuntime => {
+                            if java_runtime.is_some() {
+                                return Err(de::Error::duplicate_field("java_runtime"));
+                            }
+                            java_runtime = Some(map.next_value()?);
+                        }
                     }
                 }
 
@@ -502,6 +515,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
                 let created_at = created_at.ok_or_else(|| de::Error::missing_field("created_at"))?;
                 let updated_at = updated_at.ok_or_else(|| de::Error::missing_field("updated_at"))?;
                 let status = status;
+                let java_runtime = java_runtime;
 
                 // Construct and return the Server object
                 Ok(Server {
@@ -521,6 +535,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
                     created_at,
                     updated_at,
                     status,
+                    java_runtime,
                     pid: None,
                     stdin: None,
                     stdout: None,
@@ -545,6 +560,7 @@ impl<'de> Deserialize<'de> for Server<u64> {
             "created_at",
             "updated_at",
             "status",
+            "java_runtime",
         ];
         deserializer.deserialize_struct("Server", FIELDS, ServerVisitor)
     }
