@@ -1,6 +1,7 @@
 use crate::WWWROOT;
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
+use common_lib::traits::TransformPath;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
 use log::error;
@@ -9,92 +10,63 @@ use serde::Deserialize;
 use serde_json::json;
 use servers::physical_server::create_server_directory;
 use servers::properties::Properties;
+use servers::server::Server;
+use servers::server_database::ServerDatabase;
 use servers::server_db;
 use servers::server_db::{BasicHashedServer, HashedServer, Server};
+use std::error::Error;
 use std::path::Path;
 use std::str::FromStr;
-use common_lib::traits::TransformPath;
 
 /// Retrieves servers owned by the authenticated user
 #[get("")]
-pub async fn get_servers(req: HttpRequest) -> impl Responder {
+pub async fn get_servers(req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
-        // Fetch servers by the user's ID
-        let servers = match server_db::get_servers_by_owner(user.id) {
-            Ok(s) => s,
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        };
-
-        // Convert the servers to BasicHashedServer format for response
-        let servers: Vec<HashedServer> = servers
-            .iter()
-            .map(|s| HashedServer::from_server(s.clone()))
-            .collect();
-
-        // Return the list of servers as JSON response
-        return HttpResponse::Ok().json(servers);
+        let server = Server::get_list_of_owned_servers(user.id as u64)?;
+        return Ok(HttpResponse::Ok().json(server));
     }
 
     // Return Unauthorized if the user is not authenticated
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+    Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
 /// Retrieves a specific server by its ID, ensuring the server is owned by the authenticated user
 #[get("")]
-pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> impl Responder {
+pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Decode the given ID
-        let id_number: u32 = match decode(id.as_str()) {
-            Ok(id_number) => id_number[0] as u32,
-            Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        let id_number: u64 = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0],
+            Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
         };
 
         // Fetch the server by the ID and user's ID
-        let server = match server_db::get_owned_server_by_id(id_number, user.id) {
-            Some(s) => s,
-            None => {
-                let msg = format!("Server with id: {} not found", id_number);
-                error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
-            }
-        };
+        let server = Server::get_owned_server(id_number, user.id as u64)?;
+
         // Return the server details as JSON response
-        return HttpResponse::Ok().json(HashedServer::from_server(server));
+        return Ok(HttpResponse::Ok().json(server));
     }
 
     // Return Unauthorized if the user is not authenticated
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+    Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
 #[get("icon")]
-pub async fn get_server_icon(id: web::Path<String>) -> impl Responder {
-    let id_number: u32 = match decode(id.as_str()) {
-        Ok(id_number) => id_number[0] as u32,
-        Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+pub async fn get_server_icon(id: web::Path<String>) -> Result<impl Responder, Box<dyn Error>> {
+    let id_number = match decode(id.as_str()) {
+        Ok(id_number) => id_number[0],
+        Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
     };
 
-    let server = match server_db::get_server_by_id(id_number) {
-        Some(s) => s,
-        None => {
-            let msg = format!("Server with id: {} not found", id_number);
-            error!("{}", msg);
-            return HttpResponse::BadRequest().json(json!({"error":msg}));
-        }
-    };
+    let server = Server::get_server(id_number)?;
 
-    let icon_path = Path::join(
-        server.directory.unwrap().as_ref(),
-        Path::new("server-icon.png"),
-    );
+    let icon_path = server.directory.join(Path::new("server-icon.png"));
     if icon_path.exists() {
-        return HttpResponse::Ok().body(web::Bytes::from(std::fs::read(icon_path).unwrap()));
+        return Ok(HttpResponse::Ok().body(web::Bytes::from(std::fs::read(icon_path).unwrap())));
     }
-    HttpResponse::NotFound().finish()
+    Ok(HttpResponse::NotFound().finish())
 }
 
 #[derive(Deserialize)]
@@ -112,10 +84,7 @@ struct CreateServerRequest {
 
 /// Creates a new server for the authenticated user
 #[post("")]
-pub async fn create_server(
-    req: HttpRequest,
-    body: web::Json<CreateServerRequest>,
-) -> impl Responder {
+pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest>) -> impl Responder {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Create a new server in the database
@@ -153,9 +122,7 @@ pub async fn create_server(
 
         // Set the server's loader if provided
         if let Some(loader_version) = &body.loader_version {
-            if let Err(e) =
-                server_db::set_loader(server.id, body.loader.to(), loader_version.as_str())
-            {
+            if let Err(e) = server_db::set_loader(server.id, body.loader.to(), loader_version.as_str()) {
                 error!("{}", e);
                 return HttpResponse::BadRequest().json(json!({"error":e}));
             }
@@ -163,14 +130,7 @@ pub async fn create_server(
 
         let loader_version = body.loader_version.clone();
         if body.loader != Loader::Vanilla {
-            let executable = loader_manager::install_loader(
-                body.loader.clone(),
-                &body.minecraft_version,
-                &dir,
-                loader_version,
-            )
-            .await
-            .unwrap();
+            let executable = loader_manager::install_loader(body.loader.clone(), &body.minecraft_version, &dir, loader_version).await.unwrap();
             // Set the server executable in the database
             if let Err(e) = server_db::set_server_executable(server.id, &executable) {
                 error!("{}", e);
@@ -191,14 +151,13 @@ pub async fn create_server(
         }
 
         // Create and set server properties
-        let mut properties: Properties =
-            match Properties::new(&Path::join(&dir, Path::new("server.properties"))) {
-                Ok(p) => p,
-                Err(e) => {
-                    error!("{}", e);
-                    return HttpResponse::BadRequest().json(json!({"error":e}));
-                }
-            };
+        let mut properties: Properties = match Properties::new(&Path::join(&dir, Path::new("server.properties"))) {
+            Ok(p) => p,
+            Err(e) => {
+                error!("{}", e);
+                return HttpResponse::BadRequest().json(json!({"error":e}));
+            }
+        };
 
         properties.set("server-port", &body.port.to_string());
         properties.set("difficulty", &body.difficulty);
@@ -211,8 +170,7 @@ pub async fn create_server(
             Ok(_) => (),
             Err(e) => {
                 error!("{}", e);
-                return HttpResponse::BadRequest()
-                    .json(json!({"Failed to save the properties file: ":e}));
+                return HttpResponse::BadRequest().json(json!({"Failed to save the properties file: ":e}));
             }
         }
 
@@ -249,8 +207,7 @@ pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> impl Resp
             Ok(_) => (),
             Err(e) => {
                 error!("{}", e);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error":"Failed to delete server directory"}));
+                return HttpResponse::BadRequest().json(json!({"error":"Failed to delete server directory"}));
             }
         }
 
@@ -270,13 +227,7 @@ pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> impl Resp
 
 /// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
-pub async fn install_loader(
-    id: web::Path<String>,
-    version: web::Path<String>,
-    loader: web::Path<String>,
-    loader_version: web::Path<String>,
-    req: HttpRequest,
-) -> impl Responder {
+pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, loader: web::Path<String>, loader_version: web::Path<String>, req: HttpRequest) -> impl Responder {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Decode the given ID
@@ -305,14 +256,7 @@ pub async fn install_loader(
             }
         };
         if loader != Loader::Vanilla {
-            let executable = loader_manager::install_loader(
-                loader,
-                &version,
-                &server.clone().directory.unwrap(),
-                Some(loader_version.as_ref()),
-            )
-            .await
-            .unwrap();
+            let executable = loader_manager::install_loader(loader, &version, &server.clone().directory.unwrap(), Some(loader_version.as_ref())).await.unwrap();
             // Set the server executable in the database
             if let Err(e) = server_db::set_server_executable(id_number, &executable) {
                 error!("{}", e);
