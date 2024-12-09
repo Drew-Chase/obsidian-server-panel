@@ -35,6 +35,7 @@ pub fn initialize_server_database() -> Result<(), Box<dyn Error>> {
             loader_type INTEGER NOT NULL,                               -- Type of server loader, corresponds to an integer value
             loader_version TEXT,                                        -- Version of the server loader, nullable
             directory TEXT NOT NULL,                                    -- Directory where the server is stored, path is not nullable
+            java_runtime TEXT NULL DEFAULT NULL,                        -- Java runtime to use for the server, nullable,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of creation, stored in ISO 8601 format, cannot be NULL
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of last update, stored in ISO 8601 format, cannot be NULL
             status TEXT                                                 -- Current status of the server, stored as a string (e.g., "active", "inactive"), nullable
@@ -164,8 +165,8 @@ impl ServerDatabase for Server<u64> {
         let query = r#"
   INSERT INTO server
   (name, owner, members, min_ram, max_ram, start_script, minecraft_arguments, 
-  java_arguments, loader_type, loader_version, directory, status)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  java_arguments, loader_type, loader_version, directory, status, java_runtime)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 "#;
 
         // Prepare the SQL insert statement
@@ -184,6 +185,7 @@ impl ServerDatabase for Server<u64> {
         statement.bind((10, self.loader_version.as_ref().unwrap_or(&"".to_string()).as_str()))?; // Bind loader version
         statement.bind((11, self.directory.to_str().unwrap_or("")))?; // Bind directory path
         statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?; // Bind server status
+        statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?; // Bind the java runtime path.
 
         // Execute the SQL statement
         statement.next()?;
@@ -222,7 +224,8 @@ impl ServerDatabase for Server<u64> {
     loader_type = ?,
     loader_version = ?,
     directory = ?,
-    status = ?
+    status = ?,
+    java_runtime = ?
     WHERE id = ?
 "#;
 
@@ -264,9 +267,12 @@ impl ServerDatabase for Server<u64> {
 
         // Bind the server status to the twelfth placeholder (index 12)
         statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?;
+        
+        // Bind the Java runtime path to the thirteenth placeholder (index 13)
+        statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?;
 
-        // Bind the server ID to the thirteenth placeholder (index 13) to specify which record to update
-        statement.bind((13, self.id as i64))?;
+        // Bind the server ID to the fourteenth placeholder (index 14) to specify which record to update
+        statement.bind((14, self.id as i64))?;
 
         // Execute the next statement in the prepared sequence
         statement.next()?;
@@ -429,10 +435,7 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         owner: statement.read::<i64, _>("owner")? as u64,
 
         // Server Member IDs: Read the "members" column as a String, split by commas, and parse each into u64.
-        members: statement.read::<String, _>("members")?
-            .split(',')
-            .filter_map(|s| s.parse::<u64>().ok())
-            .collect(),
+        members: statement.read::<String, _>("members")?.split(',').filter_map(|s| s.parse::<u64>().ok()).collect(),
 
         // RAM Specifications: Minimum RAM is converted from i64 to u64.
         min_ram: statement.read::<i64, _>("min_ram")? as u64,
@@ -466,9 +469,11 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         // Status: Optionally parse the "status" as a ServerStatus if it's present and valid.
         status: statement.read::<String, _>("status").ok().and_then(|s| s.parse().ok()),
 
+        java_runtime: statement.read::<String, _>("java_runtime").ok().and_then(|s| s.parse().ok()),
+
         // I/O streams: Initialize as None, as they are not detailed in the statement.
         stdin: None,
         stdout: None,
-        pid:None,
+        pid: None,
     })
 }
