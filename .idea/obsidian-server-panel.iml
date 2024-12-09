@@ -22,6 +22,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src-actix/common_lib/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/event_system/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-actix/notifications/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/basic_server_process_management_test/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/authentication/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/crypto/target" />
@@ -41,6 +44,15 @@
       <excludeFolder url="file://$MODULE_DIR$/src-actix/common_lib/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/event_system/target" />
       <excludeFolder url="file://$MODULE_DIR$/src-actix/notifications/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/target" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/basic_server_process_management_test/target" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/.fabric" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/libraries" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/logs" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/mods" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/versions" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/start_minecraft_server_with_piped_process_test/dev-env/world" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
