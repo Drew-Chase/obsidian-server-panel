@@ -1,27 +1,28 @@
 use crate::server::Server;
 use crate::start_executable_type::{StartExecutableType, StartExecutableTypeExt};
 use lazy_static::lazy_static;
+use std::clone::Clone;
 use std::error::Error;
 use std::io::Error as IoError;
 use std::io::Write;
 use std::process::Stdio;
-use std::thread;
+use std::sync::{Arc, Mutex};
 
 lazy_static! {
-    static ref running_servers: Vec<Server<u64>> = Vec::new();
+    static ref RUNNING_SERVERS: Arc<Mutex<Vec<Arc<Mutex<Server<u64>>>>>> = Arc::new(Mutex::new(Vec::new()));
 }
 
 pub trait ServerProcess {
-    fn start_server(&mut self) -> Result<u64, Box<dyn Error>>;
+    fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>>;
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>>;
-    fn send_command(&mut self, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
+    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
 }
 
 impl ServerProcess for Server<u64> {
-    fn start_server(&mut self) -> Result<u64, Box<dyn Error>> {
+    fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>> {
         // Clone the `start_script` and unwrap it safely; assumes `start_script` is always `Some`.
         let start_script = &self.start_script;
-        let start_script = start_script.clone().unwrap();
+        let start_script = start_script.clone().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::NotFound, "Start script not set")))?;
 
         // Determine the type of executable based on the script path and handle errors if it fails.
         let start_executable_type = StartExecutableType::from_path(&start_script)?;
@@ -49,7 +50,9 @@ impl ServerProcess for Server<u64> {
             }
             StartExecutableType::Executable =>
             // Convert the executable path to a string and handle invalid data.
-                start_script.to_str().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid executable path")))?,
+            {
+                start_script.to_str().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid executable path")))?
+            }
         };
 
         // Prepare to launch a new process using the determined executable or command.
@@ -94,6 +97,13 @@ impl ServerProcess for Server<u64> {
 
         // Retrieve and return the process ID (PID) as a 64-bit integer.
         let pid = child.id();
+        let server_arc = Arc::new(Mutex::new(self.clone()));
+
+        // Add server to the running servers list.
+        match RUNNING_SERVERS.lock() {
+            Ok(mut servers) => servers.push(server_arc),
+            Err(_) => return Err(Box::new(IoError::new(std::io::ErrorKind::Other, "Failed to lock running servers"))),
+        }
 
         Ok(pid as u64)
     }
@@ -102,11 +112,13 @@ impl ServerProcess for Server<u64> {
         todo!()
     }
 
-    fn send_command(&mut self, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
-        if let Some(stdin) = &mut self.stdin {
-            writeln!(stdin, "{}", command.as_ref())?;
-        } else {
-            return Err(Box::new(IoError::new(std::io::ErrorKind::BrokenPipe, "Stdin not available")));
+    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
+        if let Ok(mut server) = server.lock() {
+            if let Some(stdin) = &mut server.stdin {
+                writeln!(stdin, "{}", command.as_ref())?;
+            } else {
+                return Err(Box::new(IoError::new(std::io::ErrorKind::BrokenPipe, "Stdin not available")));
+            }
         }
 
         Ok(())
