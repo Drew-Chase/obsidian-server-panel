@@ -21,19 +21,20 @@ export default function ProfileDropdown()
                 </div>
             </DropdownTrigger>
             <DropdownMenu>
-                <DropdownSection showDivider title={"Account"}>
-                    <DropdownItem href={"/app/settings/profile/"} endContent={<FontAwesomeIcon icon={faUser}/>}>Profile</DropdownItem>
-                    <DropdownItem href={"/app/users/"} endContent={<FontAwesomeIcon icon={faUserShield}/>}>Manage Users</DropdownItem>
-                    <DropdownItem href={"/app/users/groups/"} endContent={<FontAwesomeIcon icon={faUsersGear}/>}>Manage Groups</DropdownItem>
-                    <DropdownItem href={"/app/settings/"} endContent={<FontAwesomeIcon icon={faSliders}/>}>Settings</DropdownItem>
+                <DropdownSection showDivider title={"Account"} key="account">
+                    <DropdownItem href={"/app/settings/profile/"} endContent={<FontAwesomeIcon icon={faUser}/>} key="profile">Profile</DropdownItem>
+                    <DropdownItem href={"/app/users/"} endContent={<FontAwesomeIcon icon={faUserShield}/>} key="manage-users">Manage Users</DropdownItem>
+                    <DropdownItem href={"/app/users/groups/"} endContent={<FontAwesomeIcon icon={faUsersGear}/>} key="manage-groups">Manage Groups</DropdownItem>
+                    <DropdownItem href={"/app/settings/"} endContent={<FontAwesomeIcon icon={faSliders}/>} key="settings">Settings</DropdownItem>
                 </DropdownSection>
-                <DropdownSection>
+                <DropdownSection key="external-links">
                     <DropdownItem
                         as={Link}
                         target={"_blank"}
                         className={"text-inherit"}
                         endContent={<FontAwesomeIcon icon={faExternalLink} fontSize={12}/>}
                         href={"https://github.com/Drew-Chase/obsidian-server-panel"}
+                        key="source-code"
                     >
                         Source Code
                     </DropdownItem>
@@ -43,6 +44,7 @@ export default function ProfileDropdown()
                         className={"text-inherit"}
                         endContent={<FontAwesomeIcon icon={faExternalLink} fontSize={12}/>}
                         href={"https://github.com/Drew-Chase/obsidian-server-panel/issues"}
+                        key="help"
                     >
                         Help
                     </DropdownItem>
@@ -52,11 +54,12 @@ export default function ProfileDropdown()
                         className={"text-inherit"}
                         endContent={<FontAwesomeIcon icon={faExternalLink} fontSize={12}/>}
                         href={"https://github.com/Drew-Chase/obsidian-server-panel/issues/new"}
+                        key="feedback"
                     >
                         Feedback
                     </DropdownItem>
                 </DropdownSection>
-                <DropdownSection title={"Danger Zone"} className={"text-danger"}>
+                <DropdownSection title={"Danger Zone"} className={"text-danger"} key="danger-zone">
                     <DropdownItem
                         endContent={<FontAwesomeIcon icon={faSignOut}/>}
                         color={"danger"}
@@ -66,6 +69,7 @@ export default function ProfileDropdown()
                             setIsLoggedIn(false);
                             navigate("/");
                         }}
+                        key="logout"
                     >
                         Logout
                     </DropdownItem>
