@@ -14,7 +14,8 @@ crypto = { path = "../crypto" }
 database = { path = "../database" }
 sqlite = "0.36.1"
 lazy_static = "1.5.0"
-nix = { version = "0.29.0", features = ["process", "fs"] }
 tokio = { version = "1.40.0", features = ["full"] }
 mime_guess = "2.0.5"
 notify = { version = "7.0.0" }
+shell-words = { version = "1.1.0" }
+walkdir = {version = "2.5.0"}

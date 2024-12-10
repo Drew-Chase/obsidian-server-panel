@@ -1,6 +1,3 @@
-use actix_web::dev::Service;
-use std::path::PathBuf;
-use std::process::{Child, ExitStatus};
 mod auth_middleware;
 mod authentication_endpoint;
 mod backups_endpoint;
@@ -13,15 +10,13 @@ mod minecraft_endpoint;
 mod notifications_endpoint;
 mod server_endpoint;
 mod server_properties_endpoint;
-mod server_settings_endpoint;
 mod system_stats_endpoint;
 
 use actix_files::file_extension_to_mime;
+use actix_web::dev::Service;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::http::header;
-use actix_web::{
-    error, get, middleware, rt, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder,
-};
+use actix_web::{error, get, middleware, rt, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_ws::AggregatedMessage;
 use awc::Client;
 use configuration::config::CONFIG;
@@ -31,6 +26,7 @@ use log::{debug, error, info};
 use network_utility::{close_all_ports, open_port};
 use scheduler::{start_ticking_schedules, stop_ticking_schedules};
 use serde_json::json;
+use std::process::{exit, Child};
 use std::sync::Mutex;
 use sysinfo::System;
 
@@ -48,7 +44,13 @@ async fn main() -> std::io::Result<()> {
         Err(e) => error!("Failed to initialize authentication: {}", e),
     }
 
-    servers::server_db::initialize();
+    match servers::server_database::initialize_server_database() {
+        Ok(_) => debug!("Server database initialized"),
+        Err(e) => {
+            error!("Failed to initialize the servers database: {}", e);
+            exit(1);
+        }
+    }
     backups::initialize();
 
     if CONFIG.port_forward_webui {
@@ -66,25 +68,15 @@ async fn main() -> std::io::Result<()> {
                 let fut = srv.call(req);
                 async {
                     let mut res = fut.await?;
-                    res.headers_mut()
-                        .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-                    res.headers_mut()
-                        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
+                    res.headers_mut().insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+                    res.headers_mut().insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
                     Ok(res)
                 }
             })
-            .app_data(
-                web::JsonConfig::default()
-                    .limit(4096)
-                    .error_handler(|err, _req| {
-                        let error = json!({ "error": format!("{}", err) });
-                        error::InternalError::from_response(
-                            err,
-                            HttpResponse::BadRequest().json(error),
-                        )
-                        .into()
-                    }),
-            )
+            .app_data(web::JsonConfig::default().limit(4096).error_handler(|err, _req| {
+                let error = json!({ "error": format!("{}", err) });
+                error::InternalError::from_response(err, HttpResponse::BadRequest().json(error)).into()
+            }))
             // Handle API routes here
             .service(
                 web::scope("api")
@@ -131,27 +123,8 @@ async fn main() -> std::io::Result<()> {
                             .service(server_endpoint::create_server)
                             .service(
                                 web::scope("{id}")
-                                    .service(
-                                        web::scope("properties")
-                                            .service(
-                                                server_properties_endpoint::get_server_properties,
-                                            )
-                                            .service(
-                                                server_properties_endpoint::set_server_property,
-                                            ),
-                                    )
-                                    .service(
-                                        web::scope("settings")
-                                            .service(server_settings_endpoint::get_server_settings)
-                                            .service(server_settings_endpoint::set_java_arguments)
-                                            .service(
-                                                server_settings_endpoint::set_minecraft_arguments,
-                                            )
-                                            .service(server_settings_endpoint::set_memory_max)
-                                            .service(server_settings_endpoint::set_memory_min)
-                                            .service(server_settings_endpoint::set_executable)
-                                            .service(server_settings_endpoint::set_name),
-                                    )
+                                    .service(web::scope("properties").service(server_properties_endpoint::get_server_properties).service(server_properties_endpoint::set_server_property))
+                                    .service(server_endpoint::set_setting)
                                     .service(
                                         web::scope("files")
                                             .service(file_system_endpoint::get_server_files)
@@ -161,43 +134,28 @@ async fn main() -> std::io::Result<()> {
                                             .service(file_system_endpoint::create_file)
                                             .service(file_system_endpoint::delete_path),
                                     )
-                                    .service(
-                                        web::scope("backups")
-                                            .service(backups_endpoint::get_backups)
-                                            .service(backups_endpoint::create_manual_backup),
-                                    )
+                                    .service(web::scope("backups").service(backups_endpoint::get_backups).service(backups_endpoint::create_manual_backup))
                                     .service(server_endpoint::get_server_by_id)
                                     .service(server_endpoint::delete_server)
                                     .service(server_endpoint::get_server_icon),
                             ),
                     )
                     .service(web::scope("instances").service(instance_endpoint::discover_modpacks))
-                    .service(
-                        web::scope("loaders")
-                            .service(loader_endpoint::get_supported_loaders)
-                            .service(loader_endpoint::get_loader_by_id),
-                    ),
+                    .service(web::scope("loaders").service(loader_endpoint::get_supported_loaders).service(loader_endpoint::get_loader_by_id)),
             );
         // Add conditional routing based on the config
         if DEBUG {
             app.default_service(web::route().to(proxy_to_vite))
                 .service(web::resource("/assets/{file:.*}").route(web::get().to(proxy_to_vite)))
-                .service(
-                    web::resource("/node_modules/{file:.*}").route(web::get().to(proxy_to_vite)),
-                )
+                .service(web::resource("/node_modules/{file:.*}").route(web::get().to(proxy_to_vite)))
         } else {
-            app.default_service(web::route().to(index))
-                .service(web::scope("assets/{file}").service(assets))
+            app.default_service(web::route().to(index)).service(web::scope("assets/{file}").service(assets))
         }
     })
     .workers(4)
     .bind(format!("0.0.0.0:{port}", port = port))?
     .run();
-    info!(
-        "Starting {} server at http://127.0.0.1:{}...",
-        if DEBUG { "development" } else { "production" },
-        port
-    );
+    info!("Starting {} server at http://127.0.0.1:{}...", if DEBUG { "development" } else { "production" }, port);
 
     if DEBUG {
         start_vite_server().expect("Failed to start vite server");
@@ -223,11 +181,7 @@ fn start_vite_server() -> Result<Child, Box<dyn std::error::Error>> {
     #[cfg(not(target_os = "windows"))]
     let find_cmd = "which";
 
-    let vite = std::process::Command::new(find_cmd)
-        .arg("vite")
-        .stdout(std::process::Stdio::piped())
-        .output()?
-        .stdout;
+    let vite = std::process::Command::new(find_cmd).arg("vite").stdout(std::process::Stdio::piped()).output()?.stdout;
 
     let vite = String::from_utf8(vite);
     let vite = vite.unwrap();
@@ -235,27 +189,16 @@ fn start_vite_server() -> Result<Child, Box<dyn std::error::Error>> {
 
     if vite.is_empty() {
         error!("vite not found, make sure its installed with npm install -g vite");
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "vite not found",
-        ))?;
+        return Err(std::io::Error::new(std::io::ErrorKind::NotFound, "vite not found"))?;
     }
 
     // Get the first occurrence
-    let vite = vite
-        .split("\n")
-        .collect::<Vec<_>>()
-        .last()
-        .expect("Failed to get vite executable")
-        .trim();
+    let vite = vite.split("\n").collect::<Vec<_>>().last().expect("Failed to get vite executable").trim();
 
     debug!("found vite at: {:?}", vite);
 
     // Start the vite server
-    Ok(std::process::Command::new(vite)
-        .current_dir(r#"../../"#)
-        .spawn()
-        .expect("Failed to start vite server"))
+    Ok(std::process::Command::new(vite).current_dir(r#"../../"#).spawn().expect("Failed to start vite server"))
 }
 
 /// The maximum payload size allowed for forwarding requests and responses.
@@ -296,11 +239,7 @@ async fn index(_req: HttpRequest) -> Result<impl Responder, Error> {
 async fn assets(file: web::Path<String>) -> impl Responder {
     if let Some(file) = WWWROOT.get_file(format!("assets/{}", file.as_str())) {
         let body = file.contents();
-        return Ok(HttpResponse::Ok()
-            .content_type(file_extension_to_mime(
-                file.path().extension().unwrap().to_str().unwrap(),
-            ))
-            .body(body));
+        return Ok(HttpResponse::Ok().content_type(file_extension_to_mime(file.path().extension().unwrap().to_str().unwrap())).body(body));
     }
     Err(ErrorInternalServerError(format!("Failed to find {}", file)))
 }

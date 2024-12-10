@@ -1,10 +1,16 @@
-import Java, {JavaVersion} from "../../ts/java.ts";
 import {useEffect, useState} from "react";
 import JavaVersionComponent from "./JavaVersionComponent.tsx";
-import JavaInstallModal from "./JavaInstallModal.tsx";
 import {Skeleton} from "@nextui-org/react";
+import JavaInstallModal from "../../Settings/JavaInstallModal.tsx";
+import Java, {JavaVersion} from "../../../ts/java.ts";
 
-export default function JavaSettings()
+interface JavaSettingsProps
+{
+    selected: JavaVersion|null;
+    onSelect: (version: JavaVersion) => void;
+}
+
+export default function JavaSettings(props: JavaSettingsProps)
 {
     const [versions, setVersions] = useState<JavaVersion[]>([]);
     const [installVersion, setInstallVersion] = useState<JavaVersion | null>(null);
@@ -41,18 +47,21 @@ export default function JavaSettings()
                             ))}
                         </> :
                         <>
-                            {versions.sort((a,b)=>{
-                                let [majorA, minorA, patchA] = a.version.split(".").map(i=>Number.parseInt(i));
-                                let [majorB, minorB, patchB] = b.version.split(".").map(i=>Number.parseInt(i));
+                            {versions.sort((a, b) =>
+                            {
+                                let [majorA, minorA, patchA] = a.version.split(".").map(i => Number.parseInt(i));
+                                let [majorB, minorB, patchB] = b.version.split(".").map(i => Number.parseInt(i));
 
                                 return (majorB - majorA) || (minorB - minorA) || (patchB - patchA);
                             })
                                 .map((version) => (
-                                <JavaVersionComponent version={version} onInstall={setInstallVersion} onUninstall={version =>
-                                {
-                                    version.uninstall().then(() => Java.versions().then(setVersions));
-                                }}/>
-                            ))}
+                                    <JavaVersionComponent
+                                        version={version}
+                                        onInstall={setInstallVersion}
+                                        selected={props.selected === version}
+                                        onSelect={props.onSelect}
+                                    />
+                                ))}
                         </>
                     }
                 </div>

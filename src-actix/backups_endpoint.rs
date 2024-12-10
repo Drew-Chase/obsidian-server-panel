@@ -5,7 +5,9 @@ use backups::hashed_backup_item::HashedBackupItem;
 use crypto::hashids::decode;
 use log::error;
 use serde_json::json;
-use servers::server_db;
+use servers::server::Server;
+use servers::server_database::ServerDatabase;
+use std::error::Error;
 use std::path::Path;
 
 #[get("")]
@@ -16,54 +18,34 @@ pub async fn get_backups(id: web::Path<String>, req: HttpRequest) -> impl Respon
             Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
         };
 
-        return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number)
-            .iter()
-            .map(|e| { e.clone().hash() })
-            .collect::<Vec<HashedBackupItem>>()));
+        return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number).iter().map(|e| { e.clone().hash() }).collect::<Vec<HashedBackupItem>>()));
     }
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
 #[post("/create/{method}")]
-pub async fn create_manual_backup(
-    path: web::Path<(String, BackupType)>,
-    req: HttpRequest,
-) -> impl Responder {
+pub async fn create_manual_backup(path: web::Path<(String, BackupType)>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     let (id, method) = path.into_inner();
 
     if let Some(user) = req.extensions().get::<User>() {
-        let id_number: u32 = match decode(id.as_str()) {
-            Ok(id_number) => id_number[0] as u32,
-            Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        let id_number = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0],
+            Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
         };
 
-        let server = match server_db::get_owned_server_by_id(id_number, user.id) {
-            Some(s) => s,
-            None => {
-                let msg = format!("Server with id: {} not found", id_number);
+        let server = Server::get_owned_server(id_number, user.id as u64)?;
+
+        let item = match BackupItem::create_backup(id_number as u32, Path::new(&server.directory), BackupCreationMethod::MANUAL, method) {
+            Ok(b) => b.hash(),
+            Err(e) => {
+                let msg = format!("Failed to create backup: {}", e);
                 error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
+                return Ok(HttpResponse::BadRequest().json(json!({"error":msg})));
             }
         };
-
-        if let Some(server_directory) = server.directory {
-            let item = match BackupItem::create_backup(
-                id_number,
-                Path::new(&server_directory),
-                BackupCreationMethod::MANUAL,
-                method,
-            ) {
-                Ok(b) => b.hash(),
-                Err(e) => {
-                    let msg = format!("Failed to create backup: {}", e);
-                    error!("{}", msg);
-                    return HttpResponse::BadRequest().json(json!({"error":msg}));
-                }
-            };
-            return HttpResponse::Ok().json(json!(item));
-        }
+        return Ok(HttpResponse::Ok().json(json!(item)));
     }
 
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+    Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }

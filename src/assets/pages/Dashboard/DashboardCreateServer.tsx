@@ -9,9 +9,10 @@ import UploadIcon from "../../components/Dashboard/CreateServer/UploadIcon.tsx";
 import Server from "../../ts/servers.ts";
 import FileSystem from "../../ts/file-system.ts";
 import {useAlertModal} from "../../providers/AlertModalProvider.tsx";
-import Java from "../../ts/java.ts";
 import {useNavigate} from "react-router-dom";
 import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
+import JavaSettings from "../../components/Dashboard/CreateServer/JavaSettings.tsx";
+import {JavaVersion} from "../../ts/java.ts";
 
 export default function DashboardCreateServer()
 {
@@ -29,6 +30,7 @@ export default function DashboardCreateServer()
     const [serverIcon, setServerIcon] = useState<File | null>(null);
     const [isValid, setIsValid] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [javaVersion, setJavaVersion] = useState<JavaVersion|null>(null);
     const {alert} = useAlertModal();
     const {setSelectedServerId} = useSelectedServer();
     const navigate = useNavigate();
@@ -43,31 +45,6 @@ export default function DashboardCreateServer()
         const validLoaderVersion = loader.toLowerCase() === "vanilla" || loaderVersion.length > 0;
         setIsValid(validName && validPort && validVersion && validLoader && validLoaderVersion);
     }, [serverName, serverPort, serverDifficulty, serverGamemode, serverMaxPlayers, hardcoreMode, minecraftVersion, loader, loaderVersion]);
-
-
-    useEffect(() =>
-    {
-        Java.installed().then((versions) =>
-        {
-            if (versions.length === 0)
-            {
-                alert({
-                    title: "Java not installed",
-                    message: "Please install Java to create a server.",
-                    type: "error",
-                    actions: [
-                        {
-                            label: "Goto Settings",
-                            onClick: () =>
-                            {
-                                navigate("/app/settings/#java-settings");
-                            }
-                        }
-                    ]
-                });
-            }
-        });
-    }, []);
 
 
     const createServer = async () =>
@@ -148,6 +125,7 @@ export default function DashboardCreateServer()
                 serverMaxPlayers={serverMaxPlayers}
                 setServerMaxPlayers={setServerMaxPlayers}
             />
+            <JavaSettings onSelect={setJavaVersion} selected={javaVersion}/>
             <VersionSettings
                 onVersionChange={setMinecraftVersion}
                 onLoaderChange={(loader, version) =>

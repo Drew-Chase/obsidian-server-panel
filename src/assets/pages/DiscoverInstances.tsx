@@ -24,14 +24,17 @@ export default function DiscoverInstances()
         abortController.abort();
         abortController = new AbortController();
         Instances.browse({
-            platform: platform,
-            search: search,
-            sort: sort,
+            platform,
+            search,
+            sort,
             limit: 50,
             offset: 0
         }, abortController.signal)
-            .then(i => i.hits)
-            .then(setInstances)
+            .then(i => setInstances(i.hits))
+            .catch(e =>
+            {
+                if (e.name !== "AbortError") console.error(e);
+            })
             .finally(() => setLoading(false));
     }, [search, platform, sort]);
 
@@ -65,7 +68,7 @@ export default function DiscoverInstances()
                                 <SelectItem key={platform}>{platform}</SelectItem>
                             ))}
                         </OSelect>
-                        <OTooltip content={"Sort options only work for Modrinth"} >
+                        <OTooltip content={"Sort options only work for Modrinth"}>
                             <OSelect
                                 label={"Sort By"}
                                 disallowEmptySelection
@@ -89,6 +92,7 @@ export default function DiscoverInstances()
                             itemClasses={{
                                 base: "data-[hover]:bg-neutral-600"
                             }}
+                            className={"overflow-auto"}
                             emptyContent={"No mods found"}
                         >
                             {instances.map((instance, i) => (

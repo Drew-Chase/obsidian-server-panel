@@ -58,7 +58,7 @@ export default function CalendarDropdown(props: CalendarDropdownProps)
                     base: "data-[hover]:bg-neutral-800"
                 }}
             >
-                <DropdownItem closeOnSelect={false}>
+                <DropdownItem key={"calendar-dropdown-item"} closeOnSelect={false}>
                     <Calendar
                         {...mutableProps.calendarProps}
                         showMonthAndYearPickers

@@ -5,37 +5,32 @@ use crypto::hashids::decode;
 use log::{debug, error};
 use serde::Deserialize;
 use serde_json::json;
-use servers::physical_server;
-use servers::physical_server::{get_file_type, FileSystemEntry};
+use servers::file_system_entry::FileSystemEntries;
+use servers::server::Server;
+use servers::server_database::ServerDatabase;
+use servers::server_filesystem::ServerFilesystem;
+use std::error::Error;
 use std::fs::File;
 use std::io::{Read, Write};
 
 #[post("")]
-pub async fn get_server_files(
-    id: web::Path<String>,
-    body: Option<String>,
-    req: HttpRequest,
-) -> impl Responder {
+pub async fn get_server_files(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number = match decode(&id) {
             Ok(id) => id,
             Err(_) => {
                 error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
+                return Ok(HttpResponse::BadRequest().json(json!({"error": format!("Invalid id: {}", id)})));
             }
         };
         if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
+            return Ok(HttpResponse::BadRequest().json(json!({"error": format!("Invalid id: {}", id)})));
         }
-        return HttpResponse::Ok().json(
-            physical_server::get_server_filesystem_entries(id_number[0] as u32, user.id, body)
-                .await,
-        );
+        let server = Server::get_owned_server(id_number[0], user.id as u64)?;
+        return Ok(HttpResponse::Ok().json(server.get_files(body.unwrap_or("/".to_string()))));
     }
 
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    Ok(HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"})))
 }
 
 #[derive(Debug, Deserialize)]
@@ -49,292 +44,197 @@ struct UploadForm {
     file: TempFile,
     json: MPJson<UploadFileMetadata>,
 }
-
 #[post("/upload")]
-pub async fn upload_file_to_server(
-    id: web::Path<String>,
-    MultipartForm(mut payload): MultipartForm<UploadForm>,
-    req: HttpRequest,
-) -> impl Responder {
+pub async fn upload_file_to_server(id: web::Path<String>, MultipartForm(mut payload): MultipartForm<UploadForm>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     let directory = payload.json.directory.clone();
     let filename = payload.json.filename.clone();
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(&id) {
-            Ok(id) => id,
-            Err(_) => {
-                error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
-            }
-        };
-        if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
-        }
-        let id_number = id_number[0] as u32;
+    let ext = req.extensions();
+    let user = ext.get::<User>().ok_or("Unauthorized: User not found")?.to_owned();
 
-        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
-        if let Some(server) = server {
-            if let Some(server_dir) = server.directory {
-                let path = format!("{}{}{}", server_dir, directory, filename);
-                debug!("Uploading file to: {:?}", path);
-                debug!(
-                    "Server Directory: {:?}, Directory: {:?}, Filename: {:?}",
-                    server_dir, directory, filename
-                );
+    // Decode the ID
+    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
 
-                let mut file = match File::create(&path) {
-                    Ok(file) => file,
-                    Err(e) => {
-                        error!("Error creating file: {:?}", e);
-                        return HttpResponse::InternalServerError()
-                            .json(json!({"error": "Error creating file"}));
-                    }
-                };
-                let temp_file = payload.file.file.as_file_mut();
-                let mut temp_bytes: Vec<u8> = Vec::new();
-                if let Err(e) = temp_file.read_to_end(&mut temp_bytes) {
-                    error!("Error reading file: {:?}", e);
-                    return HttpResponse::InternalServerError()
-                        .json(json!({"error": "Error reading file"}));
-                }
-                if let Err(e) = file.write_all(&*temp_bytes) {
-                    error!("Error writing file: {:?}", e);
-                    return HttpResponse::InternalServerError()
-                        .json(json!({"error": "Error writing file"}));
-                }
-            }
-        } else {
-            return HttpResponse::BadRequest().json(json!({"error": "Server not found"}));
-        }
-        return HttpResponse::Ok().json(json!({"success": "File uploaded"}));
+    // Fetch the server owned by the user using ServerDatabase
+    let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
+
+    if let Some(server_dir) = server.directory.to_str() {
+        let path = format!("{}{}{}", server_dir, directory, filename);
+        debug!("Uploading file to: {:?}", path);
+        debug!("Server Directory: {:?}, Directory: {:?}, Filename: {:?}", server_dir, directory, filename);
+
+        // Create the file
+        let mut file = File::create(&path).map_err(|e| {
+            error!("Error creating file: {:?}", e);
+            "Error creating file"
+        })?;
+
+        // Read the temporary file into memory
+        let temp_file = payload.file.file.as_file_mut();
+        let mut temp_bytes: Vec<u8> = Vec::new();
+        temp_file.read_to_end(&mut temp_bytes).map_err(|e| {
+            error!("Error reading file: {:?}", e);
+            "Error reading file"
+        })?;
+
+        // Write the data to the new file
+        file.write_all(&temp_bytes).map_err(|e| {
+            error!("Error writing file: {:?}", e);
+            "Error writing file"
+        })?;
+
+        Ok(HttpResponse::Ok().json(json!({"success": "File uploaded"})))
+    } else {
+        Err("Server directory not specified".into())
     }
-
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
 }
 
 #[post("")]
-pub async fn get_files(body: Option<String>, req: HttpRequest) -> impl Responder {
-    if req.extensions().get::<User>().is_none() {
-        return HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}));
-    }
-    let path = body.unwrap_or_default();
-    let path = std::env::current_dir().unwrap().join(path);
-    match std::fs::read_dir(&path) {
-        Ok(entries) => {
-            let mut file_system_entries: Vec<FileSystemEntry> = Vec::new();
-            for entry in entries {
-                let entry = entry.unwrap();
-                let metadata = entry.metadata().unwrap();
-                let file_system_entry = FileSystemEntry {
-                    name: entry.file_name().into_string().unwrap(),
-                    path: entry.path(),
-                    size: metadata.len(),
-                    r#type: get_file_type(
-                        entry
-                            .path()
-                            .extension()
-                            .unwrap_or_default()
-                            .to_str()
-                            .unwrap_or_default()
-                            .to_string(),
-                    ),
-                    mime: physical_server::get_mime(&entry.path()),
-                    category: physical_server::get_mime_category(&entry.path()).await,
-                    created: metadata
-                        .created()
-                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
-                    is_dir: metadata.is_dir(),
-                    last_modified: metadata
-                        .modified()
-                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH),
-                };
-                file_system_entries.push(file_system_entry);
-            }
-            HttpResponse::Ok().json(file_system_entries)
-        }
-        Err(e) => {
-            error!("Error reading directory: {:?}", e);
-            HttpResponse::InternalServerError().json(json!({"error": "Error reading directory"}))
-        }
-    }
-}
+pub async fn get_files(body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    // Check if the user is authenticated
+    req.extensions().get::<User>().ok_or("Unauthorized: User not found")?;
 
+    let path = body.unwrap_or_default(); // Get the requested path or default to empty
+    let path = std::env::current_dir()?.join(&path); // Resolve the full path
+
+    let file_system_entries: FileSystemEntries = path.into(); // Convert the path directly into FileSystemEntries
+
+    Ok(HttpResponse::Ok().json(file_system_entries)) // Return the entries in a JSON response
+}
 #[get("/download/{file}")]
-pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) -> impl Responder {
+pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     let (id, file) = path.into_inner();
 
-    // decode the uri encoded file path
-    let file: String = match percent_encoding::percent_decode(file.as_bytes()).decode_utf8() {
-        Ok(file) => file.to_string(),
-        Err(e) => {
+    // Decode the URI-encoded file path
+    let file = percent_encoding::percent_decode(file.as_bytes())
+        .decode_utf8()
+        .map_err(|e| {
             error!("Error decoding file path: {:?}", e);
-            return HttpResponse::BadRequest().json(json!({"error": "Error decoding file path"}));
-        }
-    };
+            "Error decoding file path"
+        })?
+        .to_string();
 
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(&id) {
-            Ok(id) => id,
-            Err(_) => {
-                error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
-            }
-        };
-        if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
-        }
-        let id_number = id_number[0] as u32;
-        if let Some(server) = servers::server_db::get_owned_server_by_id(id_number, user.id) {
-            let path = format!("{}{}", server.directory.unwrap_or_default(), file);
-            debug!("Downloading file: {:?}", path);
-            return match File::open(&path) {
-                Ok(mut file) => {
-                    let mut bytes: Vec<u8> = Vec::new();
-                    if let Err(e) = file.read_to_end(&mut bytes) {
-                        error!("Error reading file: {:?}", e);
-                        return HttpResponse::InternalServerError()
-                            .json(json!({"error": "Error reading file"}));
-                    }
-                    HttpResponse::Ok()
-                        .content_type("application/octet-stream")
-                        .body(bytes)
-                }
-                Err(e) => {
-                    error!("Error opening file: {:?}", e);
-                    HttpResponse::InternalServerError().json(json!({"error": "Error opening file"}))
-                }
-            };
-        }
-    }
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+    let ext = req.extensions();
+    // Authenticate the user
+    let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
+
+    // Decode the server ID
+    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
+
+    // Fetch the server owned by the user
+    let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
+
+    // Verify the server directory and construct the file path
+    let server_dir = server.directory.to_str().ok_or("Server directory not specified")?;
+    let path = format!("{}{}", server_dir, file);
+    debug!("Downloading file: {:?}", path);
+
+    // Open and read the file
+    let mut file = File::open(&path).map_err(|e| {
+        error!("Error opening file: {:?}", e);
+        "Error opening file"
+    })?;
+
+    let mut bytes: Vec<u8> = Vec::new();
+    file.read_to_end(&mut bytes).map_err(|e| {
+        error!("Error reading file: {:?}", e);
+        "Error reading file"
+    })?;
+
+    Ok(HttpResponse::Ok().content_type("application/octet-stream").body(bytes))
 }
 
 #[post("/create/file")]
-pub async fn create_file(
-    id: web::Path<String>,
-    body: Option<String>,
-    req: HttpRequest,
-) -> impl Responder {
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(&id) {
-            Ok(id) => id,
-            Err(_) => {
-                error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
-            }
-        };
-        if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
-        }
-        let id_number = id_number[0] as u32;
-        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
-        if let Some(server) = server {
-            if let Some(server_dir) = server.directory {
-                let path = format!("{}{}", server_dir, body.unwrap_or_default());
-                debug!("Creating file: {:?}", path);
-                return match File::create(&path) {
-                    Ok(_) => HttpResponse::Ok().json(json!({"success": "File created"})),
-                    Err(e) => {
-                        error!("Error creating file: {:?}", e);
-                        HttpResponse::InternalServerError()
-                            .json(json!({"error": "Error creating file"}))
-                    }
-                };
-            }
-        }
-    }
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
+pub async fn create_file(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    let ext = req.extensions();
+    // Authenticate the user
+    let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
+
+    // Decode the server ID
+    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
+
+    // Fetch the server owned by the user
+    let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
+
+    // Verify the server directory
+    let server_dir = server.directory.to_str().ok_or("Server directory not specified")?;
+
+    // Construct the full file path
+    let path = format!("{}{}", server_dir, body.unwrap_or_default());
+    debug!("Creating file: {:?}", path);
+
+    // Create the file
+    File::create(&path).map_err(|e| {
+        error!("Error creating file: {:?}", e);
+        "Error creating file"
+    })?;
+
+    Ok(HttpResponse::Ok().json(json!({"success": "File created"})))
 }
 
 #[post("/create/directory")]
-pub async fn create_directory(
-    id: web::Path<String>,
-    body: Option<String>,
-    req: HttpRequest,
-) -> impl Responder {
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(&id) {
-            Ok(id) => id,
-            Err(_) => {
-                error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
-            }
-        };
-        if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
-        }
-        let id_number = id_number[0] as u32;
-        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
-        if let Some(server) = server {
-            if let Some(server_dir) = server.directory {
-                let path = format!("{}{}", server_dir, body.unwrap_or_default());
-                debug!("Creating directory: {:?}", path);
-                return match std::fs::create_dir(&path) {
-                    Ok(_) => HttpResponse::Ok().json(json!({"success": "Directory created"})),
-                    Err(e) => {
-                        error!("Error creating directory: {:?}", e);
-                        HttpResponse::InternalServerError()
-                            .json(json!({"error": "Error creating directory"}))
-                    }
-                };
-            }
-        }
-    }
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
-}
+pub async fn create_directory(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    let ext = req.extensions();
+    // Authenticate the user
+    let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
 
+    // Decode the server ID
+    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))? as u64;
+
+    // Fetch the server owned by the user
+    let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
+
+    // Verify the server directory
+    let server_dir = server.directory.to_str().ok_or("Server directory not specified")?;
+
+    // Construct the full directory path
+    let path = format!("{}{}", server_dir, body.unwrap_or_default());
+    debug!("Creating directory: {:?}", path);
+
+    // Create the directory
+    std::fs::create_dir(&path).map_err(|e| {
+        error!("Error creating directory: {:?}", e);
+        "Error creating directory"
+    })?;
+
+    Ok(HttpResponse::Ok().json(json!({"success": "Directory created"})))
+}
 #[delete("")]
-pub async fn delete_path(id: web::Path<String>, body: String, req: HttpRequest) -> impl Responder {
-    if let Some(user) = req.extensions().get::<User>() {
-        let id_number = match decode(&id) {
-            Ok(id) => id,
-            Err(_) => {
-                error!("Invalid id: {}", id);
-                return HttpResponse::BadRequest()
-                    .json(json!({"error": format!("Invalid id: {}", id)}));
-            }
-        };
-        if id_number.is_empty() {
-            return HttpResponse::BadRequest()
-                .json(json!({"error": format!("Invalid id: {}", id)}));
-        }
-        let id_number = id_number[0] as u32;
-        let server = servers::server_db::get_owned_server_by_id(id_number, user.id);
-        if let Some(server) = server {
-            if let Some(server_dir) = server.directory {
-                let path = format!("{}{}", server_dir, body);
-                debug!("Deleting path: {:?}", path);
-                // check if the path is a file or directory
-                if let Ok(metadata) = std::fs::metadata(&path) {
-                    return if metadata.is_file() {
-                        match std::fs::remove_file(&path) {
-                            Ok(_) => HttpResponse::Ok().json(json!({"success": "File deleted"})),
-                            Err(e) => {
-                                error!("Error deleting file: {:?}", e);
-                                HttpResponse::InternalServerError()
-                                    .json(json!({"error": "Error deleting file"}))
-                            }
-                        }
-                    } else {
-                        match std::fs::remove_dir_all(&path) {
-                            Ok(_) => HttpResponse::Ok().json(json!({"success": "Path deleted"})),
-                            Err(e) => {
-                                error!("Error deleting path: {:?}", e);
-                                HttpResponse::InternalServerError()
-                                    .json(json!({"error": "Error deleting path"}))
-                            }
-                        }
-                    };
-                }
-            }
-        }
+pub async fn delete_path(id: web::Path<String>, body: String, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    let ext = req.extensions();
+    // Authenticate the user
+    let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
+
+    // Decode the server ID
+    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))? as u64;
+
+    // Fetch the server owned by the user
+    let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
+
+    // Verify the server directory
+    let server_dir = server.directory.to_str().ok_or("Server directory not specified")?;
+
+    // Construct the full path
+    let path = format!("{}{}", server_dir, body);
+    debug!("Deleting path: {:?}", path);
+
+    // Check if the path exists and is a file or directory
+    let metadata = std::fs::metadata(&path).map_err(|e| {
+        error!("Error accessing path metadata: {:?}", e);
+        "Error accessing path metadata"
+    })?;
+
+    // Determine whether the path is a file or directory and delete accordingly
+    if metadata.is_file() {
+        std::fs::remove_file(&path).map_err(|e| {
+            error!("Error deleting file: {:?}", e);
+            "Error deleting file"
+        })?;
+        Ok(HttpResponse::Ok().json(json!({"success": "File deleted"})))
+    } else {
+        std::fs::remove_dir_all(&path).map_err(|e| {
+            error!("Error deleting directory: {:?}", e);
+            "Error deleting directory"
+        })?;
+        Ok(HttpResponse::Ok().json(json!({"success": "Path deleted"})))
     }
-    HttpResponse::Unauthorized().json(json!({"error": "Unauthorized"}))
 }

@@ -12,6 +12,7 @@ interface StatCardProps
     maxValue?: number;
     maxValueDisplay?: string;
     icon?: ReactElement;
+    valueFormater?: (value: number) => string;
 }
 
 

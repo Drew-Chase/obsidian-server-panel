@@ -1,9 +1,12 @@
-pub mod physical_server;
-pub mod properties;
-pub mod server_db;
-mod server_management;
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::expect_used)]
+#![deny(clippy::panic)]
+#![deny(unused_must_use)]
+pub mod server;
+pub mod start_executable_type;
+pub mod server_status;
+pub mod server_database;
 pub mod server_process;
-mod console_handler;
-mod server_status;
-mod server;
-mod server_manager;
+pub mod server_filesystem;
+pub mod server_properties;
+pub mod file_system_entry;
