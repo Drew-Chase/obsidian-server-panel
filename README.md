@@ -3,14 +3,23 @@ A beautiful minecraft server dashboard panel.
 This is a work in progress and is currently inoperable.
 
 # Screenshots
+### Login
+![image](https://github.com/user-attachments/assets/14711d48-f431-4bda-a64b-ac2b684de4b8)
 ### Dashboard
-![image](https://github.com/user-attachments/assets/1dfe9b89-6b7f-4c46-9c10-cf2443b2d499)
+![image](https://github.com/user-attachments/assets/9bd03d28-ef09-4c44-841c-7de6a08aa938)
+
 ### Servers
-![image](https://github.com/user-attachments/assets/1169f60b-88f5-4d9e-a2cb-dd14b4ff594b)
+![image](https://github.com/user-attachments/assets/fa6dd597-8657-425b-b151-39ca2ad4bda4)
+
 ### Instances
-![image](https://github.com/user-attachments/assets/6916cf74-48ed-4c90-81e2-b84a256bb073)
+![image](https://github.com/user-attachments/assets/e3069da4-9446-4566-b731-a8159c3ca037)
+
+### Discover Instances
+![image](https://github.com/user-attachments/assets/420d41b2-ae2e-4dbd-979e-78fd2b7bc75b)
+
 ### Create Server
-![image](https://github.com/user-attachments/assets/ffe1c010-84d8-4e89-b508-3fe193c6bc15)
+![image](https://github.com/user-attachments/assets/f6a5c610-18e2-4f1a-a78e-24de753a71a9)
+
 ### Server Details
 ![image](https://github.com/user-attachments/assets/72f52e85-b8ae-44bb-9748-9361345dd43d)
 ### Server Properties
@@ -33,3 +42,7 @@ This is a work in progress and is currently inoperable.
 ![image](https://github.com/user-attachments/assets/f8b029c5-f1bb-49d9-99d6-62f9593f3cf3)
 ### Manage User Roles
 ![image](https://github.com/user-attachments/assets/10f2cf71-8ed1-4d8d-95c9-537212e2e0d9)
+### Log Viewer
+![image](https://github.com/user-attachments/assets/f6917f67-66ba-47d0-9fbe-aaa13bc9304a)
+
+
