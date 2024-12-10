@@ -93,6 +93,40 @@ impl fmt::Display for dyn HashedIdentifier {
     }
 }
 
+pub trait ToHashed {
+    fn to_hashed(&self) -> Option<Server<String>>;
+}
+
+impl ToHashed for Server<u64> {
+    fn to_hashed(&self) -> Option<Server<String>> {
+        let id = self.id.to_hashed().map_or_else(|| "invalid id".to_string(), |id| id.to_string());
+        Some(Server {
+            id,
+            name: self.name.clone(),
+            owner: self.owner,
+            members: self.members.clone(),
+            min_ram: self.min_ram,
+            max_ram: self.max_ram,
+            auto_start: self.auto_start,
+            start_script: self.start_script.clone(),
+            minecraft_arguments: self.minecraft_arguments.clone(),
+            java_arguments: self.java_arguments.clone(),
+            java_runtime: self.java_runtime.clone(),
+            minecraft_version: self.minecraft_version.clone(),
+            loader_type: self.loader_type,
+            loader_version: self.loader_version.clone(),
+            directory: self.directory.clone(),
+            size: self.size.clone(),
+            created_at: self.created_at.clone(),
+            updated_at: self.updated_at.clone(),
+            status: self.status.clone(),
+            pid: self.pid,
+            stdin: None,
+            stdout: None,
+        })
+    }
+}
+
 /// Represents a server entity with attributes commonly used for server management and configuration.
 pub struct Server<T: Identifier> {
     /// The server's unique identifier, constrained by the `Identifier` trait.
@@ -117,12 +151,15 @@ pub struct Server<T: Identifier> {
     pub java_arguments: Option<String>,
     /// The java runtime path, this is used to start the jar binary.
     pub java_runtime: Option<PathBuf>,
+    pub minecraft_version: String,
     /// Represents the type of server loader being utilized, often an internal configuration value.
     pub loader_type: u8,
     /// An optional string indicating the version of the server loader in use.
     pub loader_version: Option<String>,
     /// Specifies the path to the server's operational working directory.
     pub directory: PathBuf,
+    /// The total size of the server and its files.
+    pub size: u64,
     /// The creation timestamp of the server, formatted in ISO 8601.
     pub created_at: String,
     /// The timestamp of the last update made to the server, also formatted in ISO 8601.
@@ -167,22 +204,24 @@ impl Default for Server<u64> {
     /// * `Self` - An instance of `Server<u64>` with default values.
     fn default() -> Self {
         Self {
-            id: 0,                                            // Default ID, set to the lowest possible value for a new server.
-            name: String::from(""),                           // Empty name string for the server.
-            owner: 0,                                         // Default owner ID, initially unattached or new.
-            members: Vec::new(),                              // Initialize with an empty membership list.
-            auto_start: false,                                // By default, the server does not start automatically.
-            min_ram: 0,                                       // Minimum RAM requirement set to zero initially.
-            max_ram: 0,                                       // Maximum RAM allowance is also zero initially.
-            start_script: None,                               // No start script is associated by default.
-            minecraft_arguments: None,                        // No Minecraft-specific arguments provided.
-            java_arguments: None,                             // JVM arguments are absent by default.
+            id: 0,                     // Default ID, set to the lowest possible value for a new server.
+            name: String::from(""),    // Empty name string for the server.
+            owner: 0,                  // Default owner ID, initially unattached or new.
+            members: Vec::new(),       // Initialize with an empty membership list.
+            auto_start: false,         // By default, the server does not start automatically.
+            min_ram: 0,                // Minimum RAM requirement set to zero initially.
+            max_ram: 0,                // Maximum RAM allowance is also zero initially.
+            start_script: None,        // No start script is associated by default.
+            minecraft_arguments: None, // No Minecraft-specific arguments provided.
+            java_arguments: None,      // JVM arguments are absent by default.
+            minecraft_version: "".to_string(),
             loader_type: 0,                                   // Default loader type, often a placeholder value.
             loader_version: None,                             // Loader version not specified initially.
             directory: PathBuf::new(),                        // New path buffer for the server's directory.
             created_at: String::from("1970-01-01T00:00:00Z"), // Default epoch start time in ISO 8601.
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default epoch update time in ISO 8601.
             status: None,                                     // Server status is undefined by default.
+            size: 0,
             java_runtime: None,
             pid: None,
             stdin: None,  // Standard input stream configuration is absent.
@@ -223,22 +262,24 @@ impl Default for Server<String> {
     /// - `stdout`: `None`.
     fn default() -> Self {
         Self {
-            id: "".to_string(),                               // Default empty string for server ID
-            name: String::from(""),                           // Default empty string for server name
-            owner: 0,                                         // Default owner ID of 0
-            members: Vec::new(),                              // Default to an empty list of members
-            auto_start: false,                                // Default auto-start to false
-            min_ram: 0,                                       // Default minimum RAM to 0 MB
-            max_ram: 0,                                       // Default maximum RAM to 0 MB
-            start_script: None,                               // Default start script to None
-            minecraft_arguments: None,                        // Default Minecraft arguments to None
-            java_arguments: None,                             // Default Java arguments to None
+            id: "".to_string(),        // Default empty string for server ID
+            name: String::from(""),    // Default empty string for server name
+            owner: 0,                  // Default owner ID of 0
+            members: Vec::new(),       // Default to an empty list of members
+            auto_start: false,         // Default auto-start to false
+            min_ram: 0,                // Default minimum RAM to 0 MB
+            max_ram: 0,                // Default maximum RAM to 0 MB
+            start_script: None,        // Default start script to None
+            minecraft_arguments: None, // Default Minecraft arguments to None
+            java_arguments: None,      // Default Java arguments to None
+            minecraft_version: "".to_string(),
             loader_type: 0,                                   // Default loader type as 0
             loader_version: None,                             // Default loader version to None
             directory: PathBuf::new(),                        // Default directory as an empty PathBuf
             created_at: String::from("1970-01-01T00:00:00Z"), // Default creation timestamp
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default updated timestamp
             status: None,                                     // Default status to None
+            size: 0,
             java_runtime: None,
             pid: None,
             stdin: None,  // Default standard input to None
@@ -323,6 +364,10 @@ impl Serialize for Server<u64> {
 
         state.serialize_field("java_runtime", &self.java_runtime)?;
 
+        state.serialize_field("size", &self.size)?;
+
+        state.serialize_field("minecraft_version", &self.minecraft_version)?;
+
         // Ends the serialization process for the `Server` struct
         state.end()
     }
@@ -352,6 +397,8 @@ impl<'de> Deserialize<'de> for Server<u64> {
             UpdatedAt,
             Status,
             JavaRuntime,
+            Size,
+            MinecraftVersion,
         }
 
         struct ServerVisitor;
@@ -385,6 +432,8 @@ impl<'de> Deserialize<'de> for Server<u64> {
                 let mut updated_at = None;
                 let mut status = None;
                 let mut java_runtime = None;
+                let mut size = None;
+                let mut minecraft_version = None;
 
                 // Iterate over each key-value pair in the map
                 while let Some(key) = map.next_key()? {
@@ -495,6 +544,18 @@ impl<'de> Deserialize<'de> for Server<u64> {
                             }
                             java_runtime = Some(map.next_value()?);
                         }
+                        Field::Size => {
+                            if size.is_some() {
+                                return Err(de::Error::duplicate_field("size"));
+                            }
+                            size = Some(map.next_value()?);
+                        }
+                        Field::MinecraftVersion => {
+                            if minecraft_version.is_some() {
+                                return Err(de::Error::duplicate_field("minecraft_version"));
+                            }
+                            minecraft_version = Some(map.next_value()?);
+                        }
                     }
                 }
 
@@ -516,6 +577,8 @@ impl<'de> Deserialize<'de> for Server<u64> {
                 let updated_at = updated_at.ok_or_else(|| de::Error::missing_field("updated_at"))?;
                 let status = status;
                 let java_runtime = java_runtime;
+                let size = size.ok_or_else(|| de::Error::missing_field("size"))?;
+                let minecraft_version = minecraft_version.ok_or_else(|| de::Error::missing_field("minecraft_version"))?;
 
                 // Construct and return the Server object
                 Ok(Server {
@@ -536,6 +599,8 @@ impl<'de> Deserialize<'de> for Server<u64> {
                     updated_at,
                     status,
                     java_runtime,
+                    size,
+                    minecraft_version,
                     pid: None,
                     stdin: None,
                     stdout: None,
@@ -561,7 +626,66 @@ impl<'de> Deserialize<'de> for Server<u64> {
             "updated_at",
             "status",
             "java_runtime",
+            "size",
+            "minecraft_version",
         ];
         deserializer.deserialize_struct("Server", FIELDS, ServerVisitor)
+    }
+}
+
+impl Clone for Server<u64> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            name: self.name.clone(),
+            owner: self.owner,
+            members: self.members.clone(),
+            min_ram: self.min_ram,
+            max_ram: self.max_ram,
+            auto_start: self.auto_start,
+            start_script: self.start_script.clone(),
+            minecraft_arguments: self.minecraft_arguments.clone(),
+            java_arguments: self.java_arguments.clone(),
+            java_runtime: self.java_runtime.clone(),
+            minecraft_version: self.minecraft_version.clone(),
+            loader_type: self.loader_type,
+            loader_version: self.loader_version.clone(),
+            directory: self.directory.clone(),
+            created_at: self.created_at.clone(),
+            updated_at: self.updated_at.clone(),
+            status: self.status.clone(),
+            size: self.size,
+            pid: self.pid,
+            stdin: None,
+            stdout: None,
+        }
+    }
+}
+impl Clone for Server<String> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            owner: self.owner,
+            members: self.members.clone(),
+            min_ram: self.min_ram,
+            max_ram: self.max_ram,
+            auto_start: self.auto_start,
+            start_script: self.start_script.clone(),
+            minecraft_arguments: self.minecraft_arguments.clone(),
+            java_arguments: self.java_arguments.clone(),
+            java_runtime: self.java_runtime.clone(),
+            minecraft_version: self.minecraft_version.clone(),
+            loader_type: self.loader_type,
+            loader_version: self.loader_version.clone(),
+            directory: self.directory.clone(),
+            created_at: self.created_at.clone(),
+            updated_at: self.updated_at.clone(),
+            status: self.status.clone(),
+            size: self.size,
+            pid: self.pid,
+            stdin: None,
+            stdout: None,
+        }
     }
 }
