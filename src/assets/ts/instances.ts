@@ -76,6 +76,7 @@ export default class Instances
             .then(response => response.json())
             .then((result: InstanceSearchResult) =>
             {
+                if (!result.hits)return {} as InstanceSearchResult;
                 result.hits.forEach(hit =>
                 {
                     switch (hit.platform)
