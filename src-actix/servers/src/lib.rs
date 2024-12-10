@@ -8,3 +8,5 @@ pub mod server_status;
 pub mod server_database;
 pub mod server_process;
 pub mod server_filesystem;
+pub mod server_properties;
+pub mod file_system_entry;
