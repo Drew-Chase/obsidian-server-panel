@@ -1,7 +1,9 @@
+use crate::file_system_entry::FileSystemEntries;
 use crate::server::Server; // Import the Server struct from the server module
 use std::error::Error; // Import the Error trait for handling error types
 use std::fs; // Import filesystem module for directory operations
-use std::path::{Path, PathBuf}; // Import Path and PathBuf for handling filesystem paths
+use std::path::{Path, PathBuf};
+// Import Path and PathBuf for handling filesystem paths
 
 // Define the trait ServerFilesystem with methods for server directory operations
 pub trait ServerFilesystem {
@@ -17,6 +19,9 @@ pub trait ServerFilesystem {
 
     /// Calculates and returns the total size of the server's files.
     fn calculate_server_size(&mut self) -> u64;
+
+    fn remove_server_directory(&self) -> Result<(), Box<dyn Error>>;
+    fn get_files(&self, subpath: impl AsRef<Path>) -> FileSystemEntries;
 }
 
 // Implementation of the ServerFilesystem trait for the Server struct
@@ -83,6 +88,15 @@ impl ServerFilesystem for Server<u64> {
                 }
             }
         }
+        self.size = size;
         size
+    }
+
+    fn remove_server_directory(&self) -> Result<(), Box<dyn Error>> {
+        fs::remove_dir_all(&self.directory).map_err(|e| e.into())
+    }
+
+    fn get_files(&self, subpath: impl AsRef<Path>) -> FileSystemEntries {
+        FileSystemEntries::from(self.directory.join(subpath.as_ref()))
     }
 }
