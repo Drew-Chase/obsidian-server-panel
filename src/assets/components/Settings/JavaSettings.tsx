@@ -26,10 +26,10 @@ export default function JavaSettings()
     }, []);
 
     return (
-        <>
+        <div className={"flex flex-col my-8"}>
             {<JavaInstallModal isOpen={installVersion !== null} onClose={() => setInstallVersion(null)} version={installVersion!} onCompleted={() => Java.versions().then(setVersions)}/>}
-            <div id={"java-settings"} className={"flex flex-col bg-neutral-600 rounded-3xl shadow-lg p-8 w-full mx-2 overflow-y-auto"}>
-                <p className={"text-lg font-semibold mr-auto mb-8"}>Java Settings</p>
+            <div id={"java-settings"} className={"flex flex-col w-full mx-2 min-h-[200px]"}>
+                <p className={"text-lg font-semibold mr-auto mb-2"}>Java Settings</p>
                 <div className={"flex flex-col gap-3"}>
                     <p className={"text-danger"}>{error}</p>
                     {loading ?
@@ -41,7 +41,13 @@ export default function JavaSettings()
                             ))}
                         </> :
                         <>
-                            {versions.map((version) => (
+                            {versions.sort((a,b)=>{
+                                let [majorA, minorA, patchA] = a.version.split(".").map(i=>Number.parseInt(i));
+                                let [majorB, minorB, patchB] = b.version.split(".").map(i=>Number.parseInt(i));
+
+                                return (majorB - majorA) || (minorB - minorA) || (patchB - patchA);
+                            })
+                                .map((version) => (
                                 <JavaVersionComponent version={version} onInstall={setInstallVersion} onUninstall={version =>
                                 {
                                     version.uninstall().then(() => Java.versions().then(setVersions));
@@ -52,6 +58,6 @@ export default function JavaSettings()
                 </div>
 
             </div>
-        </>
+        </div>
     );
 }
