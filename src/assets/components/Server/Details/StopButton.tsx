@@ -13,11 +13,11 @@ export default function StopButton()
                         <Button variant={"light"} className={"min-w-0 bg-neutral-800/20"}><FontAwesomeIcon icon={faChevronDown}/></Button>
                     </DropdownTrigger>
                     <DropdownMenu>
-                        <DropdownItem>Stop Server</DropdownItem>
-                        <DropdownItem>Restart Server</DropdownItem>
-                        <DropdownItem>Kill Server</DropdownItem>
-                        <DropdownItem>Stop and Backup</DropdownItem>
-                        <DropdownItem>Restart and Backup</DropdownItem>
+                        <DropdownItem key="stop-server">Stop Server</DropdownItem>
+                        <DropdownItem key="restart-server">Restart Server</DropdownItem>
+                        <DropdownItem key="kill-server">Kill Server</DropdownItem>
+                        <DropdownItem key="stop-and-backup">Stop and Backup</DropdownItem>
+                        <DropdownItem key="restart-and-backup">Restart and Backup</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
             </div>
