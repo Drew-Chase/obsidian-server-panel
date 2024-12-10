@@ -32,10 +32,12 @@ pub fn initialize_server_database() -> Result<(), Box<dyn Error>> {
             start_script TEXT,                                          -- Startup script path, can be NULL if no script is used
             minecraft_arguments TEXT,                                   -- Arguments for Minecraft, nullable
             java_arguments TEXT,                                        -- Arguments for Java execution, nullable
+            minecraft_version TEXT NOT NULL,                            -- Version of Minecraft to use, nullable
             loader_type INTEGER NOT NULL,                               -- Type of server loader, corresponds to an integer value
             loader_version TEXT,                                        -- Version of the server loader, nullable
             directory TEXT NOT NULL,                                    -- Directory where the server is stored, path is not nullable
             java_runtime TEXT NULL DEFAULT NULL,                        -- Java runtime to use for the server, nullable,
+            size INTEGER NOT NULL,                                      -- Size of the server in bytes, cannot be NULL
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of creation, stored in ISO 8601 format, cannot be NULL
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of last update, stored in ISO 8601 format, cannot be NULL
             status TEXT                                                 -- Current status of the server, stored as a string (e.g., "active", "inactive"), nullable
@@ -165,8 +167,8 @@ impl ServerDatabase for Server<u64> {
         let query = r#"
   INSERT INTO server
   (name, owner, members, min_ram, max_ram, start_script, minecraft_arguments, 
-  java_arguments, loader_type, loader_version, directory, status, java_runtime)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  java_arguments, loader_type, loader_version, directory, status, java_runtime, size, minecraft_version)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 "#;
 
         // Prepare the SQL insert statement
@@ -186,6 +188,8 @@ impl ServerDatabase for Server<u64> {
         statement.bind((11, self.directory.to_str().unwrap_or("")))?; // Bind directory path
         statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?; // Bind server status
         statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?; // Bind the java runtime path.
+        statement.bind((14, self.size as i64))?; // Bind the server size
+        statement.bind((15, self.minecraft_version.as_str()))?; // Bind Minecraft version
 
         // Execute the SQL statement
         statement.next()?;
@@ -212,21 +216,23 @@ impl ServerDatabase for Server<u64> {
 
         // Prepare an SQL query to update a server record
         let query = r#"
-    UPDATE server SET
-    name = ?,
-    owner = ?,
-    members = ?,
-    min_ram = ?,
-    max_ram = ?,
-    start_script = ?,
-    minecraft_arguments = ?,
-    java_arguments = ?,
-    loader_type = ?,
-    loader_version = ?,
-    directory = ?,
-    status = ?,
-    java_runtime = ?
-    WHERE id = ?
+UPDATE server SET
+name = ?,
+owner = ?,
+members = ?,
+min_ram = ?,
+max_ram = ?,
+start_script = ?,
+minecraft_arguments = ?,
+java_arguments = ?,
+loader_type = ?,
+loader_version = ?,
+directory = ?,
+status = ?,
+java_runtime = ?,
+size = ?,
+minecraft_version = ?
+WHERE id = ?
 "#;
 
         // Prepare the SQL statement with the query
@@ -267,12 +273,18 @@ impl ServerDatabase for Server<u64> {
 
         // Bind the server status to the twelfth placeholder (index 12)
         statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?;
-        
+
         // Bind the Java runtime path to the thirteenth placeholder (index 13)
         statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?;
 
-        // Bind the server ID to the fourteenth placeholder (index 14) to specify which record to update
-        statement.bind((14, self.id as i64))?;
+        // Bind the server size to the fourteenth placeholder (index 14)
+        statement.bind((14, self.size as i64))?;
+
+        // Bind the Minecraft version to the fifteenth placeholder (index 15)
+        statement.bind((15, self.minecraft_version.as_str()))?;
+
+        // Bind the server ID to the sixteenth placeholder (index 16) to specify which record to update
+        statement.bind((16, self.id as i64))?;
 
         // Execute the next statement in the prepared sequence
         statement.next()?;
@@ -470,6 +482,12 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         status: statement.read::<String, _>("status").ok().and_then(|s| s.parse().ok()),
 
         java_runtime: statement.read::<String, _>("java_runtime").ok().and_then(|s| s.parse().ok()),
+
+        // Server Size: Read "size" column from the statement and convert it to u64.
+        size: statement.read::<i64, _>("size")? as u64,
+
+        // Minecraft Version: Read the "minecraft_version" column as a String.
+        minecraft_version: statement.read::<String, _>("minecraft_version")?,
 
         // I/O streams: Initialize as None, as they are not detailed in the statement.
         stdin: None,
