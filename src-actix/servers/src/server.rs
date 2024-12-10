@@ -3,10 +3,13 @@ use crypto::hashids::{decode, encode};
 use serde::de::{self, Deserializer, MapAccess, Visitor};
 use serde::{Deserialize, Serialize, Serializer};
 use std::any::Any;
+use std::error::Error;
 use std::fmt;
 use std::path::PathBuf;
 use std::process::{ChildStdin, ChildStdout};
 use std::str::FromStr;
+use crate::server_database::ServerDatabase;
+use crate::server_filesystem::ServerFilesystem;
 
 /// The `SimpleHashedIdentifier` structure is used to represent
 /// an identifier in a hashed form, using the `serde_derive::Serialize` trait to enable serialization.
@@ -228,6 +231,7 @@ impl Default for Server<u64> {
             stdout: None, // Standard output stream configuration is absent.
         }
     }
+    
 }
 
 // Default implementation for `Server<String>`.
@@ -687,5 +691,38 @@ impl Clone for Server<String> {
             stdin: None,
             stdout: None,
         }
+    }
+}
+
+impl Server<u64>{
+
+    /// Deletes the server by removing its associated directory and database entry.
+    ///
+    /// This method performs two key operations:
+    /// 1. Removes the server's directory from the filesystem by invoking `remove_server_directory`. 
+    /// 2. Deletes the server's record from the database using `remove_from_database`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if either:
+    /// - The server's directory cannot be deleted due to a filesystem error in `remove_server_directory`.
+    /// - The server's entry cannot be removed from the database due to database-related errors in `remove_from_database`.
+    ///
+    /// # Example
+    /// ```no-code
+    /// let server = Server::new(123, "/path/to/server");
+    /// server.delete()?; // Deletes the server and cleans up resources.
+    /// ```
+    pub fn delete(&self) -> Result<(), Box<dyn Error>> {
+        // Attempt to remove the server directory from the filesystem.
+        // If an error occurs here, it will be propagated to the caller.
+        self.remove_server_directory()?;
+
+        // Attempt to remove the server entry from the database.
+        // If an error occurs here, it will also be propagated to the caller.
+        self.remove_from_database()?;
+
+        // If both operations succeed, return Ok.
+        Ok(())
     }
 }
