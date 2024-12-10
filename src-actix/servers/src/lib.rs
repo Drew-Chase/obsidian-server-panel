@@ -6,4 +6,5 @@ pub mod server;
 pub mod start_executable_type;
 pub mod server_status;
 pub mod server_database;
-mod server_process;
+pub mod server_process;
+pub mod server_filesystem;
