@@ -88,7 +88,7 @@ pub trait ServerDatabase {
     /// # Errors
     ///
     /// Indicates an error if the server could not be deleted from the database.
-    fn delete(&self) -> Result<(), Box<dyn Error>>;
+    fn remove_from_database(&self) -> Result<(), Box<dyn Error>>;
 
     /// Retrieves a server by its unique ID.
     ///
@@ -300,7 +300,7 @@ WHERE id = ?
     /// Returns an error if:
     /// - There was an error creating the database connection.
     /// - An error occurred preparing or executing the delete statement.
-    fn delete(&self) -> Result<(), Box<dyn Error>> {
+    fn remove_from_database(&self) -> Result<(), Box<dyn Error>> {
         // Establish a connection to the database
         let conn = create_appdb_connection()?;
 
