@@ -17,6 +17,7 @@ use servers::server_db::{BasicHashedServer, HashedServer, Server};
 use std::error::Error;
 use std::path::Path;
 use std::str::FromStr;
+use servers::server_filesystem::ServerFilesystem;
 
 /// Retrieves servers owned by the authenticated user
 #[get("")]
@@ -84,35 +85,19 @@ struct CreateServerRequest {
 
 /// Creates a new server for the authenticated user
 #[post("")]
-pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest>) -> impl Responder {
+pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest>) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Create a new server in the database
-        let server: Server = match server_db::create_server(body.name.as_str(), user.id) {
-            Ok(s) => s,
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        };
-
-        // Create a directory for the server
-        let dir = match create_server_directory(server.id) {
-            Ok(d) => d,
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        };
-
-        // Set the server's directory in the database
-        match server_db::set_server_directory(server.id, dir.normalize().to_str().unwrap()) {
-            Ok(_) => (),
-            Err(e) => {
-                error!("Failed to set the servers directory to {:?}, {}", &dir, e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        }
+        let mut server: Server<u64> = Server::default();
+        server.name = body.name.clone();
+        server.owner = user.id as u64;
+        server.loader_type = body.loader.to();
+        server.loader_version = body.loader_version.clone();
+        server.minecraft_version = body.minecraft_version.clone();
+        
+        server.create_server_directory()?;
+        server.add()?;
 
         // Set the Minecraft version for the server
         if let Err(e) = server_db::set_minecraft_version(server.id, &body.minecraft_version) {
