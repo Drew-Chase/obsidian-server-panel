@@ -1,5 +1,6 @@
 # Obsidian Server Panel
-A beautiful minecraft server dashboard panel
+A beautiful minecraft server dashboard panel.   
+This is a work in progress and is currently inoperable.
 
 # Screenshots
 ### Dashboard
