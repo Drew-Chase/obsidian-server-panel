@@ -1,23 +1,20 @@
-use crate::WWWROOT;
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use authentication::data::User;
-use common_lib::traits::TransformPath;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
 use log::error;
 use minecraft::minecraft_version::download_server_jar;
 use serde::Deserialize;
 use serde_json::json;
-use servers::physical_server::create_server_directory;
-use servers::properties::Properties;
 use servers::server::Server;
 use servers::server_database::ServerDatabase;
-use servers::server_db;
-use servers::server_db::{BasicHashedServer, HashedServer, Server};
-use std::error::Error;
-use std::path::Path;
-use std::str::FromStr;
 use servers::server_filesystem::ServerFilesystem;
+use servers::server_properties::ServerProperties;
+use std::collections::HashMap;
+use std::convert::Into;
+use std::error::Error;
+use std::path::PathBuf;
+use std::str::FromStr;
 
 /// Retrieves servers owned by the authenticated user
 #[get("")]
@@ -62,10 +59,8 @@ pub async fn get_server_icon(id: web::Path<String>) -> Result<impl Responder, Bo
     };
 
     let server = Server::get_server(id_number)?;
-
-    let icon_path = server.directory.join(Path::new("server-icon.png"));
-    if icon_path.exists() {
-        return Ok(HttpResponse::Ok().body(web::Bytes::from(std::fs::read(icon_path).unwrap())));
+    if let Some(icon_path) = server.get_server_icon() {
+        return Ok(HttpResponse::Ok().body(web::Bytes::from(std::fs::read(&icon_path).unwrap())));
     }
     Ok(HttpResponse::NotFound().finish())
 }
@@ -88,148 +83,98 @@ struct CreateServerRequest {
 pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest>) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
-        // Create a new server in the database
+        // Initialize a new server instance with default values
         let mut server: Server<u64> = Server::default();
+
+        // Assign server properties from the request body
         server.name = body.name.clone();
-        server.owner = user.id as u64;
-        server.loader_type = body.loader.to();
+        server.owner = user.id as u64; // Set the authenticated user as the server owner
+        server.loader_type = body.loader.to(); // Map the loader type to its numeric representation
         server.loader_version = body.loader_version.clone();
         server.minecraft_version = body.minecraft_version.clone();
-        
+
+        // Create the directory for the server, ensuring a valid and unique directory name
         server.create_server_directory()?;
+
+        // Handle the server's start script based on the selected loader type
+        match body.loader {
+            // For Vanilla servers, download the server JAR file
+            Loader::Vanilla => server.start_script = Some(download_server_jar(&body.minecraft_version, &server.directory).await?),
+            // For other loaders, delegate installation to the loader manager and get the start script
+            _ => server.start_script = Some(PathBuf::from(loader_manager::install_loader(body.loader.clone(), &body.minecraft_version, &server.directory, body.loader_version.clone()).await?)),
+        }
+
+        // Generate a `server.properties` file in the server directory
+        server.create_properties_file()?;
+
+        // Set additional configuration properties using a range of key-value pairs from the request body
+        server.set_property_range(
+            [
+                ("server-port", body.port.to_string()),        // Server port number
+                ("difficulty", body.difficulty.clone()),       // Difficulty level
+                ("gamemode", body.gamemode.clone()),           // Game mode
+                ("hardcore", body.hardcore.to_string()),       // Hardcore mode status (true/false)
+                ("max-players", body.max_players.to_string()), // Maximum allowed players
+            ]
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v)) // Convert keys and values into a String format
+            .collect(), // Collect into a HashMap
+        )?;
+
+        // Calculate the total size of the server directory and update the server object
+        server.calculate_server_size();
+
+        // Persist the server information to the database
         server.add()?;
 
-        // Set the Minecraft version for the server
-        if let Err(e) = server_db::set_minecraft_version(server.id, &body.minecraft_version) {
-            error!("{}", e);
-            return HttpResponse::BadRequest().json(json!({"error":e}));
-        }
-
-        // Set the server's loader if provided
-        if let Some(loader_version) = &body.loader_version {
-            if let Err(e) = server_db::set_loader(server.id, body.loader.to(), loader_version.as_str()) {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        }
-
-        let loader_version = body.loader_version.clone();
-        if body.loader != Loader::Vanilla {
-            let executable = loader_manager::install_loader(body.loader.clone(), &body.minecraft_version, &dir, loader_version).await.unwrap();
-            // Set the server executable in the database
-            if let Err(e) = server_db::set_server_executable(server.id, &executable) {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        } else {
-            let path = match download_server_jar(&body.minecraft_version, &dir).await {
-                Ok(p) => p,
-                Err(e) => {
-                    error!("{}", e);
-                    return HttpResponse::BadRequest().json(json!({"error":e.to_string()}));
-                }
-            };
-            if let Err(e) = server_db::set_server_executable(server.id, path.to_str().unwrap()) {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        }
-
-        // Create and set server properties
-        let mut properties: Properties = match Properties::new(&Path::join(&dir, Path::new("server.properties"))) {
-            Ok(p) => p,
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
-        };
-
-        properties.set("server-port", &body.port.to_string());
-        properties.set("difficulty", &body.difficulty);
-        properties.set("gamemode", &body.gamemode);
-        properties.set("hardcore", &body.hardcore.to_string());
-        properties.set("max-players", &body.max_players.to_string());
-
-        // Save the properties to the file
-        match properties.write() {
-            Ok(_) => (),
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"Failed to save the properties file: ":e}));
-            }
-        }
-
-        // Return the created server details as JSON response
-        return HttpResponse::Ok().json(HashedServer::from_server(server));
+        // Respond with the created server details in JSON format
+        return Ok(HttpResponse::Ok().json(server));
     }
 
-    // Return Unauthorized if the user is not authenticated
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+    // Respond with an "Unauthorized" error if the user is not authenticated
+    Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
 /// Deletes a server by its ID, ensuring the server is owned by the authenticated user
 #[delete("")]
-pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> impl Responder {
+pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
-        // Decode the given ID
-        let id_number: u32 = match decode(id.as_str()) {
-            Ok(id_number) => id_number[0] as u32,
-            Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        // Try to decode the given ID string into a `u64` integer
+        let id_number: u64 = match decode(id.as_str()) {
+            // On successful decoding, extract the first ID from the decoded vector
+            Ok(id_number) => id_number[0],
+            // If decoding fails, return a `BadRequest` response with an error message
+            Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
         };
 
-        // Fetch the server by the ID and user's ID
-        let server = match server_db::get_owned_server_by_id(id_number, user.id) {
-            Some(s) => s,
-            None => {
-                let msg = format!("Server with id: {} not found", id_number);
-                error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
-            }
-        };
+        // Retrieve the server owned or accessible by the user using the decoded ID
+        let server = Server::get_owned_server(id_number, user.id as u64)?;
 
-        match std::fs::remove_dir_all(server.directory.clone().unwrap()) {
-            Ok(_) => (),
-            Err(e) => {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":"Failed to delete server directory"}));
-            }
-        }
+        // Delete the server from both the database and the filesystem
+        server.delete()?;
 
-        // Delete the server directory
-        if let Err(e) = server_db::delete_server(server.id) {
-            error!("{}", e);
-            return HttpResponse::BadRequest().json(json!({"error":e}));
-        }
-
-        // Return the deleted server details as JSON response
-        return HttpResponse::Ok().json(HashedServer::from_server(server));
+        // If deletion is successful, return an HTTP response with no content
+        return Ok(HttpResponse::Ok().finish());
     }
 
-    // Return Unauthorized if the user is not authenticated
-    HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
+    // If no authenticated user is found, return an `Unauthorized` response with an error message
+    Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
 /// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
-pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, loader: web::Path<String>, loader_version: web::Path<String>, req: HttpRequest) -> impl Responder {
+pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, loader: web::Path<String>, loader_version: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Decode the given ID
-        let id_number: u32 = match decode(id.as_str()) {
-            Ok(id_number) => id_number[0] as u32,
-            Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
+        let id_number = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0],
+            Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
         };
 
         // Fetch the server by the ID and user's ID
-        let server = match server_db::get_owned_server_by_id(id_number, user.id) {
-            Some(s) => s,
-            None => {
-                let msg = format!("Server with id: {} not found", id_number);
-                error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
-            }
-        };
+        let mut server = Server::get_owned_server(id_number, user.id as u64)?;
 
         // Install the specified loader if it's not VANILLA
         let loader = match Loader::from_str(loader.as_ref().as_str()) {
@@ -237,22 +182,61 @@ pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, l
             Err(_) => {
                 let msg = format!("Loader {} not found", loader);
                 error!("{}", msg);
-                return HttpResponse::BadRequest().json(json!({"error":msg}));
+                return Ok(HttpResponse::BadRequest().json(json!({"error":msg})));
             }
         };
         if loader != Loader::Vanilla {
-            let executable = loader_manager::install_loader(loader, &version, &server.clone().directory.unwrap(), Some(loader_version.as_ref())).await.unwrap();
-            // Set the server executable in the database
-            if let Err(e) = server_db::set_server_executable(id_number, &executable) {
-                error!("{}", e);
-                return HttpResponse::BadRequest().json(json!({"error":e}));
-            }
+            server.start_script = Some(PathBuf::from(loader_manager::install_loader(loader, &version, &server.clone().directory, Some(loader_version.as_ref())).await?));
+        } else {
+            return Ok(HttpResponse::BadRequest().json(json!({"message":"To install vanilla version, use the /install_minecraft endpoint"})));
         }
 
         // Return the updated server details as JSON response
-        return HttpResponse::Ok().json(HashedServer::from_server(server));
+        return Ok(HttpResponse::Ok().json(server));
     }
 
     // Return a bad request if there's an unexpected error
-    HttpResponse::BadRequest().json(json!({"message":"Unexpected error has occurred"}))
+    Ok(HttpResponse::BadRequest().json(json!({"message":"Unexpected error has occurred"})))
+}
+
+#[post("/install_minecraft/{version}")]
+pub async fn install_minecraft(id: web::Path<String>, version: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    if let Some(user) = req.extensions().get::<User>() {
+        // Decode the given ID
+        let id_number = match decode(id.as_str()) {
+            Ok(id_number) => id_number[0],
+            Err(_) => return Ok(HttpResponse::BadRequest().json(json!({"error":"Invalid ID"}))),
+        };
+
+        // Fetch the server by the ID and user's ID
+        let mut server = Server::get_owned_server(id_number, user.id as u64)?;
+        download_server_jar(version.as_ref(), server.directory.clone()).await?;
+        server.minecraft_version = version.clone();
+        server.update()?;
+        return Ok(HttpResponse::Ok().json(server));
+    }
+    // Return a bad request if there's an unexpected error
+    Ok(HttpResponse::BadRequest().json(json!({"message":"Unexpected error has occurred"})))
+}
+
+#[post("/settings")]
+pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    let parameters: HashMap<String, String> = req.query_string()
+                                                 .split('&')
+                                                 .filter_map(|s| s.split_once('='))
+                                                 .map(|(k, v)| (k.to_string(), v.to_string()))
+                                                 .collect();
+
+    let id_number = decode(id.as_str()).map(|id_number| id_number[0])?;
+    let mut server = Server::get_owned_server(id_number, 0)?;
+
+    parameters.get("max-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.max_ram = v);
+    parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.min_ram = v);
+    parameters.get("auto-start").map(|v| server.auto_start = v.to_lowercase() == "true");
+    parameters.get("start-script").map(|v| server.start_script = Some(PathBuf::from(v)));
+    parameters.get("minecraft-arguments").map(|v| server.minecraft_arguments = Some(v.clone()));
+    parameters.get("java-arguments").map(|v| server.java_arguments = Some(v.clone()));
+
+    server.update()?;
+    Ok(HttpResponse::Ok().json(server))
 }
