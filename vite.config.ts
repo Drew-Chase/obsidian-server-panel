@@ -1,6 +1,7 @@
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react";
 
+const port = 3000;
 export default defineConfig({
     plugins: [react()],
     esbuild: {
@@ -12,13 +13,13 @@ export default defineConfig({
     clearScreen: false,
     server: {
         host: true,
-        port: 3000,
+        port: port,
         strictPort: true,
         hmr: {
             protocol: "ws",
             host: "localhost",
-            port: 3000,
-            clientPort: 3000,
+            port: port,
+            clientPort: port,
             overlay: true
         },
         watch: {
