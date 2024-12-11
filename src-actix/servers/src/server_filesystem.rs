@@ -1,7 +1,10 @@
 use crate::file_system_entry::FileSystemEntries;
-use crate::server::Server; // Import the Server struct from the server module
-use std::error::Error; // Import the Error trait for handling error types
-use std::fs; // Import filesystem module for directory operations
+use crate::server::Server;
+// Import the Server struct from the server module
+use std::error::Error;
+// Import the Error trait for handling error types
+use std::fs;
+// Import filesystem module for directory operations
 use std::path::{Path, PathBuf};
 // Import Path and PathBuf for handling filesystem paths
 
@@ -22,6 +25,8 @@ pub trait ServerFilesystem {
 
     fn remove_server_directory(&self) -> Result<(), Box<dyn Error>>;
     fn get_files(&self, subpath: impl AsRef<Path>) -> FileSystemEntries;
+
+    fn relativize_paths(&mut self);
 }
 
 // Implementation of the ServerFilesystem trait for the Server struct
@@ -97,6 +102,24 @@ impl ServerFilesystem for Server<u64> {
     }
 
     fn get_files(&self, subpath: impl AsRef<Path>) -> FileSystemEntries {
-        FileSystemEntries::from(self.directory.join(subpath.as_ref()))
+        let mut entries = FileSystemEntries::from(self.directory.join(subpath.as_ref()));
+        if let Some(parent) = entries.parent {
+            entries.parent = parent.strip_prefix(&self.directory).ok().map(|i| i.to_path_buf())
+        }
+
+        for entry in entries.entries.iter_mut() {
+            if let Some(path) = entry.path.strip_prefix(&self.directory).ok().map(|i| i.to_path_buf()) {
+                entry.path = path;
+            }
+        }
+
+        entries
+    }
+
+    fn relativize_paths(&mut self) {
+        if let Some(start_script) = &self.start_script{
+            self.start_script = Some(start_script.strip_prefix(&self.directory).ok().map(|i| i.to_path_buf()).unwrap_or(start_script.clone()));
+        }
+        self.directory = self.directory.strip_prefix("servers").ok().map(|i| i.to_path_buf()).unwrap_or(self.directory.clone());
     }
 }
