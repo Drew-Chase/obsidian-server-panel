@@ -10,6 +10,7 @@ use serde_json::json;
 use servers::server::Server;
 use servers::server_database::ServerDatabase;
 use servers::server_filesystem::ServerFilesystem;
+use servers::server_process::ServerProcess;
 use servers::server_properties::ServerProperties;
 use std::collections::HashMap;
 use std::convert::{From, Into};
@@ -322,6 +323,27 @@ pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl
 }
 
 #[post("/start")]
-pub async fn start_server(id: web::Path<String>) -> Result<impl Responder, Box<dyn Error>> {
-    Err::<HttpResponse, Box<dyn Error>>(std::io::Error::new(std::io::ErrorKind::Other, "Not implemented").into())
+pub async fn start_server(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id = decode(id.as_str()).map(|id_number| id_number[0])?;
+        let mut server = Server::get_owned_server(id, user.id as u64)?;
+        server.start_server()?;
+        return Ok(HttpResponse::Ok().finish());
+    }
+    Ok(HttpResponse::Unauthorized().finish())
+}
+
+#[post("/send-command")]
+pub async fn send_command(
+    id: web::Path<String>,
+    body: String,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
+    if let Some(user) = req.extensions().get::<User>() {
+        let id = decode(id.as_str()).map(|id_number| id_number[0])?;
+        let server = Server::get_owned_server(id, user.id as u64)?;
+        Server::send_command_to_server(server.id, body)?;
+        return Ok(HttpResponse::Ok().finish());
+    }
+    Ok(HttpResponse::Unauthorized().finish())
 }
