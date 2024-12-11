@@ -20,6 +20,7 @@ export default function Navigation()
     const sections = ["server", "discover", "users", "files", "settings", "profile"];
     const section = () => sections.find((s) => pathname.startsWith(`/app/${s}/`)) || "";
     const [selected, setSelected] = useState(section);
+    const [serverIconUrl, setServerIconUrl] = useState(`/api/server/${selectedServerId}/icon`);
 
     useEffect(() =>
     {
@@ -84,7 +85,7 @@ export default function Navigation()
                         {server &&
                             <AccordionItem
                                 key={"server"}
-                                startContent={<Avatar src={`/api/server/${selectedServerId}/icon`}/>}
+                                startContent={<Avatar src={serverIconUrl} onError={() => setServerIconUrl(`/src/assets/images/logo.gif`)}/>}
                                 title={server.name.length > 12 ? <OTooltip content={server.name}><span className={"truncate max-w-[120px]"}>{server.name}</span></OTooltip> : server.name}
                                 indicator={indicator}
                                 aria-label={server.name}
