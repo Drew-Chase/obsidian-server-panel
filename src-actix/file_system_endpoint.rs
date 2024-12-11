@@ -12,6 +12,7 @@ use servers::server_filesystem::ServerFilesystem;
 use std::error::Error;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::path::PathBuf;
 
 #[post("")]
 pub async fn get_server_files(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
@@ -124,8 +125,7 @@ pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) 
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
 
     // Verify the server directory and construct the file path
-    let server_dir = server.directory.to_str().ok_or("Server directory not specified")?;
-    let path = format!("{}{}", server_dir, file);
+    let path = server.directory.join(PathBuf::from(file));
     debug!("Downloading file: {:?}", path);
 
     // Open and read the file
