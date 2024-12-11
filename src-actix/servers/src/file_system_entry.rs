@@ -22,7 +22,7 @@ pub struct FileSystemEntry {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileSystemEntries {
-    pub parent: Option<String>,
+    pub parent: Option<PathBuf>,
     pub entries: Vec<FileSystemEntry>,
 }
 
@@ -249,7 +249,7 @@ impl From<PathBuf> for FileSystemEntries {
                 entries.push(entry.path().into());
             }
             return Self {
-                parent: Some(value.to_string_lossy().to_string()),
+                parent: value.parent().map(|p| p.to_path_buf()),
                 entries,
             };
         }
