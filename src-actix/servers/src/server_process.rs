@@ -1,26 +1,40 @@
 use crate::server::Server;
+use crate::server_database::ServerDatabase;
+use crate::server_status::ServerStatus;
 use crate::start_executable_type::{StartExecutableType, StartExecutableTypeExt};
 use lazy_static::lazy_static;
+use log::{info, warn};
 use std::clone::Clone;
 use std::error::Error;
-use std::io::Error as IoError;
 use std::io::Write;
-use std::process::Stdio;
+use std::io::{Error as IoError, Stdin};
+use std::path::PathBuf;
+use std::process::{ChildStdin, ChildStdout, Stdio};
 use std::sync::{Arc, Mutex};
 
+struct RunningServerProcess {
+    /// The server id
+    pub server_id: u64,
+    /// The process id of the running server
+    pub pid: u64,
+    /// Configuration related to the server's standard input stream.
+    pub stdin: Option<ChildStdin>,
+    /// Configuration related to the server's standard output stream.
+    pub stdout: Option<ChildStdout>,
+}
+
 lazy_static! {
-    static ref RUNNING_SERVERS: Arc<Mutex<Vec<Arc<Mutex<Server<u64>>>>>> = Arc::new(Mutex::new(Vec::new()));
+    static ref RUNNING_SERVERS: Arc<Mutex<Vec<Arc<Mutex<RunningServerProcess>>>>> = Arc::new(Mutex::new(Vec::new()));
 }
 
 pub trait ServerProcess {
-    fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>>;
+    fn start_server(&mut self) -> Result<u64, Box<dyn Error>>;
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>>;
-    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>)
-        -> Result<(), Box<dyn Error>>;
+    fn send_command_to_server(id: u64, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
 }
 
 impl ServerProcess for Server<u64> {
-    fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>> {
+    fn start_server(&mut self) -> Result<u64, Box<dyn Error>> {
         // Clone the `start_script` and unwrap it safely; assumes `start_script` is always `Some`.
         let start_script = &self.start_script;
         let start_script = start_script
@@ -93,6 +107,9 @@ impl ServerProcess for Server<u64> {
                     }
                 };
             }
+            process.arg(format!("-Xms{}m", self.min_ram));
+            process.arg(format!("-Xmx{}m", self.max_ram));
+
             // Adding the -jar argument and the start script path to the command.
             process.arg("-jar");
             process.arg(start_script);
@@ -110,6 +127,16 @@ impl ServerProcess for Server<u64> {
             }
         }
 
+        info!(
+            "Running command: {} {}",
+            process.get_program().to_str().unwrap_or("unknown.exe"),
+            process
+                .get_args()
+                .map(|a| a.to_str().unwrap_or(""))
+                .collect::<Vec<&str>>()
+                .join(" ")
+        );
+
         // Configure the process to provide input/output via pipes.
         process.stdin(Stdio::piped());
         process.stdout(Stdio::piped());
@@ -117,17 +144,18 @@ impl ServerProcess for Server<u64> {
         // Spawn the process and handle potential spawning errors.
         let mut child = process.spawn()?;
 
-        // Assign the stdin and stdout of the spawned process to the server fields.
-        self.stdin = child.stdin.take();
-        self.stdout = child.stdout.take();
-
         // Retrieve and return the process ID (PID) as a 64-bit integer.
         let pid = child.id();
-        let server_arc = Arc::new(Mutex::new(self.clone()));
 
         // Add server to the running servers list.
+        let running_server_process = RunningServerProcess {
+            server_id: self.id,
+            pid: pid as u64,
+            stdin: child.stdin.take(),
+            stdout: child.stdout.take(),
+        };
         match RUNNING_SERVERS.lock() {
-            Ok(mut servers) => servers.push(server_arc),
+            Ok(mut servers) => servers.push(Arc::new(Mutex::new(running_server_process))),
             Err(_) => {
                 return Err(Box::new(IoError::new(
                     std::io::ErrorKind::Other,
@@ -136,25 +164,34 @@ impl ServerProcess for Server<u64> {
             }
         }
 
+        self.status = Some(ServerStatus::Online);
+        self.update()?;
+
         Ok(pid as u64)
     }
 
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>> {
+        self.status = Some(ServerStatus::Offline);
+        self.update()?;
         todo!()
     }
 
-    fn send_command_to_server(
-        server: &Arc<Mutex<Server<u64>>>,
-        command: impl AsRef<str>,
-    ) -> Result<(), Box<dyn Error>> {
-        if let Ok(mut server) = server.lock() {
-            if let Some(stdin) = &mut server.stdin {
-                writeln!(stdin, "{}", command.as_ref())?;
-            } else {
-                return Err(Box::new(IoError::new(
-                    std::io::ErrorKind::BrokenPipe,
-                    "Stdin not available",
-                )));
+    fn send_command_to_server(id: u64, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
+        if let Ok(servers) = RUNNING_SERVERS.lock() {
+            let server = servers
+                .iter()
+                .find(|s| s.lock().map(|server| server.server_id == id).unwrap_or(false))
+                .ok_or_else(|| IoError::new(std::io::ErrorKind::NotFound, "Server not found"))?;
+
+            if let Ok(mut server) = server.lock() {
+                if let Some(stdin) = &mut server.stdin {
+                    writeln!(stdin, "{}", command.as_ref())?;
+                } else {
+                    return Err(Box::new(IoError::new(
+                        std::io::ErrorKind::BrokenPipe,
+                        "Stdin not available",
+                    )));
+                }
             }
         }
 
