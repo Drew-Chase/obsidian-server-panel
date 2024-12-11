@@ -11,9 +11,6 @@ export default function ServerDetails()
     setTitle("Server Details");
     return (
         <div className={"flex flex-col gap-8"}>
-            <div className={"flex flex-row"}>
-                <p className={"text-xl font-semibold mr-auto"}>SMP Server</p>
-            </div>
             <OverviewStatCard/>
             <div className={"flex flex-row w-full gap-8"}>
                 <div className={"w-full flex flex-col gap-8"}>
