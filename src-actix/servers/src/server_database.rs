@@ -38,6 +38,7 @@ pub fn initialize_server_database() -> Result<(), Box<dyn Error>> {
             directory TEXT NOT NULL,                                    -- Directory where the server is stored, path is not nullable
             java_runtime TEXT NULL DEFAULT NULL,                        -- Java runtime to use for the server, nullable,
             size INTEGER NOT NULL,                                      -- Size of the server in bytes, cannot be NULL
+            auto_start BOOLEAN NOT NULL DEFAULT 0,                      -- Whether the server should automatically start on server startup, cannot be NULL
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of creation, stored in ISO 8601 format, cannot be NULL
             updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- Timestamp of last update, stored in ISO 8601 format, cannot be NULL
             status TEXT                                                 -- Current status of the server, stored as a string (e.g., "active", "inactive"), nullable
@@ -231,7 +232,9 @@ directory = ?,
 status = ?,
 java_runtime = ?,
 size = ?,
-minecraft_version = ?
+minecraft_version = ?,
+updated_at = CURRENT_TIMESTAMP,
+auto_start = ?
 WHERE id = ?
 "#;
 
@@ -283,8 +286,11 @@ WHERE id = ?
         // Bind the Minecraft version to the fifteenth placeholder (index 15)
         statement.bind((15, self.minecraft_version.as_str()))?;
 
-        // Bind the server ID to the sixteenth placeholder (index 16) to specify which record to update
-        statement.bind((16, self.id as i64))?;
+        // Bind the auto_start field to the sixteenth placeholder (index 16)
+        statement.bind((16, self.auto_start as i64))?;
+
+        // Bind the server ID to the seventeenth placeholder (index 17) to specify which record to update
+        statement.bind((17, self.id as i64))?;
 
         // Execute the next statement in the prepared sequence
         statement.next()?;
