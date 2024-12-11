@@ -1,0 +1,25 @@
+meta {
+  name: Set Settings
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/server/:id/settings?name=awesome server&max-ram=4096&min-ram=1024&auto-start=false&start-script=server.jar&minecraft-arguments=nogui&java-arguments=-XX:+TestJavaArgs
+  body: none
+  auth: none
+}
+
+params:query {
+  name: awesome server
+  max-ram: 4096
+  min-ram: 1024
+  auto-start: false
+  start-script: server.jar
+  minecraft-arguments: nogui
+  java-arguments: -XX:+TestJavaArgs
+}
+
+params:path {
+  id: Ak7rl05ErxDbzvy2
+}

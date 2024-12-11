@@ -2,11 +2,11 @@ import {nextui} from "@nextui-org/react";
 
 /** @type {import('tailwindcss').Config} */
 export default {
-    content:     [
+    content: [
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
         "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
-    ], theme:    {
+    ], theme: {
         extend: {
             backgroundImage: {
                 'custom-gradient': 'linear-gradient(176deg, #5300C8 0%, #102872 8%, #0D193F 24%, rgb(11, 23, 57) 100%)',
@@ -15,34 +15,35 @@ export default {
     }, darkMode: "class", plugins: [
         nextui({
             themes: {
-                light:   {
+                light: {
                     colors: {
-                        primary:      {
+                        primary: {
                             DEFAULT: "#f13848", foreground: "#fff",
                         }, secondary: "#2b2b2b", background: "#e3e3ea",
 
                     }
-                }, dark: {
+                },
+                dark: {
                     "colors": {
-                        default:         {
-                            "100":     "#0B1739",
-                            "200":     "#111e45",
-                            "300":     "#182753",
-                            "400":     "#182753",
+                        default: {
+                            "100": "#0B1739",
+                            "200": "#111e45",
+                            "300": "#182753",
+                            "400": "#182753",
                             "DEFAULT": "#182753",
                         },
-                        content1:        "#0b2039",
-                        content2:        "#112645",
-                        content3:        "#182b53",
-                        content4:        "#183c53",
-                        "primary":       {
-                            "DEFAULT":    "#CB3CFF",
-                            "dark":       "#8951ff",
+                        content1: "#0b2039",
+                        content2: "#112645",
+                        content3: "#182b53",
+                        content4: "#183c53",
+                        "primary": {
+                            "DEFAULT": "#CB3CFF",
+                            "dark": "#8951ff",
                             "foreground": "#ffffff"
                         },
-                        "secondary":     "#21c3fc",
-                        "accent":        "#0e43fb",
-                        "neutral":       {
+                        "secondary": "#21c3fc",
+                        "accent": "#0e43fb",
+                        "neutral": {
                             "100": "#ffffff",
                             "200": "#d9e1fa",
                             "300": "#d1dbf9",
@@ -52,20 +53,20 @@ export default {
                             "700": "#0a1330",
                             "800": "#081028"
                         },
-                        "system":        {
-                            "blue":   {
+                        "system": {
+                            "blue": {
                                 "400": "#086cd9",
                                 "300": "#1d88fe",
                                 "200": "#8fc3ff",
                                 "100": "#eaf4ff"
                             },
-                            "green":  {
+                            "green": {
                                 "400": "#11845b",
                                 "300": "#05c168",
                                 "200": "#7fdca4",
                                 "100": "#def2e6"
                             },
-                            "red":    {
+                            "red": {
                                 "400": "#dc2b2b",
                                 "300": "#ff5a65",
                                 "200": "#ffbec2",
@@ -78,27 +79,27 @@ export default {
                                 "100": "#fff3e4"
                             }
                         },
-                        "other":         {
-                            "purple":  {
+                        "other": {
+                            "purple": {
                                 "100": "#575dff",
-                                "50":  "#575dff"
+                                "50": "#575dff"
                             },
-                            "blue":    {
+                            "blue": {
                                 "50": "#1d88fe"
                             },
                             "skyBlue": {
                                 "50": "#57c3ff"
                             },
-                            "red":     {
+                            "red": {
                                 "50": "#ff5a65"
                             },
-                            "gray":    {
+                            "gray": {
                                 "50": "#aeb9e1"
                             },
-                            "green":   {
+                            "green": {
                                 "50": "#05c168"
                             },
-                            "yellow":  {
+                            "yellow": {
                                 "50": "#ffb016"
                             },
                             "overlay": {
@@ -107,11 +108,11 @@ export default {
                             }
                         },
                         "illustrations": {
-                            "orange":      {
+                            "orange": {
                                 "100": "#ffe3d3",
                                 "200": "#e8ad8c"
                             },
-                            "blueDark":    {
+                            "blueDark": {
                                 "100": "#27266a"
                             },
                             "purpleLight": "#dbd8ff"
