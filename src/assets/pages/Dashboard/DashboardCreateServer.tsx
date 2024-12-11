@@ -30,7 +30,7 @@ export default function DashboardCreateServer()
     const [serverIcon, setServerIcon] = useState<File | null>(null);
     const [isValid, setIsValid] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [javaVersion, setJavaVersion] = useState<JavaVersion|null>(null);
+    const [javaVersion, setJavaVersion] = useState<JavaVersion | null>(null);
     const {alert} = useAlertModal();
     const {setSelectedServerId} = useSelectedServer();
     const navigate = useNavigate();
@@ -43,8 +43,8 @@ export default function DashboardCreateServer()
         const validVersion = minecraftVersion.length > 0;
         const validLoader = loader.length > 0;
         const validLoaderVersion = loader.toLowerCase() === "vanilla" || loaderVersion.length > 0;
-        setIsValid(validName && validPort && validVersion && validLoader && validLoaderVersion);
-    }, [serverName, serverPort, serverDifficulty, serverGamemode, serverMaxPlayers, hardcoreMode, minecraftVersion, loader, loaderVersion]);
+        setIsValid(validName && validPort && validVersion && validLoader && validLoaderVersion && javaVersion !== null);
+    }, [serverName, serverPort, serverDifficulty, serverGamemode, serverMaxPlayers, hardcoreMode, minecraftVersion, loader, loaderVersion, javaVersion]);
 
 
     const createServer = async () =>
@@ -53,8 +53,7 @@ export default function DashboardCreateServer()
         setIsLoading(true);
         try
         {
-
-            const newlyCreatedServer = await Server.create(serverName, +serverPort, serverDifficulty, serverGamemode, hardcoreMode, serverMaxPlayers, minecraftVersion, loader, loaderVersion);
+            const newlyCreatedServer = await Server.create(serverName, +serverPort, serverDifficulty, serverGamemode, hardcoreMode, serverMaxPlayers, minecraftVersion, loader, loaderVersion, javaVersion!);
             if (newlyCreatedServer)
             {
                 console.log("Server created successfully!");
