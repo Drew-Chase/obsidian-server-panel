@@ -17,7 +17,7 @@ export default function JavaVersionComponent(props: JavaVersionComponentProps)
             <p className={"text-neutral-200 font-bold"}>
                 <p>{props.version.version} <span className={"text-sm italic opacity-50"}>({props.version.runtime})</span> {props.version.installed && (<span className={"text-sm text-primary italic"}>installed</span>)}</p>
             </p>
-            <OTooltip content={props.version.installed ? `Uninstall Java ${props.version.version} from your server!` : `Install Java ${props.version.version} to your server!`}>
+            <OTooltip content={!props.version.installed ? `Install Java ${props.version.version} to your server!` : !props.selected ? `Use Java ${props.version.version} on your server!` : `Currently selected Java ${props.version.version}!`}>
                 <Button
                     onClick={() =>
                     {
@@ -28,7 +28,7 @@ export default function JavaVersionComponent(props: JavaVersionComponentProps)
                     color={props.selected ? "primary" : "default"}
                     variant={"solid"}
                 >
-                    {props.version.installed ? "Use" : "Install"}
+                    {!props.version.installed ? "Install" : props.selected ? "Selected" : "Select"}
                 </Button>
             </OTooltip>
         </div>
