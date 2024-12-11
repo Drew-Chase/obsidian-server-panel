@@ -15,6 +15,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
 {
     const [auth] = useState(() => new Authentication());
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [debugTimer, setDebugTimer] = useState<number>(0);
     const navigate = useNavigate();
 
     useEffect(() =>
@@ -32,6 +33,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
                 }
             });
     }, [auth]);
+
+
+    useEffect(() =>
+    {
+        clearInterval(debugTimer);
+        setDebugTimer(setInterval(() =>
+        {
+            const token = document.cookie
+                .split(";")
+                .find((row) => row.trim().startsWith("token="))
+                ?.trim()
+                .slice(6);
+
+            if (!token)
+            {
+                alert("No token found in cookie. Please log in again.");
+            }
+
+        }, 1000));
+    }, []);
 
     return (
         <AuthContext.Provider value={{auth, isLoggedIn, setIsLoggedIn}}>
