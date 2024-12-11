@@ -1,6 +1,6 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import Authentication, {LoginResponse} from "../ts/authentication.ts";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 
 interface AuthContextType
 {
@@ -15,8 +15,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
 {
     const [auth] = useState(() => new Authentication());
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [debugTimer, setDebugTimer] = useState<number>(0);
     const navigate = useNavigate();
+    const {pathname} = useLocation();
 
     useEffect(() =>
     {
@@ -25,34 +25,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) =>
             {
                 const isLoggedIn = typeof response === "boolean" ? response : !!response;
                 setIsLoggedIn(isLoggedIn);
-                const newPath = isLoggedIn ? "/app" : "/";
-                if (window.location.pathname.startsWith("/app") !== isLoggedIn)
+                if (!isLoggedIn && pathname.startsWith("/app"))
                 {
+                    navigate("/");
                     auth.logout();
-                    navigate(newPath);
+                } else
+                {
+                    navigate("/app");
                 }
             });
     }, [auth]);
-
-
-    useEffect(() =>
-    {
-        clearInterval(debugTimer);
-        setDebugTimer(setInterval(() =>
-        {
-            const token = document.cookie
-                .split(";")
-                .find((row) => row.trim().startsWith("token="))
-                ?.trim()
-                .slice(6);
-
-            if (!token)
-            {
-                alert("No token found in cookie. Please log in again.");
-            }
-
-        }, 1000));
-    }, []);
 
     return (
         <AuthContext.Provider value={{auth, isLoggedIn, setIsLoggedIn}}>
