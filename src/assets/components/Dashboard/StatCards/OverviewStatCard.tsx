@@ -7,6 +7,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faUser} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
 import SystemMonitor from "../../../ts/system-monitor.ts";
+import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
+import Server from "../../../ts/servers.ts";
 
 export default function OverviewStatCard()
 {
@@ -14,7 +16,9 @@ export default function OverviewStatCard()
     const [memoryUsage, setMemoryUsage] = useState(0);
     const [totalMemory, setTotalMemory] = useState(0);
     const [storageUsage, setStorageUsage] = useState(0);
+    const [totalStorageUsage, setTotalStorageUsage] = useState(0);
     const [onlinePlayers, setOnlinePlayers] = useState(0);
+    const {server} = useSelectedServer();
 
     useEffect(() =>
     {
@@ -22,19 +26,29 @@ export default function OverviewStatCard()
         setCpuUsage(monitor.current_data.cpu_usage);
         setMemoryUsage(monitor.current_data.memory.used);
         setTotalMemory(monitor.current_data.memory.total);
-        setStorageUsage(0);
         setOnlinePlayers(4);
         monitor.startMonitoring((data) =>
         {
             setCpuUsage(Math.min(Math.floor(data.cpu_usage), 100));
             setMemoryUsage(data.memory.used);
             setTotalMemory(data.memory.total);
-            setStorageUsage(0);
             setOnlinePlayers(4);
         });
 
+        if (server) setStorageUsage(server.size);
+        Server
+            .list()
+            .then(servers => servers.reduce((total, server) => total + server.size, 0))
+            .then(totalSize =>
+            {
+                if (!server) setStorageUsage(totalSize);
+                setTotalStorageUsage(totalSize);
+            });
+
+
         return () => monitor.stopMonitoring();
     }, []);
+
     return (
         <div className={"flex flex-row w-full justify-between flex-wrap gap-4 grow shrink"}>
             <StatCard
@@ -57,8 +71,8 @@ export default function OverviewStatCard()
                 title={"Storage Usage"}
                 value={storageUsage}
                 valueDisplay={`${Conversions.bytesToSize(storageUsage)}`}
-                maxValue={1000}
-                maxValueDisplay={"1000 GB"}
+                maxValue={totalStorageUsage}
+                maxValueDisplay={`${Conversions.bytesToSize(totalStorageUsage)}`}
                 icon={<Storage size={24}/>}
             />
             <StatCard
