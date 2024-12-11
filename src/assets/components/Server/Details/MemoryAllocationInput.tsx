@@ -1,12 +1,49 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Slider} from "@nextui-org/react";
 import OInput from "../../Extends/OInput.tsx";
+import {useSelectedServer} from "../../../providers/SelectedServerProvider.tsx";
+import $ from "jquery";
+import {useAuth} from "../../../providers/AuthProvider.tsx";
 
 export default function MemoryAllocationInput()
 {
-    const [minMemory, setMinMemory] = useState<string>("4");
-    const [maxMemory, setMaxMemory] = useState<string>("6");
+    const [minMemory, setMinMemory] = useState<string>("");
+    const [maxMemory, setMaxMemory] = useState<string>("");
     const systemMemoryCapacity = 32;
+    const {server} = useSelectedServer();
+    const {auth} = useAuth();
+
+    useEffect(() =>
+    {
+        if (server) server?.settings().then(settings =>
+        {
+            setMaxMemory(settings.max_ram.toString());
+            setMinMemory(settings.min_ram.toString());
+        });
+    }, [server]);
+
+    useEffect(() =>
+    {
+        if (
+            !server ||
+            !auth.token ||
+            minMemory === "" ||
+            maxMemory === "" ||
+            Number.isNaN(Number.parseInt(minMemory.replace(/\D/g, ""))) ||
+            Number.isNaN(Number.parseInt(maxMemory.replace(/\D/g, "")))
+        )
+            return;
+        console.log(`Updating memory allocation for ${server.name} to ${minMemory}GB - ${maxMemory}GB`);
+        $.ajax({
+            url: `/api/server/${server?.id}/settings?max-ram=${maxMemory}&min-ram=${minMemory}`,
+            method: "POST",
+            headers: {
+                "X-Authorization-Token": auth.token
+            }
+        });
+
+    }, [minMemory, maxMemory]);
+
     return (
         <div className={"flex flex-col gap-2"}>
             <p>Memory Allocation</p>
