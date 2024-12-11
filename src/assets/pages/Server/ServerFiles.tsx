@@ -27,6 +27,7 @@ export default function ServerFiles()
         server
             .filesystem()
             .files(path)
+            .then(files=>files.entries)
             .then(setFiles)
             .finally(() => setLoading(false));
     };
