@@ -545,8 +545,6 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         minecraft_version: statement.read::<String, _>("minecraft_version")?,
 
         // I/O streams: Initialize as None, as they are not detailed in the statement.
-        stdin: None,
-        stdout: None,
         pid: None,
     })
 }
