@@ -8,7 +8,6 @@ use std::any::Any;
 use std::error::Error;
 use std::fmt;
 use std::path::PathBuf;
-use std::process::{ChildStdin, ChildStdout};
 use std::str::FromStr;
 
 /// The `SimpleHashedIdentifier` structure is used to represent
@@ -131,13 +130,12 @@ impl ToHashed for Server<u64> {
             updated_at: self.updated_at.clone(),
             status: self.status.clone(),
             pid: self.pid,
-            stdin: None,
-            stdout: None,
         })
     }
 }
 
 /// Represents a server entity with attributes commonly used for server management and configuration.
+#[derive(Debug)]
 pub struct Server<T: Identifier> {
     /// The server's unique identifier, constrained by the `Identifier` trait.
     pub id: T,
@@ -178,10 +176,6 @@ pub struct Server<T: Identifier> {
     pub status: Option<ServerStatus>,
     /// If the server is running, this will be the process id, otherwise it will be none.
     pub pid: Option<u64>,
-    /// Configuration related to the server's standard input stream.
-    pub stdin: Option<ChildStdin>,
-    /// Configuration related to the server's standard output stream.
-    pub stdout: Option<ChildStdout>,
 }
 
 // Default implementation for `Server<u64>`.
@@ -234,8 +228,6 @@ impl Default for Server<u64> {
             size: 0,
             java_runtime: None,
             pid: None,
-            stdin: None,  // Standard input stream configuration is absent.
-            stdout: None, // Standard output stream configuration is absent.
         }
     }
 }
@@ -292,8 +284,6 @@ impl Default for Server<String> {
             size: 0,
             java_runtime: None,
             pid: None,
-            stdin: None,  // Default standard input to None
-            stdout: None, // Default standard output to None
         }
     }
 }
@@ -619,8 +609,6 @@ impl<'de> Deserialize<'de> for Server<u64> {
                     size,
                     minecraft_version,
                     pid: None,
-                    stdin: None,
-                    stdout: None,
                 })
             }
         }
@@ -673,8 +661,6 @@ impl Clone for Server<u64> {
             status: self.status.clone(),
             size: self.size,
             pid: self.pid,
-            stdin: None,
-            stdout: None,
         }
     }
 }
@@ -701,8 +687,6 @@ impl Clone for Server<String> {
             status: self.status.clone(),
             size: self.size,
             pid: self.pid,
-            stdin: None,
-            stdout: None,
         }
     }
 }
