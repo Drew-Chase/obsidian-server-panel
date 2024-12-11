@@ -40,8 +40,8 @@ export default function JavaSettings(props: JavaSettingsProps)
                     <p className={"text-danger"}>{error}</p>
                     {loading ?
                         <>
-                            {Array.from({length: 6}).map(() => (
-                                <Skeleton>
+                            {Array.from({length: 6}).map((_,i) => (
+                                <Skeleton key={`version-skeleton-${i}`}>
                                     <div className={"h-16"}></div>
                                 </Skeleton>
                             ))}
@@ -56,6 +56,7 @@ export default function JavaSettings(props: JavaSettingsProps)
                             })
                                 .map((version) => (
                                     <JavaVersionComponent
+                                        key={`java-version-${version.version}-${version.runtime}-${version.installed ? "installed" : "not-installed"}`}
                                         version={version}
                                         onInstall={setInstallVersion}
                                         selected={props.selected === version}
