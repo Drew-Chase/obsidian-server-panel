@@ -5,21 +5,21 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/server/:id/settings?name=awesome server&max-ram=4096&min-ram=1024&auto-start=false&start-script=server.jar&minecraft-arguments=nogui&java-arguments=-XX:+TestJavaArgs
+  url: {{baseUrl}}/server/:id/settings?max-ram=4&min-ram=1
   body: none
   auth: none
 }
 
 params:query {
-  name: awesome server
-  max-ram: 4096
-  min-ram: 1024
-  auto-start: false
-  start-script: server.jar
-  minecraft-arguments: nogui
-  java-arguments: -XX:+TestJavaArgs
+  max-ram: 4
+  min-ram: 1
+  ~name: awesome server
+  ~auto-start: false
+  ~start-script: server.jar
+  ~minecraft-arguments: nogui
+  ~java-arguments: -XX:+TestJavaArgs
 }
 
 params:path {
-  id: Ak7rl05ErxDbzvy2
+  id: XnzWJR3lr5pNxMG4
 }
