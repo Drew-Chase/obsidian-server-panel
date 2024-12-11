@@ -28,11 +28,12 @@ CREATE TABLE IF NOT EXISTS notifications
 
 pub fn insert(notification: Notification) -> Result<(), Box<dyn Error>> {
     let connection = database::create_appdb_connection()?;
-    let mut stmt=    connection.prepare(
+    let mut stmt = connection.prepare(
         r#"
 INSERT INTO notifications (title, message, read, archived, sender_id, sender_type, receiver_id, action)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-"#)?;
+"#,
+    )?;
     stmt.bind((1, notification.title.as_str()))?;
     stmt.bind((2, notification.message.as_str()))?;
     stmt.bind((3, notification.read as i64))?;

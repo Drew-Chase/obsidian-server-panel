@@ -151,10 +151,7 @@ pub async fn get_latest_snapshot() -> Result<MinecraftVersionResponse, String> {
     Err("No latest snapshot found".to_string())
 }
 
-pub async fn get_version_by_id(
-    id: &str,
-    snapshot: Option<bool>,
-) -> Result<MinecraftVersionResponse, String> {
+pub async fn get_version_by_id(id: &str, snapshot: Option<bool>) -> Result<MinecraftVersionResponse, String> {
     let versions = match get_versions().await {
         Ok(versions) => versions,
         Err(e) => {
@@ -185,9 +182,7 @@ pub async fn get_version_by_id(
     Err("Version not found".to_string())
 }
 
-pub async fn get_version_asset_data(
-    version: impl AsRef<str>,
-) -> Result<VersionAssetData, Box<dyn Error>> {
+pub async fn get_version_asset_data(version: impl AsRef<str>) -> Result<VersionAssetData, Box<dyn Error>> {
     let version = version.as_ref();
     let url = "https://launchermeta.mojang.com/mc/game/version_manifest.json".to_string();
     let response = reqwest::get(&url).await?;

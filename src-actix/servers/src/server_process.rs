@@ -15,14 +15,17 @@ lazy_static! {
 pub trait ServerProcess {
     fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>>;
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>>;
-    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
+    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>)
+        -> Result<(), Box<dyn Error>>;
 }
 
 impl ServerProcess for Server<u64> {
     fn start_server(&'static mut self) -> Result<u64, Box<dyn Error>> {
         // Clone the `start_script` and unwrap it safely; assumes `start_script` is always `Some`.
         let start_script = &self.start_script;
-        let start_script = start_script.clone().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::NotFound, "Start script not set")))?;
+        let start_script = start_script
+            .clone()
+            .ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::NotFound, "Start script not set")))?;
 
         // Determine the type of executable based on the script path and handle errors if it fails.
         let start_executable_type = StartExecutableType::from_path(&start_script)?;
@@ -37,21 +40,34 @@ impl ServerProcess for Server<u64> {
                     "sh"
                 } else {
                     // Return an error if the OS is unsupported for scripting.
-                    return Err(Box::new(IoError::new(std::io::ErrorKind::Other, "Unsupported OS for Script type")));
+                    return Err(Box::new(IoError::new(
+                        std::io::ErrorKind::Other,
+                        "Unsupported OS for Script type",
+                    )));
                 }
             }
             StartExecutableType::Jar => {
                 // Check if Java runtime path is provided, otherwise return an error.
                 if let Some(jr) = &self.java_runtime {
-                    jr.to_str().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid Java runtime path")))?
+                    jr.to_str().ok_or_else(|| {
+                        Box::new(IoError::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Invalid Java runtime path",
+                        ))
+                    })?
                 } else {
-                    return Err(Box::new(IoError::new(std::io::ErrorKind::NotFound, "Java runtime not set")));
+                    return Err(Box::new(IoError::new(
+                        std::io::ErrorKind::NotFound,
+                        "Java runtime not set",
+                    )));
                 }
             }
             StartExecutableType::Executable =>
             // Convert the executable path to a string and handle invalid data.
             {
-                start_script.to_str().ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid executable path")))?
+                start_script
+                    .to_str()
+                    .ok_or_else(|| Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid executable path")))?
             }
         };
 
@@ -69,7 +85,12 @@ impl ServerProcess for Server<u64> {
                 // Split Java arguments into separate tokens and handle errors.
                 match shell_words::split(java_arg) {
                     Ok(args) => process.args(args),
-                    Err(_) => return Err(Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid Java arguments"))),
+                    Err(_) => {
+                        return Err(Box::new(IoError::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Invalid Java arguments",
+                        )))
+                    }
                 };
             }
             // Adding the -jar argument and the start script path to the command.
@@ -79,7 +100,12 @@ impl ServerProcess for Server<u64> {
                 // Split Minecraft arguments into separate tokens and handle errors.
                 match shell_words::split(minecraft_args) {
                     Ok(args) => process.args(args),
-                    Err(_) => return Err(Box::new(IoError::new(std::io::ErrorKind::InvalidData, "Invalid Minecraft arguments"))),
+                    Err(_) => {
+                        return Err(Box::new(IoError::new(
+                            std::io::ErrorKind::InvalidData,
+                            "Invalid Minecraft arguments",
+                        )))
+                    }
                 };
             }
         }
@@ -102,7 +128,12 @@ impl ServerProcess for Server<u64> {
         // Add server to the running servers list.
         match RUNNING_SERVERS.lock() {
             Ok(mut servers) => servers.push(server_arc),
-            Err(_) => return Err(Box::new(IoError::new(std::io::ErrorKind::Other, "Failed to lock running servers"))),
+            Err(_) => {
+                return Err(Box::new(IoError::new(
+                    std::io::ErrorKind::Other,
+                    "Failed to lock running servers",
+                )))
+            }
         }
 
         Ok(pid as u64)
@@ -112,12 +143,18 @@ impl ServerProcess for Server<u64> {
         todo!()
     }
 
-    fn send_command_to_server(server: &Arc<Mutex<Server<u64>>>, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
+    fn send_command_to_server(
+        server: &Arc<Mutex<Server<u64>>>,
+        command: impl AsRef<str>,
+    ) -> Result<(), Box<dyn Error>> {
         if let Ok(mut server) = server.lock() {
             if let Some(stdin) = &mut server.stdin {
                 writeln!(stdin, "{}", command.as_ref())?;
             } else {
-                return Err(Box::new(IoError::new(std::io::ErrorKind::BrokenPipe, "Stdin not available")));
+                return Err(Box::new(IoError::new(
+                    std::io::ErrorKind::BrokenPipe,
+                    "Stdin not available",
+                )));
             }
         }
 

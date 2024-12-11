@@ -55,11 +55,7 @@ impl OpenPorts {
             }
         });
 
-        self.ports.push(OpenPort {
-            id,
-            port,
-            description,
-        });
+        self.ports.push(OpenPort { id, port, description });
         if !self.is_renewal_thread_running {
             self.open_renewal_thread();
         }
@@ -114,11 +110,7 @@ impl OpenPorts {
         std::thread::spawn(|| loop {
             let singleton = UPNP_SINGLETON.lock().unwrap();
             let configs = singleton.create_upnp_config();
-            debug!(
-                "Refreshing {} ports: {:?}",
-                configs.len(),
-                singleton.get_ports()
-            );
+            debug!("Refreshing {} ports: {:?}", configs.len(), singleton.get_ports());
             for item in easy_upnp::add_ports(configs) {
                 match item {
                     Ok(_) => trace!("port refreshed!"),
@@ -141,7 +133,7 @@ macro_rules! open_port {
 #[macro_export]
 macro_rules! close_all_ports {
     () => {{
-       $crate::upnp::UPNP_SINGLETON.lock().unwrap().clear_ports();
+        $crate::upnp::UPNP_SINGLETON.lock().unwrap().clear_ports();
     }};
 }
 

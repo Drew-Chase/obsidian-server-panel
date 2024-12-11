@@ -1,3 +1,5 @@
+use crate::server_database::ServerDatabase;
+use crate::server_filesystem::ServerFilesystem;
 use crate::server_status::ServerStatus;
 use crypto::hashids::{decode, encode};
 use serde::de::{self, Deserializer, MapAccess, Visitor};
@@ -8,8 +10,6 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process::{ChildStdin, ChildStdout};
 use std::str::FromStr;
-use crate::server_database::ServerDatabase;
-use crate::server_filesystem::ServerFilesystem;
 
 /// The `SimpleHashedIdentifier` structure is used to represent
 /// an identifier in a hashed form, using the `serde_derive::Serialize` trait to enable serialization.
@@ -58,7 +58,9 @@ impl Identifier for u64 {
 
     fn to_hashed(&self) -> Option<Box<dyn HashedIdentifier>> {
         // Encodes the `u64` into a hashed representation
-        Some(Box::new(SimpleHashedIdentifier { hashed: encode(&[*self]) }))
+        Some(Box::new(SimpleHashedIdentifier {
+            hashed: encode(&[*self]),
+        }))
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -75,7 +77,9 @@ impl Identifier for String {
 
     fn to_hashed(&self) -> Option<Box<dyn HashedIdentifier>> {
         // Creates a `SimpleHashedIdentifier` from the string
-        Some(Box::new(SimpleHashedIdentifier { hashed: self.to_string() }))
+        Some(Box::new(SimpleHashedIdentifier {
+            hashed: self.to_string(),
+        }))
     }
 
     fn as_any(&self) -> &dyn Any {
@@ -102,7 +106,10 @@ pub trait ToHashed {
 
 impl ToHashed for Server<u64> {
     fn to_hashed(&self) -> Option<Server<String>> {
-        let id = self.id.to_hashed().map_or_else(|| "invalid id".to_string(), |id| id.to_string());
+        let id = self
+            .id
+            .to_hashed()
+            .map_or_else(|| "invalid id".to_string(), |id| id.to_string());
         Some(Server {
             id,
             name: self.name.clone(),
@@ -218,12 +225,12 @@ impl Default for Server<u64> {
             minecraft_arguments: None, // No Minecraft-specific arguments provided.
             java_arguments: None,      // JVM arguments are absent by default.
             minecraft_version: "".to_string(),
-            loader_type: 0,                                   // Default loader type, often a placeholder value.
-            loader_version: None,                             // Loader version not specified initially.
-            directory: PathBuf::new(),                        // New path buffer for the server's directory.
+            loader_type: 0,            // Default loader type, often a placeholder value.
+            loader_version: None,      // Loader version not specified initially.
+            directory: PathBuf::new(), // New path buffer for the server's directory.
             created_at: String::from("1970-01-01T00:00:00Z"), // Default epoch start time in ISO 8601.
             updated_at: String::from("1970-01-01T00:00:00Z"), // Default epoch update time in ISO 8601.
-            status: None,                                     // Server status is undefined by default.
+            status: None,              // Server status is undefined by default.
             size: 0,
             java_runtime: None,
             pid: None,
@@ -231,7 +238,6 @@ impl Default for Server<u64> {
             stdout: None, // Standard output stream configuration is absent.
         }
     }
-    
 }
 
 // Default implementation for `Server<String>`.
@@ -319,7 +325,13 @@ impl Serialize for Server<u64> {
 
         // Serializes the `id` field; uses a custom function to convert it to a hashed string
         // If the `id` hashing fails, it defaults to "invalid id"
-        state.serialize_field("id", &self.id.to_hashed().map_or_else(|| "invalid id".to_string(), |id| id.to_string()))?;
+        state.serialize_field(
+            "id",
+            &self
+                .id
+                .to_hashed()
+                .map_or_else(|| "invalid id".to_string(), |id| id.to_string()),
+        )?;
 
         // Serializes the `name` field of the server
         state.serialize_field("name", &self.name)?;
@@ -582,7 +594,8 @@ impl<'de> Deserialize<'de> for Server<u64> {
                 let status = status;
                 let java_runtime = java_runtime;
                 let size = size.ok_or_else(|| de::Error::missing_field("size"))?;
-                let minecraft_version = minecraft_version.ok_or_else(|| de::Error::missing_field("minecraft_version"))?;
+                let minecraft_version =
+                    minecraft_version.ok_or_else(|| de::Error::missing_field("minecraft_version"))?;
 
                 // Construct and return the Server object
                 Ok(Server {
@@ -694,12 +707,11 @@ impl Clone for Server<String> {
     }
 }
 
-impl Server<u64>{
-
+impl Server<u64> {
     /// Deletes the server by removing its associated directory and database entry.
     ///
     /// This method performs two key operations:
-    /// 1. Removes the server's directory from the filesystem by invoking `remove_server_directory`. 
+    /// 1. Removes the server's directory from the filesystem by invoking `remove_server_directory`.
     /// 2. Deletes the server's record from the database using `remove_from_database`.
     ///
     /// # Errors

@@ -15,7 +15,11 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 
 #[post("")]
-pub async fn get_server_files(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn get_server_files(
+    id: web::Path<String>,
+    body: Option<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
         let id_number = match decode(&id) {
             Ok(id) => id,
@@ -46,14 +50,22 @@ struct UploadForm {
     json: MPJson<UploadFileMetadata>,
 }
 #[post("/upload")]
-pub async fn upload_file_to_server(id: web::Path<String>, MultipartForm(mut payload): MultipartForm<UploadForm>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn upload_file_to_server(
+    id: web::Path<String>,
+    MultipartForm(mut payload): MultipartForm<UploadForm>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let directory = payload.json.directory.clone();
     let filename = payload.json.filename.clone();
     let ext = req.extensions();
     let user = ext.get::<User>().ok_or("Unauthorized: User not found")?.to_owned();
 
     // Decode the ID
-    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
+    let id_number = decode(&id)
+        .map_err(|_| format!("Invalid id: {}", id))?
+        .get(0)
+        .cloned()
+        .ok_or(format!("Invalid id: {}", id))?;
 
     // Fetch the server owned by the user using ServerDatabase
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
@@ -61,7 +73,10 @@ pub async fn upload_file_to_server(id: web::Path<String>, MultipartForm(mut payl
     if let Some(server_dir) = server.directory.to_str() {
         let path = format!("{}{}{}", server_dir, directory, filename);
         debug!("Uploading file to: {:?}", path);
-        debug!("Server Directory: {:?}, Directory: {:?}, Filename: {:?}", server_dir, directory, filename);
+        debug!(
+            "Server Directory: {:?}, Directory: {:?}, Filename: {:?}",
+            server_dir, directory, filename
+        );
 
         // Create the file
         let mut file = File::create(&path).map_err(|e| {
@@ -102,7 +117,10 @@ pub async fn get_files(body: Option<String>, req: HttpRequest) -> Result<impl Re
     Ok(HttpResponse::Ok().json(file_system_entries)) // Return the entries in a JSON response
 }
 #[get("/download/{file}")]
-pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn download_file(
+    path: web::Path<(String, String)>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let (id, file) = path.into_inner();
 
     // Decode the URI-encoded file path
@@ -119,7 +137,11 @@ pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) 
     let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
 
     // Decode the server ID
-    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
+    let id_number = decode(&id)
+        .map_err(|_| format!("Invalid id: {}", id))?
+        .get(0)
+        .cloned()
+        .ok_or(format!("Invalid id: {}", id))?;
 
     // Fetch the server owned by the user
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
@@ -144,13 +166,21 @@ pub async fn download_file(path: web::Path<(String, String)>, req: HttpRequest) 
 }
 
 #[post("/create/file")]
-pub async fn create_file(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn create_file(
+    id: web::Path<String>,
+    body: Option<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let ext = req.extensions();
     // Authenticate the user
     let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
 
     // Decode the server ID
-    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))?;
+    let id_number = decode(&id)
+        .map_err(|_| format!("Invalid id: {}", id))?
+        .get(0)
+        .cloned()
+        .ok_or(format!("Invalid id: {}", id))?;
 
     // Fetch the server owned by the user
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
@@ -172,13 +202,21 @@ pub async fn create_file(id: web::Path<String>, body: Option<String>, req: HttpR
 }
 
 #[post("/create/directory")]
-pub async fn create_directory(id: web::Path<String>, body: Option<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn create_directory(
+    id: web::Path<String>,
+    body: Option<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let ext = req.extensions();
     // Authenticate the user
     let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
 
     // Decode the server ID
-    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))? as u64;
+    let id_number = decode(&id)
+        .map_err(|_| format!("Invalid id: {}", id))?
+        .get(0)
+        .cloned()
+        .ok_or(format!("Invalid id: {}", id))? as u64;
 
     // Fetch the server owned by the user
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;
@@ -199,13 +237,21 @@ pub async fn create_directory(id: web::Path<String>, body: Option<String>, req: 
     Ok(HttpResponse::Ok().json(json!({"success": "Directory created"})))
 }
 #[delete("")]
-pub async fn delete_path(id: web::Path<String>, body: String, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn delete_path(
+    id: web::Path<String>,
+    body: String,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let ext = req.extensions();
     // Authenticate the user
     let user = ext.get::<User>().ok_or("Unauthorized: User not found")?;
 
     // Decode the server ID
-    let id_number = decode(&id).map_err(|_| format!("Invalid id: {}", id))?.get(0).cloned().ok_or(format!("Invalid id: {}", id))? as u64;
+    let id_number = decode(&id)
+        .map_err(|_| format!("Invalid id: {}", id))?
+        .get(0)
+        .cloned()
+        .ok_or(format!("Invalid id: {}", id))? as u64;
 
     // Fetch the server owned by the user
     let server = Server::get_owned_server(id_number, user.id as u64).map_err(|_| "Server not found")?;

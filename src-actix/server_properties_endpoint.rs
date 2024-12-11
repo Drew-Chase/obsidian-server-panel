@@ -21,7 +21,11 @@ pub async fn get_server_properties(id: web::Path<String>, req: HttpRequest) -> R
     Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 #[post("/{key}")]
-pub async fn set_server_property(path: web::Path<(String, String)>, body: String, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn set_server_property(
+    path: web::Path<(String, String)>,
+    body: String,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
         let (id, key) = path.into_inner();
 

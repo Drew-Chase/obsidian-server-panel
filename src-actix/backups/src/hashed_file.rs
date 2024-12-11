@@ -29,11 +29,7 @@ impl HashedFile {
 
         let hash = hash_file(&path)?;
         let timestamp = SystemTime::now();
-        Ok(Self {
-            path,
-            hash,
-            timestamp,
-        })
+        Ok(Self { path, hash, timestamp })
     }
     pub fn changed(&self) -> Result<bool, Box<dyn Error>> {
         if let Some(file) = file_hash_db::get(&self.path) {

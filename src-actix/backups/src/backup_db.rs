@@ -112,10 +112,7 @@ pub fn delete(id: u32) {
 
     match stmt.next() {
         Ok(State::Done) => info!("Backup item with ID {} deleted successfully.", id),
-        Ok(_) => error!(
-            "Unexpected state while deleting backup item with ID {}.",
-            id
-        ),
+        Ok(_) => error!("Unexpected state while deleting backup item with ID {}.", id),
         Err(e) => error!("Failed to delete backup item with ID {}: {}", id, e),
     }
 }
@@ -133,9 +130,7 @@ pub fn get(id: u32) -> Option<BackupItem> {
     info!("Retrieving backup item with ID: {}", id);
     let conn = create_appdb_connection().ok()?;
 
-    let mut stmt = conn
-        .prepare("SELECT * FROM backups WHERE id = ? LIMIT 1")
-        .ok()?;
+    let mut stmt = conn.prepare("SELECT * FROM backups WHERE id = ? LIMIT 1").ok()?;
 
     if stmt.bind((1, id as i64)).is_err() {
         error!("Unable to bind the id to the statement.");
@@ -164,10 +159,7 @@ pub fn list() -> Vec<BackupItem> {
     let mut stmt = match conn.prepare("SELECT * FROM backups") {
         Ok(stmt) => stmt,
         Err(e) => {
-            error!(
-                "Unable to prepare the statement to get the list of backups: {}",
-                e
-            );
+            error!("Unable to prepare the statement to get the list of backups: {}", e);
             return Vec::new();
         }
     };
@@ -197,10 +189,7 @@ pub fn list() -> Vec<BackupItem> {
 /// A `Vec<BackupItem>` containing all the `BackupItem`s for the specified server.
 /// If no backup items are found or an error occurs, an empty `Vec` is returned.
 pub fn list_by_server(server_id: u32) -> Vec<BackupItem> {
-    info!(
-        "Retrieving list of backup items for server with ID: {}",
-        server_id
-    );
+    info!("Retrieving list of backup items for server with ID: {}", server_id);
     let conn = match create_appdb_connection() {
         Ok(conn) => conn,
         Err(e) => {

@@ -1,8 +1,7 @@
 use std::error::Error;
 use std::path::Path;
 
-const FORGE_VERSIONS_MANIFEST: &str =
-    "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+const FORGE_VERSIONS_MANIFEST: &str = "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
 
 pub async fn versions(minecraft_version: impl AsRef<str>) -> Result<Vec<String>, Box<dyn Error>> {
     let response = reqwest::get(FORGE_VERSIONS_MANIFEST).await?;

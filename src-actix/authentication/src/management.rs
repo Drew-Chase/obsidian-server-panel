@@ -102,11 +102,10 @@ pub fn get_users_list() -> Result<PublicUsersList, String> {
         Err(e) => return Err(format!("Failed to create DB connection: {}", e)),
     };
 
-    let mut stmt =
-        match conn.prepare("SELECT *, (SELECT COUNT(*) FROM users) AS 'count' FROM users") {
-            Ok(stmt) => stmt,
-            Err(e) => return Err(format!("Failed to prepare statement: {}", e)),
-        };
+    let mut stmt = match conn.prepare("SELECT *, (SELECT COUNT(*) FROM users) AS 'count' FROM users") {
+        Ok(stmt) => stmt,
+        Err(e) => return Err(format!("Failed to prepare statement: {}", e)),
+    };
 
     let mut users = Vec::new();
     let mut count = -1;

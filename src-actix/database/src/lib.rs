@@ -61,7 +61,10 @@ pub fn create_cachedb_connection() -> Result<sqlite::Connection, sqlite::Error> 
 pub fn last_inserted_id(table: impl AsRef<str>) -> Result<u64, Box<dyn Error>> {
     let conn = create_appdb_connection()?;
     let id: i64 = conn
-        .prepare(format!("SELECT seq FROM sqlite_sequence WHERE name = '{}'", table.as_ref()))
+        .prepare(format!(
+            "SELECT seq FROM sqlite_sequence WHERE name = '{}'",
+            table.as_ref()
+        ))
         .and_then(|mut s| s.next().map(|_| s.read("seq")))
         .map_err(|e| format!("Failed to get inserted id: {}", e))?
         .map_err(|e| format!("Failed to read inserted id: {}", e))?;

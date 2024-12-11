@@ -100,10 +100,7 @@ pub fn archive_directory(
             let mut reader = BufReader::new(input_file);
             reader.read_to_end(&mut buffer)?;
 
-            Ok(FileEntry {
-                relative_path,
-                buffer,
-            })
+            Ok(FileEntry { relative_path, buffer })
         })
         .collect();
 

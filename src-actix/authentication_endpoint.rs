@@ -1,17 +1,12 @@
 use actix_web::{get, post, web, HttpRequest, HttpResponse, Responder};
-use authentication::access_tokens::{
-    generate_unique_registration_access_token, get_all_access_tokens,
-};
+use authentication::access_tokens::{generate_unique_registration_access_token, get_all_access_tokens};
 use authentication::data::{UserLogin, UserRegistration};
 use serde_json::json;
 use std::collections::HashMap;
 
 #[post("/login")]
 pub async fn login(body: web::Json<UserLogin>, req: HttpRequest) -> impl Responder {
-    match authentication::management::login(
-        body.into_inner(),
-        req.connection_info().realip_remote_addr().unwrap(),
-    ) {
+    match authentication::management::login(body.into_inner(), req.connection_info().realip_remote_addr().unwrap()) {
         Ok(user) => HttpResponse::Ok().json(user),
         Err(e) => HttpResponse::BadRequest().json(json!({"error": e})),
     }
@@ -28,8 +23,9 @@ pub async fn login_with_token(token: web::Json<Token>, req: HttpRequest) -> impl
         req.connection_info().realip_remote_addr().unwrap(),
     ) {
         Ok(user) => HttpResponse::Ok().json(user),
-        Err(e) => HttpResponse::BadRequest()
-            .json(json!({ "error": format!("Failed to login with token: {}", e).as_str() })),
+        Err(e) => {
+            HttpResponse::BadRequest().json(json!({ "error": format!("Failed to login with token: {}", e).as_str() }))
+        }
     }
 }
 
@@ -63,9 +59,7 @@ pub async fn generate_access_token(req: HttpRequest) -> impl Responder {
     };
 
     match generate_unique_registration_access_token(message.as_str()) {
-        Ok(token) => {
-            HttpResponse::Ok().json(json!({"message": "Access token generated", "token": token}))
-        }
+        Ok(token) => HttpResponse::Ok().json(json!({"message": "Access token generated", "token": token})),
         Err(e) => HttpResponse::BadRequest().json(json!({"error": e})),
     }
 }

@@ -1,8 +1,8 @@
+use common_lib::traits::TransformPath;
 use java::versions::JavaVersion;
 use log::debug;
 use std::io::Write;
 use std::path::Path;
-use common_lib::traits::TransformPath;
 
 const FABRIC_LOADER_API: &str = "https://meta.fabricmc.net/v2/versions/loader";
 const FABRIC_INSTALLER_API: &str = "https://meta.fabricmc.net/v2/versions/installer";
@@ -19,9 +19,7 @@ pub async fn versions() -> Result<Vec<String>, Box<dyn std::error::Error>> {
 async fn get_latest_installer_version() -> Result<String, Box<dyn std::error::Error>> {
     let response = reqwest::get(FABRIC_INSTALLER_API).await?;
     let json: Vec<serde_json::Value> = response.json().await?;
-    let version = json
-        .iter()
-        .find_map(|v| v.get("version").and_then(|v| v.as_str()));
+    let version = json.iter().find_map(|v| v.get("version").and_then(|v| v.as_str()));
     if version.is_none() {
         return Err("Failed to get version".into());
     }
@@ -31,9 +29,7 @@ async fn download_installer(path: impl AsRef<Path>) -> Result<(), Box<dyn std::e
     std::fs::create_dir_all(path.as_ref().parent().unwrap())?;
     let response = reqwest::get(FABRIC_INSTALLER_API).await?;
     let json: Vec<serde_json::Value> = response.json().await?;
-    let download_url = json
-        .iter()
-        .find_map(|v| v.get("url").and_then(|v| v.as_str()));
+    let download_url = json.iter().find_map(|v| v.get("url").and_then(|v| v.as_str()));
 
     if download_url.is_none() {
         return Err("Failed to get download url".into());
@@ -67,9 +63,7 @@ pub async fn install(
         return Err("No java versions installed".into());
     }
 
-    let java = java_versions
-        .get_mut(0)
-        .ok_or("No java versions installed")?;
+    let java = java_versions.get_mut(0).ok_or("No java versions installed")?;
     java.execute_command(
         format!(
             "-jar {:?} server -mcversion {} -dir {:?} -loader {} -downloadMinecraft",

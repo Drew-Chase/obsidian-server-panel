@@ -232,11 +232,7 @@ impl CurseForgePackSearchResults {
 
     pub fn to_modpack_results(self) -> ModpackSearchResults {
         ModpackSearchResults {
-            hits: self
-                .data
-                .into_iter()
-                .map(|item| item.to_modpack())
-                .collect(),
+            hits: self.data.into_iter().map(|item| item.to_modpack()).collect(),
             offset: self.pagination.index,
             limit: self.pagination.page_size,
             total_hits: self.pagination.total_count,
@@ -251,12 +247,7 @@ impl CurseForgePackItem {
             name: self.name,
             description: self.summary,
             icon: Some(self.logo.url),
-            gallery: Some(
-                self.screenshots
-                    .into_iter()
-                    .map(|screenshot| screenshot.url)
-                    .collect(),
-            ),
+            gallery: Some(self.screenshots.into_iter().map(|screenshot| screenshot.url).collect()),
             game_versions: Some(
                 self.latest_files
                     .iter()
@@ -265,32 +256,18 @@ impl CurseForgePackItem {
             ),
             downloads: self.download_count as u32,
             likes: Some(self.thumbs_up_count as u32),
-            last_updated: self
-                .date_modified
-                .parse::<chrono::DateTime<chrono::Utc>>()
-                .ok(),
-            published: self
-                .date_created
-                .parse::<chrono::DateTime<chrono::Utc>>()
-                .ok(),
+            last_updated: self.date_modified.parse::<chrono::DateTime<chrono::Utc>>().ok(),
+            published: self.date_created.parse::<chrono::DateTime<chrono::Utc>>().ok(),
             platform: Platform::Curseforge,
             categories: Some(self.categories.into_iter().map(|cat| cat.name).collect()),
-            project_url: Some(format!(
-                "https://www.curseforge.com/minecraft/modpacks/{}",
-                self.slug
-            )),
+            project_url: Some(format!("https://www.curseforge.com/minecraft/modpacks/{}", self.slug)),
             author: self
                 .authors
                 .into_iter()
                 .map(|author| author.name)
                 .collect::<Vec<String>>()
                 .join(", "),
-            versions: Some(
-                self.latest_files
-                    .into_iter()
-                    .map(|file| file.display_name)
-                    .collect(),
-            ),
+            versions: Some(self.latest_files.into_iter().map(|file| file.display_name).collect()),
         }
     }
 }

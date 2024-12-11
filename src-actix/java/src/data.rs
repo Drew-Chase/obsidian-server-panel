@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use serde_derive::{Deserialize, Serialize};
+use std::fmt::Display;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Version {

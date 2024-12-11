@@ -23,15 +23,8 @@ pub(crate) fn initialize() {
         info!("Successfully created or verified the backups table.");
     }
 }
-pub(crate) fn insert(
-    path: impl AsRef<Path>,
-    hash: impl AsRef<str>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    info!(
-        "Inserting a new hashed file: {:?} ({})",
-        path.as_ref(),
-        hash.as_ref()
-    );
+pub(crate) fn insert(path: impl AsRef<Path>, hash: impl AsRef<str>) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Inserting a new hashed file: {:?} ({})", path.as_ref(), hash.as_ref());
 
     // Get the last modified time of the file
     let metadata = std::fs::metadata(path.as_ref())?;
@@ -39,8 +32,7 @@ pub(crate) fn insert(
     let timestamp = system_time_to_string(timestamp);
 
     let conn = create_appdb_connection()?;
-    let mut stmt =
-        conn.prepare("INSERT INTO file_hash_table (path, hash, timestamp) VALUES (?, ?, ?)")?;
+    let mut stmt = conn.prepare("INSERT INTO file_hash_table (path, hash, timestamp) VALUES (?, ?, ?)")?;
     stmt.bind((1, path.as_ref().to_str()))?;
     stmt.bind((2, hash.as_ref()))?;
     stmt.bind((3, timestamp.as_str()))?;
@@ -49,15 +41,8 @@ pub(crate) fn insert(
     Ok(())
 }
 
-pub(crate) fn update(
-    path: impl AsRef<Path>,
-    hash: impl AsRef<str>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    info!(
-        "Updating the hash for file: {:?} ({})",
-        path.as_ref(),
-        hash.as_ref()
-    );
+pub(crate) fn update(path: impl AsRef<Path>, hash: impl AsRef<str>) -> Result<(), Box<dyn std::error::Error>> {
+    info!("Updating the hash for file: {:?} ({})", path.as_ref(), hash.as_ref());
 
     // Get the last modified time of the file
     let metadata = std::fs::metadata(path.as_ref())?;
@@ -65,8 +50,7 @@ pub(crate) fn update(
     let timestamp = system_time_to_string(timestamp);
 
     let conn = create_appdb_connection()?;
-    let mut stmt =
-        conn.prepare("UPDATE file_hash_table SET hash = ?, timestamp = ? WHERE path = ?")?;
+    let mut stmt = conn.prepare("UPDATE file_hash_table SET hash = ?, timestamp = ? WHERE path = ?")?;
     stmt.bind((1, hash.as_ref()))?;
     stmt.bind((2, timestamp.as_str()))?;
     stmt.bind((3, path.as_ref().to_str()))?;

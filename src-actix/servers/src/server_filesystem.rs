@@ -42,7 +42,14 @@ impl ServerFilesystem for Server<u64> {
     /// Returns an error if the directory cannot be created due to filesystem restrictions.
     fn create_server_directory(&mut self) -> Result<PathBuf, Box<dyn Error>> {
         // Clean the server's name to create a directory name
-        let directory_name = &self.name.trim().replace(|c: char| c.is_whitespace() || (!c.is_alphabetic() && !c.is_numeric() && c != '_'), "_").to_lowercase();
+        let directory_name = &self
+            .name
+            .trim()
+            .replace(
+                |c: char| c.is_whitespace() || (!c.is_alphabetic() && !c.is_numeric() && c != '_'),
+                "_",
+            )
+            .to_lowercase();
         // Join the cleaned name with the root "servers" directory
         let mut directory = Path::new("servers").join(directory_name);
 
@@ -117,9 +124,20 @@ impl ServerFilesystem for Server<u64> {
     }
 
     fn relativize_paths(&mut self) {
-        if let Some(start_script) = &self.start_script{
-            self.start_script = Some(start_script.strip_prefix(&self.directory).ok().map(|i| i.to_path_buf()).unwrap_or(start_script.clone()));
+        if let Some(start_script) = &self.start_script {
+            self.start_script = Some(
+                start_script
+                    .strip_prefix(&self.directory)
+                    .ok()
+                    .map(|i| i.to_path_buf())
+                    .unwrap_or(start_script.clone()),
+            );
         }
-        self.directory = self.directory.strip_prefix("servers").ok().map(|i| i.to_path_buf()).unwrap_or(self.directory.clone());
+        self.directory = self
+            .directory
+            .strip_prefix("servers")
+            .ok()
+            .map(|i| i.to_path_buf())
+            .unwrap_or(self.directory.clone());
     }
 }

@@ -1,1 +1,8 @@
-max_width = 250  # Set this to a larger value like 200 or more to prevent wrapping
+max_width = 120  # Or any desired width, like 250
+wrap_comments = false
+normalize_comments = false
+
+# Preserve chains on multiple lines
+chain_split_single_line = true  # Splits chains into individual lines for better readability
+merge_derives = true            # Helps with large derive macros (optional)
+

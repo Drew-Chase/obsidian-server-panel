@@ -67,12 +67,7 @@ pub trait StartExecutableTypeExt {
 impl StartExecutableTypeExt for StartExecutableType {
     fn from_path(path: impl AsRef<Path>) -> Result<Self, Box<dyn std::error::Error>> {
         // Extract the file extension from the given path.
-        let extension = path
-            .as_ref()
-            .extension()
-            .unwrap_or_default()
-            .to_str()
-            .unwrap_or("");
+        let extension = path.as_ref().extension().unwrap_or_default().to_str().unwrap_or("");
 
         // Determine the executable type based on the file extension.
         match extension {

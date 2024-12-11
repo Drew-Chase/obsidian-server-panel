@@ -39,9 +39,7 @@ pub fn initialize() -> Result<(), Box<dyn Error>> {
 							",
             ) {
                 Ok(_) => {}
-                Err(e) => {
-                    return Err(format!("Failed to create `access-tokens` table: {}", e).into())
-                }
+                Err(e) => return Err(format!("Failed to create `access-tokens` table: {}", e).into()),
             }
             match create_user(UserRegistration {
 				username: "admin".to_string(),

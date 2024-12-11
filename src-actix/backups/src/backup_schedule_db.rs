@@ -35,7 +35,9 @@ pub fn insert(
     exec_if_offline: bool,
 ) -> Result<(), Box<dyn Error>> {
     let conn = create_appdb_connection()?;
-    let mut stmt = conn.prepare("INSERT INTO scheduled_backups (server, type, interval, exec_if_empty, exec_if_offline) VALUES (?, ?, ?, ?, ?)")?;
+    let mut stmt = conn.prepare(
+        "INSERT INTO scheduled_backups (server, type, interval, exec_if_empty, exec_if_offline) VALUES (?, ?, ?, ?, ?)",
+    )?;
     let backup_type = match backup_type {
         BackupType::Full => 0,
         BackupType::Incremental => 1,

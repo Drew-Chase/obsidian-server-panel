@@ -24,9 +24,7 @@ pub async fn get_supported_loaders(
         HttpResponse::Ok().json(
             Loader::all()
                 .iter()
-                .filter(|loader| {
-                    loader.supported_by_minecraft_version(minecraft_version.as_str(), is_snapshot)
-                })
+                .filter(|loader| loader.supported_by_minecraft_version(minecraft_version.as_str(), is_snapshot))
                 .collect::<Vec<&Loader>>(),
         )
     }
@@ -46,13 +44,11 @@ pub async fn get_loader_by_id(params: web::Path<(String, String)>) -> impl Respo
     match loader {
         Loader::Fabric => match loader_manager::fabric::versions().await {
             Ok(versions) => HttpResponse::Ok().json(json!(versions)),
-            Err(_) => HttpResponse::InternalServerError()
-                .json(json!({"message":"Failed to fetch versions"})),
+            Err(_) => HttpResponse::InternalServerError().json(json!({"message":"Failed to fetch versions"})),
         },
         Loader::Forge => match loader_manager::forge::versions(minecraft_version).await {
             Ok(versions) => HttpResponse::Ok().json(json!(versions)),
-            Err(_) => HttpResponse::InternalServerError()
-                .json(json!({"message":"Failed to fetch versions"})),
+            Err(_) => HttpResponse::InternalServerError().json(json!({"message":"Failed to fetch versions"})),
         },
 
         _ => HttpResponse::Ok().json(json!([])),

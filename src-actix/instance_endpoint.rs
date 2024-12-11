@@ -8,7 +8,8 @@ pub async fn discover_modpacks(query: web::Query<BrowseOptions>) -> impl Respond
     let results = instance_manager::modpacks::search_modpacks(options).await;
     match results {
         Ok(data) => HttpResponse::Ok().json(data),
-        Err(e) => HttpResponse::BadRequest()
-            .json(json!({"message": "Failed to fetch modpacks", "error":format!("{}", e)})),
+        Err(e) => {
+            HttpResponse::BadRequest().json(json!({"message": "Failed to fetch modpacks", "error":format!("{}", e)}))
+        }
     }
 }

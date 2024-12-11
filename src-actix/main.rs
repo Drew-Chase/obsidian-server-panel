@@ -68,8 +68,10 @@ async fn main() -> std::io::Result<()> {
                 let fut = srv.call(req);
                 async {
                     let mut res = fut.await?;
-                    res.headers_mut().insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
-                    res.headers_mut().insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
+                    res.headers_mut()
+                        .insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*".parse().unwrap());
+                    res.headers_mut()
+                        .insert(header::ACCESS_CONTROL_ALLOW_HEADERS, "*".parse().unwrap());
                     Ok(res)
                 }
             })
@@ -123,7 +125,11 @@ async fn main() -> std::io::Result<()> {
                             .service(server_endpoint::create_server)
                             .service(
                                 web::scope("{id}")
-                                    .service(web::scope("properties").service(server_properties_endpoint::get_server_properties).service(server_properties_endpoint::set_server_property))
+                                    .service(
+                                        web::scope("properties")
+                                            .service(server_properties_endpoint::get_server_properties)
+                                            .service(server_properties_endpoint::set_server_property),
+                                    )
                                     .service(server_endpoint::set_setting)
                                     .service(
                                         web::scope("files")
@@ -134,14 +140,23 @@ async fn main() -> std::io::Result<()> {
                                             .service(file_system_endpoint::create_file)
                                             .service(file_system_endpoint::delete_path),
                                     )
-                                    .service(web::scope("backups").service(backups_endpoint::get_backups).service(backups_endpoint::create_manual_backup))
+                                    .service(
+                                        web::scope("backups")
+                                            .service(backups_endpoint::get_backups)
+                                            .service(backups_endpoint::create_manual_backup),
+                                    )
                                     .service(server_endpoint::get_server_by_id)
                                     .service(server_endpoint::delete_server)
-                                    .service(server_endpoint::get_server_icon),
+                                    .service(server_endpoint::get_server_icon)
+                                    .service(server_endpoint::start_server),
                             ),
                     )
                     .service(web::scope("instances").service(instance_endpoint::discover_modpacks))
-                    .service(web::scope("loaders").service(loader_endpoint::get_supported_loaders).service(loader_endpoint::get_loader_by_id)),
+                    .service(
+                        web::scope("loaders")
+                            .service(loader_endpoint::get_supported_loaders)
+                            .service(loader_endpoint::get_loader_by_id),
+                    ),
             );
         // Add conditional routing based on the config
         if DEBUG {
@@ -149,13 +164,18 @@ async fn main() -> std::io::Result<()> {
                 .service(web::resource("/assets/{file:.*}").route(web::get().to(proxy_to_vite)))
                 .service(web::resource("/node_modules/{file:.*}").route(web::get().to(proxy_to_vite)))
         } else {
-            app.default_service(web::route().to(index)).service(web::scope("assets/{file}").service(assets))
+            app.default_service(web::route().to(index))
+                .service(web::scope("assets/{file}").service(assets))
         }
     })
     .workers(4)
     .bind(format!("0.0.0.0:{port}", port = port))?
     .run();
-    info!("Starting {} server at http://127.0.0.1:{}...", if DEBUG { "development" } else { "production" }, port);
+    info!(
+        "Starting {} server at http://127.0.0.1:{}...",
+        if DEBUG { "development" } else { "production" },
+        port
+    );
 
     if DEBUG {
         start_vite_server().expect("Failed to start vite server");
@@ -181,7 +201,11 @@ fn start_vite_server() -> Result<Child, Box<dyn std::error::Error>> {
     #[cfg(not(target_os = "windows"))]
     let find_cmd = "which";
 
-    let vite = std::process::Command::new(find_cmd).arg("vite").stdout(std::process::Stdio::piped()).output()?.stdout;
+    let vite = std::process::Command::new(find_cmd)
+        .arg("vite")
+        .stdout(std::process::Stdio::piped())
+        .output()?
+        .stdout;
 
     let vite = String::from_utf8(vite);
     let vite = vite.unwrap();
@@ -193,12 +217,20 @@ fn start_vite_server() -> Result<Child, Box<dyn std::error::Error>> {
     }
 
     // Get the first occurrence
-    let vite = vite.split("\n").collect::<Vec<_>>().last().expect("Failed to get vite executable").trim();
+    let vite = vite
+        .split("\n")
+        .collect::<Vec<_>>()
+        .last()
+        .expect("Failed to get vite executable")
+        .trim();
 
     debug!("found vite at: {:?}", vite);
 
     // Start the vite server
-    Ok(std::process::Command::new(vite).current_dir(r#"../../"#).spawn().expect("Failed to start vite server"))
+    Ok(std::process::Command::new(vite)
+        .current_dir(r#"../../"#)
+        .spawn()
+        .expect("Failed to start vite server"))
 }
 
 /// The maximum payload size allowed for forwarding requests and responses.
@@ -239,7 +271,11 @@ async fn index(_req: HttpRequest) -> Result<impl Responder, Error> {
 async fn assets(file: web::Path<String>) -> impl Responder {
     if let Some(file) = WWWROOT.get_file(format!("assets/{}", file.as_str())) {
         let body = file.contents();
-        return Ok(HttpResponse::Ok().content_type(file_extension_to_mime(file.path().extension().unwrap().to_str().unwrap())).body(body));
+        return Ok(HttpResponse::Ok()
+            .content_type(file_extension_to_mime(
+                file.path().extension().unwrap().to_str().unwrap(),
+            ))
+            .body(body));
     }
     Err(ErrorInternalServerError(format!("Failed to find {}", file)))
 }

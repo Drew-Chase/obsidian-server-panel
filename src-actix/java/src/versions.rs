@@ -1,20 +1,20 @@
 use crate::data::{JavaVersionData, Manifest, OSVersions, RuntimeVersion, OS};
+use common_lib::traits::TransformPath;
+use futures::stream;
 use futures::stream::StreamExt;
 use log::{debug, error, info, warn};
 use reqwest::Client;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
+use shellwords::split;
 use std::error::Error;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use std::{fs::File, io::Write, sync::Arc};
-use futures::stream;
-use shellwords::split;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use common_lib::traits::TransformPath;
 
 #[derive(Serialize, Deserialize)]
 pub struct JavaVersion {
@@ -36,7 +36,10 @@ pub struct DownloadProgress {
 impl JavaVersion {
     pub async fn list() -> Result<Vec<Self>, Box<dyn Error>> {
         let mut versions: Vec<Self> = vec![];
-        let response = reqwest::get("https://piston-meta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json").await?;
+        let response = reqwest::get(
+            "https://piston-meta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json",
+        )
+        .await?;
         let data: OSVersions = response.json().await?;
         let current_os = get_current_os().ok_or("Unsupported OS")?;
         let current_os_versions = match current_os {
@@ -89,12 +92,7 @@ impl JavaVersion {
         Ok(versions)
     }
 
-    fn append_versions(
-        versions: &mut Vec<Self>,
-        version_data: Vec<JavaVersionData>,
-        os: OS,
-        runtime: RuntimeVersion,
-    ) {
+    fn append_versions(versions: &mut Vec<Self>, version_data: Vec<JavaVersionData>, os: OS, runtime: RuntimeVersion) {
         for version in version_data {
             let mut vcard = JavaVersion {
                 operating_system: os,
@@ -137,8 +135,7 @@ impl JavaVersion {
     }
 
     fn get_installation_directory(&self) -> PathBuf {
-        let path =
-            std::fs::canonicalize("meta/java").unwrap_or_else(|_| PathBuf::from("meta/java"));
+        let path = std::fs::canonicalize("meta/java").unwrap_or_else(|_| PathBuf::from("meta/java"));
         let path = path.join(format!("{}-{}", self.runtime, self.version));
         path
     }
@@ -169,11 +166,7 @@ impl JavaVersion {
         Ok(versions)
     }
 
-    pub async fn execute_command<F>(
-        &mut self,
-        args: impl AsRef<str>,
-        callback: F,
-    ) -> Result<(), Box<dyn Error>>
+    pub async fn execute_command<F>(&mut self, args: impl AsRef<str>, callback: F) -> Result<(), Box<dyn Error>>
     where
         F: Fn(String) + Send + 'static,
     {
@@ -181,7 +174,7 @@ impl JavaVersion {
         if !executable.exists() {
             return Err("Java executable not found".into());
         }
-        
+
         println!("Executing command: {} {}", executable.display(), args.as_ref());
 
         let args = args.as_ref();

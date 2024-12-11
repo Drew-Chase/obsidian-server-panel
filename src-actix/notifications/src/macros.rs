@@ -17,19 +17,17 @@ macro_rules! push_notification {
 	};
 }
 
-
-fn push(title:String, message:String, sender:String, sender_type:SenderType) -> Notification {
-	Notification{
-		id: "".to_string(),
-		title: title,
-		message: message,
-		read: false,
-		archived: false,
-		action: vec![],
-		sender: sender,
-		receiver: "".to_string(),
-		sender_type: sender_type,
-		date: "".to_string(),
-	}
-	
+fn push(title: String, message: String, sender: String, sender_type: SenderType) -> Notification {
+    Notification {
+        id: "".to_string(),
+        title: title,
+        message: message,
+        read: false,
+        archived: false,
+        action: vec![],
+        sender: sender,
+        receiver: "".to_string(),
+        sender_type: sender_type,
+        date: "".to_string(),
+    }
 }

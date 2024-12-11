@@ -36,10 +36,7 @@ pub async fn uninstall_java_version(runtime: web::Path<String>) -> impl Responde
 }
 
 #[get("/install/{runtime}/sse")]
-pub async fn install_java_version(
-    runtime: web::Path<String>,
-    _req: HttpRequest,
-) -> Result<impl Responder, Error> {
+pub async fn install_java_version(runtime: web::Path<String>, _req: HttpRequest) -> Result<impl Responder, Error> {
     let (sender, receiver) = mpsc::channel(2);
     let runtime = runtime.into_inner();
     actix_web::rt::spawn(async move {
@@ -90,9 +87,7 @@ pub async fn install_java_version(
             }
         };
         // Close the channel after the task is done
-        let _ = sender
-            .send(sse::Data::new("done").event("done").into())
-            .await;
+        let _ = sender.send(sse::Data::new("done").event("done").into()).await;
     });
     Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
 }

@@ -74,16 +74,14 @@ impl BackupItem {
             Path::new(&Uuid::new_v4().as_simple().to_string()),
         );
         if r#type == BackupType::Full {
-            Self::create_full_backup(server_directory.as_ref(), &output_file).map_err(|e| {
-                BackupError {
-                    message: format!("Error creating full backup: {:?}", e),
-                    method: Some(method),
-                    r#type: Some(r#type),
-                }
+            Self::create_full_backup(server_directory.as_ref(), &output_file).map_err(|e| BackupError {
+                message: format!("Error creating full backup: {:?}", e),
+                method: Some(method),
+                r#type: Some(r#type),
             })?;
         } else {
-            let items = Self::create_incremental_backup(server_directory.as_ref(), &output_file)
-                .map_err(|e| BackupError {
+            let items =
+                Self::create_incremental_backup(server_directory.as_ref(), &output_file).map_err(|e| BackupError {
                     message: format!("Error creating incremental backup: {:?}", e),
                     method: Some(method),
                     r#type: Some(r#type),
@@ -119,10 +117,7 @@ impl BackupItem {
         })
     }
 
-    pub fn create_world_edit_backup(
-        server_dir: PathBuf,
-        world_directory: PathBuf,
-    ) -> Result<(), String> {
+    pub fn create_world_edit_backup(server_dir: PathBuf, world_directory: PathBuf) -> Result<(), String> {
         let output_file = Path::join(server_dir.as_path(), Path::new("backups"));
         archive_directory(world_directory, output_file, &|_| true)
             .map_err(|e| format!("Error creating WorldEdit backup: {:?}", e))?;
@@ -157,10 +152,7 @@ impl BackupItem {
         HashedBackupItem::from_backup_item(self)
     }
 
-    fn create_full_backup(
-        server_directory: impl AsRef<Path>,
-        archive_path: impl AsRef<Path>,
-    ) -> Result<(), String> {
+    fn create_full_backup(server_directory: impl AsRef<Path>, archive_path: impl AsRef<Path>) -> Result<(), String> {
         archive_directory(server_directory, archive_path, &|_| true)
             .map_err(|e| format!("Error creating full backup: {:?}", e))?;
         Ok(())

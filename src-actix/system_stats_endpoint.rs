@@ -132,8 +132,5 @@ pub async fn get_storage_info() -> impl Responder {
 }
 
 fn common_prefix_length(s1: &str, s2: &str) -> usize {
-    s1.chars()
-        .zip(s2.chars())
-        .take_while(|(c1, c2)| c1 == c2)
-        .count()
+    s1.chars().zip(s2.chars()).take_while(|(c1, c2)| c1 == c2).count()
 }

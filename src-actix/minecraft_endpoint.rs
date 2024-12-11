@@ -32,9 +32,7 @@ pub async fn get_snapshots() -> impl Responder {
         Ok(versions) => {
             let snapshots: Vec<minecraft::minecraft_version::MinecraftVersionResponse> = versions
                 .into_iter()
-                .filter(|version| {
-                    version.version_type == minecraft::minecraft_version::VersionType::Snapshot
-                })
+                .filter(|version| version.version_type == minecraft::minecraft_version::VersionType::Snapshot)
                 .collect();
             HttpResponse::Ok().json(snapshots)
         }
@@ -48,9 +46,7 @@ pub async fn get_releases() -> impl Responder {
         Ok(versions) => {
             let releases: Vec<minecraft::minecraft_version::MinecraftVersionResponse> = versions
                 .into_iter()
-                .filter(|version| {
-                    version.version_type == minecraft::minecraft_version::VersionType::Release
-                })
+                .filter(|version| version.version_type == minecraft::minecraft_version::VersionType::Release)
                 .collect();
             HttpResponse::Ok().json(releases)
         }

@@ -7,7 +7,9 @@ pub trait TransformPath {
 }
 impl TransformPath for PathBuf {
     fn normalize(&self) -> PathBuf {
-        let path = self.canonicalize().expect(format!("Failed to canonicalize path {:?}", self).as_str());
+        let path = self
+            .canonicalize()
+            .expect(format!("Failed to canonicalize path {:?}", self).as_str());
         let path_str = path.to_str().expect("Failed to convert path to string");
 
         // If the path starts with the extended-length path prefix, remove it.

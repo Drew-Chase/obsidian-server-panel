@@ -76,9 +76,7 @@ impl AddAssign for ModpackSearchResults {
     }
 }
 
-pub async fn search_modpacks(
-    options: BrowseOptions,
-) -> Result<ModpackSearchResults, Box<dyn std::error::Error>> {
+pub async fn search_modpacks(options: BrowseOptions) -> Result<ModpackSearchResults, Box<dyn std::error::Error>> {
     match options.platform {
         Platform::All => {
             let mut results = ModpackSearchResults {
@@ -103,11 +101,7 @@ pub async fn search_modpacks(
             //            });
 
             results += modrinth_thread.join().unwrap().await?.to_modpack_results();
-            results += curseforge_thread
-                .join()
-                .unwrap()
-                .await?
-                .to_modpack_results();
+            results += curseforge_thread.join().unwrap().await?.to_modpack_results();
             //            results += atlauncher_thread.join().unwrap().await?.to_modpack_results();
 
             // sort results by downloads
@@ -115,11 +109,9 @@ pub async fn search_modpacks(
 
             Ok(results)
         }
-        Platform::Curseforge => Ok(crate::curseforge::CurseForgePackSearchResults::search(
-            options.clone(),
-        )
-        .await?
-        .to_modpack_results()),
+        Platform::Curseforge => Ok(crate::curseforge::CurseForgePackSearchResults::search(options.clone())
+            .await?
+            .to_modpack_results()),
 
         Platform::Modrinth => Ok(crate::modrinth::ModrinthPackSearchResults::search(options)
             .await?

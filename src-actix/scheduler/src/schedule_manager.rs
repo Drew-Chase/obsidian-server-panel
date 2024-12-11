@@ -4,8 +4,7 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 
 lazy_static! {
-    pub static ref SCHEDULE_MANAGER_SINGLETON: Mutex<ScheduleManager> =
-        Mutex::new(ScheduleManager::new());
+    pub static ref SCHEDULE_MANAGER_SINGLETON: Mutex<ScheduleManager> = Mutex::new(ScheduleManager::new());
 }
 
 pub struct ScheduleManager {

@@ -11,9 +11,7 @@ pub struct AccessToken {
 
 pub fn generate_unique_registration_access_token(message: &str) -> Result<String, String> {
     if message.len() > 10 {
-        return Err(
-            "Message is too long, the message cannot be longer than 10 characters".to_string(),
-        );
+        return Err("Message is too long, the message cannot be longer than 10 characters".to_string());
     }
 
     let mut rng = rand::thread_rng();
@@ -36,16 +34,10 @@ pub fn generate_unique_registration_access_token(message: &str) -> Result<String
 
     let conn = match create_appdb_connection() {
         Ok(conn) => conn,
-        Err(e) => {
-            return Err(format!(
-                "Failed to create connection to the database: {}",
-                e
-            ))
-        }
+        Err(e) => return Err(format!("Failed to create connection to the database: {}", e)),
     };
 
-    let mut stmt = match conn
-        .prepare("INSERT INTO `access-tokens` (token, created_at) VALUES (?, CURRENT_TIMESTAMP);")
+    let mut stmt = match conn.prepare("INSERT INTO `access-tokens` (token, created_at) VALUES (?, CURRENT_TIMESTAMP);")
     {
         Ok(stmt) => stmt,
         Err(e) => return Err(format!("Failed to prepare statement: {}", e)),
@@ -64,12 +56,7 @@ pub fn generate_unique_registration_access_token(message: &str) -> Result<String
 pub fn does_token_exist(token: &str) -> Result<bool, String> {
     let conn = match create_appdb_connection() {
         Ok(conn) => conn,
-        Err(e) => {
-            return Err(format!(
-                "Failed to create connection to the database: {}",
-                e
-            ))
-        }
+        Err(e) => return Err(format!("Failed to create connection to the database: {}", e)),
     };
     let mut stmt = match conn.prepare("SELECT 1 FROM `access-tokens` WHERE token = ?;") {
         Ok(exists) => exists,
@@ -96,12 +83,7 @@ pub fn does_token_exist(token: &str) -> Result<bool, String> {
 pub fn get_all_access_tokens() -> Result<Vec<AccessToken>, String> {
     let conn = match create_appdb_connection() {
         Ok(conn) => conn,
-        Err(e) => {
-            return Err(format!(
-                "Failed to create connection to the database: {}",
-                e
-            ))
-        }
+        Err(e) => return Err(format!("Failed to create connection to the database: {}", e)),
     };
     let mut stmt = match conn.prepare("SELECT * FROM `access-tokens`;") {
         Ok(stmt) => stmt,
@@ -123,11 +105,7 @@ pub fn get_all_access_tokens() -> Result<Vec<AccessToken>, String> {
             Ok(date) => date,
             Err(e) => return Err(format!("Failed to read token creation date: {}", e)),
         };
-        tokens.push(AccessToken {
-            id,
-            token,
-            created_at,
-        });
+        tokens.push(AccessToken { id, token, created_at });
     }
     Ok(tokens)
 }
@@ -135,12 +113,7 @@ pub fn get_all_access_tokens() -> Result<Vec<AccessToken>, String> {
 pub fn use_access_token(token: &str) -> Result<(), String> {
     let conn = match create_appdb_connection() {
         Ok(conn) => conn,
-        Err(e) => {
-            return Err(format!(
-                "Failed to create connection to the database: {}",
-                e
-            ))
-        }
+        Err(e) => return Err(format!("Failed to create connection to the database: {}", e)),
     };
     let mut stmt = match conn.prepare("SELECT 1 FROM `access-tokens` WHERE token = ?;") {
         Ok(exists) => exists,

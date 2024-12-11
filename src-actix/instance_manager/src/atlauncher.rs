@@ -44,12 +44,7 @@ impl ATLauncherPackSearchResults {
 
     pub fn to_modpack_results(self) -> ModpackSearchResults {
         ModpackSearchResults {
-            hits: self
-                .clone()
-                .data
-                .into_iter()
-                .map(|item| item.to_modpack())
-                .collect(),
+            hits: self.clone().data.into_iter().map(|item| item.to_modpack()).collect(),
             offset: 0, // ATLauncher does not provide offset info
             limit: self.data.len() as i64,
             total_hits: self.data.len() as i64,
@@ -59,11 +54,7 @@ impl ATLauncherPackSearchResults {
 
 impl ATLauncherPackItem {
     pub fn to_modpack(self) -> Modpack {
-        let latest_published = self
-            .versions
-            .first()
-            .map(|v| v.published)
-            .unwrap_or_default();
+        let latest_published = self.versions.first().map(|v| v.published).unwrap_or_default();
 
         let latest_published = chrono::DateTime::from_timestamp(latest_published, 0);
 

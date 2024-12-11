@@ -218,7 +218,10 @@ impl Default for FileSystemEntry {
 
 impl Default for FileSystemEntries {
     fn default() -> Self {
-        Self { parent: None, entries: Vec::new() }
+        Self {
+            parent: None,
+            entries: Vec::new(),
+        }
     }
 }
 
@@ -226,11 +229,21 @@ impl From<PathBuf> for FileSystemEntry {
     fn from(value: PathBuf) -> Self {
         if let Ok(metadata) = value.metadata() {
             return Self {
-                name: value.file_name().unwrap_or(OsStr::new("")).to_string_lossy().to_string(),
+                name: value
+                    .file_name()
+                    .unwrap_or(OsStr::new(""))
+                    .to_string_lossy()
+                    .to_string(),
                 path: value.clone(),
                 is_dir: metadata.is_dir(),
                 size: metadata.len(),
-                r#type: get_file_type(value.extension().unwrap_or(OsStr::new("")).to_string_lossy().to_string()),
+                r#type: get_file_type(
+                    value
+                        .extension()
+                        .unwrap_or(OsStr::new(""))
+                        .to_string_lossy()
+                        .to_string(),
+                ),
                 mime: get_mime(&value),
                 category: get_mime_category(&value),
                 created: metadata.created().unwrap_or(SystemTime::UNIX_EPOCH),

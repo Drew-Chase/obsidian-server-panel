@@ -178,16 +178,37 @@ impl ServerDatabase for Server<u64> {
         // Bind the values of the server fields to the SQL statement parameters
         statement.bind((1, self.name.as_str()))?; // Bind server name
         statement.bind((2, self.owner as i64))?; // Bind owner ID
-        statement.bind((3, self.members.iter().map(u64::to_string).collect::<Vec<String>>().join(",").as_str()))?; // Bind member IDs as a comma-separated string
+        statement.bind((
+            3,
+            self.members
+                .iter()
+                .map(u64::to_string)
+                .collect::<Vec<String>>()
+                .join(",")
+                .as_str(),
+        ))?; // Bind member IDs as a comma-separated string
         statement.bind((4, self.min_ram as i64))?; // Bind minimum RAM
         statement.bind((5, self.max_ram as i64))?; // Bind maximum RAM
-        statement.bind((6, self.start_script.as_ref().map(|i| i.to_str().unwrap_or("")).unwrap_or("")))?; // Bind start script path
+        statement.bind((
+            6,
+            self.start_script
+                .as_ref()
+                .map(|i| i.to_str().unwrap_or(""))
+                .unwrap_or(""),
+        ))?; // Bind start script path
         statement.bind((7, self.minecraft_arguments.as_ref().unwrap_or(&"".to_string()).as_str()))?; // Bind Minecraft arguments
         statement.bind((8, self.java_arguments.as_ref().unwrap_or(&"".to_string()).as_str()))?; // Bind Java arguments
         statement.bind((9, self.loader_type as i64))?; // Bind loader type
         statement.bind((10, self.loader_version.as_ref().unwrap_or(&"".to_string()).as_str()))?; // Bind loader version
         statement.bind((11, self.directory.to_str().unwrap_or("")))?; // Bind directory path
-        statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?; // Bind server status
+        statement.bind((
+            12,
+            self.status
+                .as_ref()
+                .unwrap_or(&ServerStatus::Offline)
+                .to_string()
+                .as_str(),
+        ))?; // Bind server status
         statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?; // Bind the java runtime path.
         statement.bind((14, self.size as i64))?; // Bind the server size
         statement.bind((15, self.minecraft_version.as_str()))?; // Bind Minecraft version
@@ -248,7 +269,15 @@ WHERE id = ?
         statement.bind((2, self.owner as i64))?;
 
         // Bind the server's members as a comma-separated string to the third placeholder (index 3)
-        statement.bind((3, self.members.iter().map(u64::to_string).collect::<Vec<String>>().join(",").as_str()))?;
+        statement.bind((
+            3,
+            self.members
+                .iter()
+                .map(u64::to_string)
+                .collect::<Vec<String>>()
+                .join(",")
+                .as_str(),
+        ))?;
 
         // Bind the minimum RAM requirement to the fourth placeholder (index 4)
         statement.bind((4, self.min_ram as i64))?;
@@ -257,7 +286,13 @@ WHERE id = ?
         statement.bind((5, self.max_ram as i64))?;
 
         // Bind the start script path to the sixth placeholder (index 6)
-        statement.bind((6, self.start_script.as_ref().map(|i| i.to_str().unwrap_or("")).unwrap_or("")))?;
+        statement.bind((
+            6,
+            self.start_script
+                .as_ref()
+                .map(|i| i.to_str().unwrap_or(""))
+                .unwrap_or(""),
+        ))?;
 
         // Bind the Minecraft launch arguments to the seventh placeholder (index 7)
         statement.bind((7, self.minecraft_arguments.as_ref().unwrap_or(&"".to_string()).as_str()))?;
@@ -275,7 +310,14 @@ WHERE id = ?
         statement.bind((11, self.directory.to_str().unwrap_or("")))?;
 
         // Bind the server status to the twelfth placeholder (index 12)
-        statement.bind((12, self.status.as_ref().unwrap_or(&ServerStatus::Offline).to_string().as_str()))?;
+        statement.bind((
+            12,
+            self.status
+                .as_ref()
+                .unwrap_or(&ServerStatus::Offline)
+                .to_string()
+                .as_str(),
+        ))?;
 
         // Bind the Java runtime path to the thirteenth placeholder (index 13)
         statement.bind((13, self.java_runtime.as_ref().unwrap_or(&PathBuf::from("")).to_str()))?;
@@ -453,7 +495,11 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         owner: statement.read::<i64, _>("owner")? as u64,
 
         // Server Member IDs: Read the "members" column as a String, split by commas, and parse each into u64.
-        members: statement.read::<String, _>("members")?.split(',').filter_map(|s| s.parse::<u64>().ok()).collect(),
+        members: statement
+            .read::<String, _>("members")?
+            .split(',')
+            .filter_map(|s| s.parse::<u64>().ok())
+            .collect(),
 
         // RAM Specifications: Minimum RAM is converted from i64 to u64.
         min_ram: statement.read::<i64, _>("min_ram")? as u64,
@@ -487,7 +533,10 @@ fn get_server_from_statement(statement: &mut sqlite::Statement) -> Result<Server
         // Status: Optionally parse the "status" as a ServerStatus if it's present and valid.
         status: statement.read::<String, _>("status").ok().and_then(|s| s.parse().ok()),
 
-        java_runtime: statement.read::<String, _>("java_runtime").ok().and_then(|s| s.parse().ok()),
+        java_runtime: statement
+            .read::<String, _>("java_runtime")
+            .ok()
+            .and_then(|s| s.parse().ok()),
 
         // Server Size: Read "size" column from the statement and convert it to u64.
         size: statement.read::<i64, _>("size")? as u64,

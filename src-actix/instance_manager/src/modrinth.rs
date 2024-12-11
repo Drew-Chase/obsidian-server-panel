@@ -47,11 +47,7 @@ impl ModrinthPackSearchResults {
     }
     pub fn to_modpack_results(self) -> ModpackSearchResults {
         ModpackSearchResults {
-            hits: self
-                .hits
-                .into_iter()
-                .map(|item| item.to_modpack())
-                .collect(),
+            hits: self.hits.into_iter().map(|item| item.to_modpack()).collect(),
             offset: self.offset,
             limit: self.limit,
             total_hits: self.total_hits,
@@ -70,14 +66,8 @@ impl ModrinthPackItem {
             game_versions: Some(self.versions),
             downloads: self.downloads as u32,
             likes: Some(self.follows as u32),
-            last_updated: self
-                .date_modified
-                .parse::<chrono::DateTime<chrono::Utc>>()
-                .ok(),
-            published: self
-                .date_created
-                .parse::<chrono::DateTime<chrono::Utc>>()
-                .ok(),
+            last_updated: self.date_modified.parse::<chrono::DateTime<chrono::Utc>>().ok(),
+            published: self.date_created.parse::<chrono::DateTime<chrono::Utc>>().ok(),
             platform: Platform::Modrinth,
             categories: Some(self.categories),
             project_url: Some(format!("https://modrinth.com/modpack/{}", self.slug)),

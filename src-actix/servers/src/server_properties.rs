@@ -80,7 +80,7 @@ pub trait ServerProperties {
     ///
     /// object.set_property_range(properties)?;
     /// ```
-    fn set_property_range(&self, values: HashMap<String, String>) -> Result<(), Box<dyn Error>> ;
+    fn set_property_range(&self, values: HashMap<String, String>) -> Result<(), Box<dyn Error>>;
 }
 
 impl ServerProperties for Server<u64> {
@@ -185,7 +185,7 @@ impl ServerProperties for Server<u64> {
 /// * `file_path` - The path where the properties file should be created or overwritten.
 ///
 /// # Returns
-/// * `Result<(), Box<dyn Error>>` - Returns `Ok(())` if the file was successfully created and written to, 
+/// * `Result<(), Box<dyn Error>>` - Returns `Ok(())` if the file was successfully created and written to,
 ///   or an error wrapped in a `Box<dyn Error>` if any failure occurs.
 ///
 /// # Errors

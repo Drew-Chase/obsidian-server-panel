@@ -18,14 +18,20 @@ pub async fn get_backups(id: web::Path<String>, req: HttpRequest) -> impl Respon
             Err(_) => return HttpResponse::BadRequest().json(json!({"error":"Invalid ID"})),
         };
 
-        return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number).iter().map(|e| { e.clone().hash() }).collect::<Vec<HashedBackupItem>>()));
+        return HttpResponse::Ok().json(json!(BackupItem::from_server(id_number)
+            .iter()
+            .map(|e| { e.clone().hash() })
+            .collect::<Vec<HashedBackupItem>>()));
     }
 
     HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"}))
 }
 
 #[post("/create/{method}")]
-pub async fn create_manual_backup(path: web::Path<(String, BackupType)>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn create_manual_backup(
+    path: web::Path<(String, BackupType)>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let (id, method) = path.into_inner();
 
     if let Some(user) = req.extensions().get::<User>() {
@@ -36,7 +42,12 @@ pub async fn create_manual_backup(path: web::Path<(String, BackupType)>, req: Ht
 
         let server = Server::get_owned_server(id_number, user.id as u64)?;
 
-        let item = match BackupItem::create_backup(id_number as u32, Path::new(&server.directory), BackupCreationMethod::MANUAL, method) {
+        let item = match BackupItem::create_backup(
+            id_number as u32,
+            Path::new(&server.directory),
+            BackupCreationMethod::MANUAL,
+            method,
+        ) {
             Ok(b) => b.hash(),
             Err(e) => {
                 let msg = format!("Failed to create backup: {}", e);
