@@ -4,6 +4,7 @@ use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
 use log::error;
 use minecraft::minecraft_version::download_server_jar;
+use percent_encoding::percent_decode;
 use serde::Deserialize;
 use serde_json::json;
 use servers::server::Server;
@@ -11,7 +12,7 @@ use servers::server_database::ServerDatabase;
 use servers::server_filesystem::ServerFilesystem;
 use servers::server_properties::ServerProperties;
 use std::collections::HashMap;
-use std::convert::Into;
+use std::convert::{From, Into};
 use std::error::Error;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -21,8 +22,11 @@ use std::str::FromStr;
 pub async fn get_servers(req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
-        let server = Server::get_list_of_owned_servers(user.id as u64)?;
-        return Ok(HttpResponse::Ok().json(server));
+        let mut servers = Server::get_list_of_owned_servers(user.id as u64)?;
+
+        servers.iter_mut().for_each(|s| s.relativize_paths());
+
+        return Ok(HttpResponse::Ok().json(servers));
     }
 
     // Return Unauthorized if the user is not authenticated
@@ -76,6 +80,7 @@ struct CreateServerRequest {
     minecraft_version: String,
     loader: Loader,
     loader_version: Option<String>,
+    java_path: String,
 }
 
 /// Creates a new server for the authenticated user
@@ -92,6 +97,7 @@ pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest
         server.loader_type = body.loader.to(); // Map the loader type to its numeric representation
         server.loader_version = body.loader_version.clone();
         server.minecraft_version = body.minecraft_version.clone();
+        server.java_runtime = Some(PathBuf::from(body.java_path.clone()));
 
         // Create the directory for the server, ensuring a valid and unique directory name
         server.create_server_directory()?;
@@ -221,22 +227,26 @@ pub async fn install_minecraft(id: web::Path<String>, version: web::Path<String>
 
 #[post("/settings")]
 pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
-    let parameters: HashMap<String, String> = req.query_string()
-                                                 .split('&')
-                                                 .filter_map(|s| s.split_once('='))
-                                                 .map(|(k, v)| (k.to_string(), v.to_string()))
-                                                 .collect();
+    if let Some(user) = req.extensions().get::<User>() {
+        let parameters: HashMap<String, String> = req
+            .query_string()
+            .split('&')
+            .filter_map(|s| s.split_once('='))
+            .map(|(k, v)| (k.to_string(), percent_decode(v.to_string().as_bytes()).decode_utf8().unwrap().to_string()))
+            .collect();
+        let id_number = decode(id.as_str()).map(|id_number| id_number[0])?;
+        let mut server = Server::get_owned_server(id_number, user.id as u64)?;
 
-    let id_number = decode(id.as_str()).map(|id_number| id_number[0])?;
-    let mut server = Server::get_owned_server(id_number, 0)?;
+        parameters.get("name").map(|v| server.name = v.clone());
+        parameters.get("max-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.max_ram = v);
+        parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.min_ram = v);
+        parameters.get("auto-start").map(|v| server.auto_start = v.to_lowercase() == "true");
+        parameters.get("start-script").map(|v| server.start_script = Some(PathBuf::from(v)));
+        parameters.get("minecraft-arguments").map(|v| server.minecraft_arguments = Some(v.clone()));
+        parameters.get("java-arguments").map(|v| server.java_arguments = Some(v.clone()));
 
-    parameters.get("max-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.max_ram = v);
-    parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.min_ram = v);
-    parameters.get("auto-start").map(|v| server.auto_start = v.to_lowercase() == "true");
-    parameters.get("start-script").map(|v| server.start_script = Some(PathBuf::from(v)));
-    parameters.get("minecraft-arguments").map(|v| server.minecraft_arguments = Some(v.clone()));
-    parameters.get("java-arguments").map(|v| server.java_arguments = Some(v.clone()));
-
-    server.update()?;
-    Ok(HttpResponse::Ok().json(server))
+        server.update()?;
+        return Ok(HttpResponse::Ok().finish());
+    }
+    Ok(HttpResponse::Unauthorized().json(json!({"message":"User not authenticated"})))
 }
