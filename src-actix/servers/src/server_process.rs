@@ -107,8 +107,8 @@ impl ServerProcess for Server<u64> {
                     }
                 };
             }
-            process.arg(format!("-Xms{}m", self.min_ram));
-            process.arg(format!("-Xmx{}m", self.max_ram));
+            process.arg(format!("-Xms{}G", self.min_ram));
+            process.arg(format!("-Xmx{}G", self.max_ram));
 
             // Adding the -jar argument and the start script path to the command.
             process.arg("-jar");
