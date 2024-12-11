@@ -1,0 +1,19 @@
+meta {
+  name: Send Command to Server
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/server/:id/send-command
+  body: text
+  auth: none
+}
+
+params:path {
+  id: Ak7rl05ErxDbzvy2
+}
+
+body:text {
+  help
+}
