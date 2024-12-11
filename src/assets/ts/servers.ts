@@ -2,6 +2,7 @@ import $ from "jquery";
 import FileSystem from "./file-system.ts";
 import {ServerPropertiesItem} from "../pages/Server/ServerProperties.tsx";
 import ServerSettings from "./server-settings.ts";
+import {JavaVersion} from "./java.ts";
 
 export enum ServerStatus
 {
@@ -28,7 +29,7 @@ export default class Server
     minecraft_arguments: string | null;
     java_arguments: string | null;
     minecraft_version: string | null;
-    loader: number;
+    loader_type: number;
     loader_version: string | null;
     directory: string | null;
     status: ServerStatus = ServerStatus.Offline;
@@ -39,7 +40,7 @@ export default class Server
         created_at: Date, updated_at: Date, instance: string | null = null, size: number = 0,
         auto_start: boolean = false, min_ram: number = 0, max_ram: number = 0, executable: string | null = null,
         minecraft_arguments: string | null = null, java_arguments: string | null = null, minecraft_version: string | null = null,
-        loader: number = 0, loader_version: string | null = null, directory: string | null = null,
+        loader_type: number = 0, loader_version: string | null = null, directory: string | null = null,
         status: ServerStatus = ServerStatus.Offline, uptime: number = 0
     )
     {
@@ -58,7 +59,7 @@ export default class Server
         this.minecraft_arguments = minecraft_arguments;
         this.java_arguments = java_arguments;
         this.minecraft_version = minecraft_version;
-        this.loader = loader;
+        this.loader_type = loader_type;
         this.loader_version = loader_version;
         this.directory = directory;
         this.status = status;
@@ -83,7 +84,7 @@ export default class Server
             json.minecraft_arguments ?? null,
             json.java_arguments ?? null,
             json.minecraft_version ?? null,
-            json.loader ?? 0,
+            json.loader_type ?? 0,
             json.loader_version ?? null,
             json.directory ?? null,
             json.status ?? ServerStatus.Offline,
@@ -109,7 +110,7 @@ export default class Server
             minecraft_arguments: this.minecraft_arguments,
             java_arguments: this.java_arguments,
             minecraft_version: this.minecraft_version,
-            loader: this.loader,
+            loader_type: this.loader_type,
             loader_version: this.loader_version,
             directory: this.directory,
             status: this.status,
@@ -130,7 +131,7 @@ export default class Server
         return response.map(Server.fromJson);
     }
 
-    static async create(name: string, port: number, difficulty: string, gameMode: string, hardcore: boolean, maxPlayers: number, minecraftVersion: string, loader: string, loaderVersion: string): Promise<Server | null>
+    static async create(name: string, port: number, difficulty: string, gameMode: string, hardcore: boolean, maxPlayers: number, minecraftVersion: string, loader: string, loaderVersion: string, javaVersion: JavaVersion): Promise<Server | null>
     {
         return $.ajax({
             url: "/api/server",
@@ -148,7 +149,8 @@ export default class Server
                 max_players: maxPlayers,
                 minecraft_version: minecraftVersion,
                 loader: loader,
-                loader_version: loaderVersion
+                loader_version: loaderVersion,
+                java_path: javaVersion.executable
             })
         });
     }
