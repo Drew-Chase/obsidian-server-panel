@@ -1,4 +1,4 @@
-import $ from "jquery";
+import Server from "./servers.ts";
 
 export default class ServerSettings
 {
@@ -8,11 +8,11 @@ export default class ServerSettings
     public minecraft_arguments: string;
     public java_arguments: string;
     public minecraft_version: string;
-    public loader: string;
+    public loader_type: number;
     public loader_version: string;
     public executable: string;
 
-    constructor(name: string, min_ram: number, max_ram: number, minecraft_arguments: string, java_arguments: string, minecraft_version: string, loader: string, loader_version: string, executable: string)
+    constructor(name: string, min_ram: number, max_ram: number, minecraft_arguments: string, java_arguments: string, minecraft_version: string, loader_type: number, loader_version: string, executable: string)
     {
         this.name = name;
         this.min_ram = min_ram;
@@ -20,24 +20,26 @@ export default class ServerSettings
         this.minecraft_arguments = minecraft_arguments;
         this.java_arguments = java_arguments;
         this.minecraft_version = minecraft_version;
-        this.loader = loader;
+        this.loader_type = loader_type;
         this.loader_version = loader_version;
         this.executable = executable;
     }
 
     static async getServerSettings(id: string): Promise<ServerSettings>
     {
-        const settings = await $.get(`/api/server/${id}/settings`) as ServerSettings;
+        let server = await Server.get(id);
+        if (server === null) throw new Error("Server not found");
+
         return new ServerSettings(
-            settings.name,
-            settings.min_ram,
-            settings.max_ram,
-            settings.minecraft_arguments ?? "",
-            settings.java_arguments ?? "",
-            settings.minecraft_version,
-            settings.loader,
-            settings.loader_version,
-            settings.executable
+            server.name,
+            server.min_ram,
+            server.max_ram,
+            server.minecraft_arguments ?? "",
+            server.java_arguments ?? "",
+            server.minecraft_version ?? "",
+            server.loader_type,
+            server.loader_version ?? "",
+            server.executable ?? ""
         );
     }
 
