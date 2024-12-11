@@ -1,6 +1,11 @@
 import $ from "jquery";
 import {toast} from "sonner";
 
+export type FileSystemEntries={
+    parent: String|null,
+    entries: FileItem[]
+}
+
 export type FileItem = {
     name: string;
     path: string;
@@ -32,8 +37,9 @@ export default class FileSystem
         this.serverId = serverId;
     }
 
-    async files(subPath: string): Promise<FileItem[]>
+    async files(subPath: string): Promise<FileSystemEntries>
     {
+        subPath = subPath.replace(/^\//, "");
         return $.ajax({
             url: `/api/server/${this.serverId}/files`,
             method: "POST",
