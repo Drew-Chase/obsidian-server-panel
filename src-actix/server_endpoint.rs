@@ -2,7 +2,7 @@ use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, 
 use authentication::data::User;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
-use log::error;
+use log::{debug, error};
 use minecraft::minecraft_version::download_server_jar;
 use percent_encoding::percent_decode;
 use serde::Deserialize;
@@ -18,7 +18,7 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-/// Retrieves servers owned by the authenticated user
+// Retrieves servers owned by the authenticated user
 #[get("")]
 pub async fn get_servers(req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
@@ -34,7 +34,7 @@ pub async fn get_servers(req: HttpRequest) -> Result<impl Responder, Box<dyn Err
     Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
-/// Retrieves a specific server by its ID, ensuring the server is owned by the authenticated user
+// Retrieves a specific server by its ID, ensuring the server is owned by the authenticated user
 #[get("")]
 pub async fn get_server_by_id(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
@@ -84,7 +84,7 @@ struct CreateServerRequest {
     java_path: String,
 }
 
-/// Creates a new server for the authenticated user
+// Creates a new server for the authenticated user
 #[post("")]
 pub async fn create_server(
     req: HttpRequest,
@@ -102,6 +102,8 @@ pub async fn create_server(
         server.loader_version = body.loader_version.clone();
         server.minecraft_version = body.minecraft_version.clone();
         server.java_runtime = Some(PathBuf::from(body.java_path.clone()));
+        server.min_ram = 1;
+        server.max_ram = 4;
 
         // Create the directory for the server, ensuring a valid and unique directory name
         server.create_server_directory()?;
@@ -157,7 +159,7 @@ pub async fn create_server(
     Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
-/// Deletes a server by its ID, ensuring the server is owned by the authenticated user
+// Deletes a server by its ID, ensuring the server is owned by the authenticated user
 #[delete("")]
 pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
@@ -184,7 +186,7 @@ pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> Result<im
     Ok(HttpResponse::Unauthorized().json(json!({"error":"Unauthorized"})))
 }
 
-/// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
+// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
 pub async fn install_loader(
     id: web::Path<String>,
@@ -277,6 +279,9 @@ pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl
                 )
             })
             .collect();
+
+        debug!("Parameters: {:?}", parameters);
+
         let id_number = decode(id.as_str()).map(|id_number| id_number[0])?;
         let mut server = Server::get_owned_server(id_number, user.id as u64)?;
 
@@ -290,6 +295,14 @@ pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl
         // If the value can be parsed into a `u64`, update the server's min_ram attribute.
         if let Some(v) = parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()) {
             server.min_ram = v;
+            println!("Min RAM: {}", server.min_ram);
+        }
+
+        // Attempt to retrieve the "max-ram" parameter from the `parameters` map.
+        // If the value exists, try to parse it as an unsigned 64-bit integer (`u64`).
+        if let Some(v) = parameters.get("max-ram").and_then(|v| u64::from_str(v).ok()) {
+            server.max_ram = v;
+            println!("Min RAM: {}", server.max_ram);
         }
 
         // Retrieve the "auto-start" parameter, if present, convert it to lowercase,
