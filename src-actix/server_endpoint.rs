@@ -85,7 +85,10 @@ struct CreateServerRequest {
 
 /// Creates a new server for the authenticated user
 #[post("")]
-pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest>) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn create_server(
+    req: HttpRequest,
+    body: web::Json<CreateServerRequest>,
+) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Initialize a new server instance with default values
@@ -105,9 +108,21 @@ pub async fn create_server(req: HttpRequest, body: web::Json<CreateServerRequest
         // Handle the server's start script based on the selected loader type
         match body.loader {
             // For Vanilla servers, download the server JAR file
-            Loader::Vanilla => server.start_script = Some(download_server_jar(&body.minecraft_version, &server.directory).await?),
+            Loader::Vanilla => {
+                server.start_script = Some(download_server_jar(&body.minecraft_version, &server.directory).await?)
+            }
             // For other loaders, delegate installation to the loader manager and get the start script
-            _ => server.start_script = Some(PathBuf::from(loader_manager::install_loader(body.loader.clone(), &body.minecraft_version, &server.directory, body.loader_version.clone()).await?)),
+            _ => {
+                server.start_script = Some(PathBuf::from(
+                    loader_manager::install_loader(
+                        body.loader.clone(),
+                        &body.minecraft_version,
+                        &server.directory,
+                        body.loader_version.clone(),
+                    )
+                    .await?,
+                ))
+            }
         }
 
         // Generate a `server.properties` file in the server directory
@@ -170,7 +185,13 @@ pub async fn delete_server(id: web::Path<String>, req: HttpRequest) -> Result<im
 
 /// Installs a specified loader for a server, ensuring the server is owned by the authenticated user
 #[post("/install_loader/{version}/{loader}/{loader_version}")]
-pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, loader: web::Path<String>, loader_version: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn install_loader(
+    id: web::Path<String>,
+    version: web::Path<String>,
+    loader: web::Path<String>,
+    loader_version: web::Path<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     // Check if a user is authenticated from the request extensions
     if let Some(user) = req.extensions().get::<User>() {
         // Decode the given ID
@@ -192,9 +213,18 @@ pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, l
             }
         };
         if loader != Loader::Vanilla {
-            server.start_script = Some(PathBuf::from(loader_manager::install_loader(loader, &version, &server.clone().directory, Some(loader_version.as_ref())).await?));
+            server.start_script = Some(PathBuf::from(
+                loader_manager::install_loader(
+                    loader,
+                    &version,
+                    &server.clone().directory,
+                    Some(loader_version.as_ref()),
+                )
+                .await?,
+            ));
         } else {
-            return Ok(HttpResponse::BadRequest().json(json!({"message":"To install vanilla version, use the /install_minecraft endpoint"})));
+            return Ok(HttpResponse::BadRequest()
+                .json(json!({"message":"To install vanilla version, use the /install_minecraft endpoint"})));
         }
 
         // Return the updated server details as JSON response
@@ -206,7 +236,11 @@ pub async fn install_loader(id: web::Path<String>, version: web::Path<String>, l
 }
 
 #[post("/install_minecraft/{version}")]
-pub async fn install_minecraft(id: web::Path<String>, version: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn install_minecraft(
+    id: web::Path<String>,
+    version: web::Path<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
         // Decode the given ID
         let id_number = match decode(id.as_str()) {
@@ -232,21 +266,62 @@ pub async fn set_setting(id: web::Path<String>, req: HttpRequest) -> Result<impl
             .query_string()
             .split('&')
             .filter_map(|s| s.split_once('='))
-            .map(|(k, v)| (k.to_string(), percent_decode(v.to_string().as_bytes()).decode_utf8().unwrap().to_string()))
+            .map(|(k, v)| {
+                (
+                    k.to_string(),
+                    percent_decode(v.to_string().as_bytes())
+                        .decode_utf8()
+                        .unwrap()
+                        .to_string(),
+                )
+            })
             .collect();
         let id_number = decode(id.as_str()).map(|id_number| id_number[0])?;
         let mut server = Server::get_owned_server(id_number, user.id as u64)?;
 
-        parameters.get("name").map(|v| server.name = v.clone());
-        parameters.get("max-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.max_ram = v);
-        parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()).map(|v| server.min_ram = v);
-        parameters.get("auto-start").map(|v| server.auto_start = v.to_lowercase() == "true");
-        parameters.get("start-script").map(|v| server.start_script = Some(PathBuf::from(v)));
-        parameters.get("minecraft-arguments").map(|v| server.minecraft_arguments = Some(v.clone()));
-        parameters.get("java-arguments").map(|v| server.java_arguments = Some(v.clone()));
+        // Attempt to get the "name" parameter from the parameters map.
+        // If it exists, update the server's name with its value.
+        if let Some(v) = parameters.get("name") {
+            server.name = v.clone();
+        }
+
+        // Try to retrieve the "min-ram" parameter from the parameters map.
+        // If the value can be parsed into a `u64`, update the server's min_ram attribute.
+        if let Some(v) = parameters.get("min-ram").and_then(|v| u64::from_str(v).ok()) {
+            server.min_ram = v;
+        }
+
+        // Retrieve the "auto-start" parameter, if present, convert it to lowercase,
+        // and check if it equals "true". Update the server's auto_start flag accordingly.
+        if let Some(v) = parameters.get("auto-start") {
+            server.auto_start = v.to_lowercase() == "true";
+        }
+
+        // Check for the "start-script" parameter.
+        // If present, convert it to a `PathBuf` and update the server's start_script value.
+        if let Some(v) = parameters.get("start-script") {
+            server.start_script = Some(PathBuf::from(v));
+        }
+
+        // Attempt to get the "minecraft-arguments" parameter.
+        // If it exists, clone the value and update the server's minecraft_arguments attribute.
+        if let Some(v) = parameters.get("minecraft-arguments") {
+            server.minecraft_arguments = Some(v.clone());
+        }
+
+        // Check for the "java-arguments" parameter.
+        // If found, clone the value and update the server's java_arguments attribute.
+        if let Some(v) = parameters.get("java-arguments") {
+            server.java_arguments = Some(v.clone());
+        }
 
         server.update()?;
         return Ok(HttpResponse::Ok().finish());
     }
     Ok(HttpResponse::Unauthorized().json(json!({"message":"User not authenticated"})))
+}
+
+#[post("/start")]
+pub async fn start_server(id: web::Path<String>) -> Result<impl Responder, Box<dyn Error>> {
+    Err::<HttpResponse, Box<dyn Error>>(std::io::Error::new(std::io::ErrorKind::Other, "Not implemented").into())
 }
