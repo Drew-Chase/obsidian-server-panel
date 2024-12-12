@@ -5,6 +5,7 @@ use log::info;
 use sqlite::State;
 use std::error::Error;
 use std::path::{Path, PathBuf};
+use crypto::hashids::decode;
 
 /// Initializes the server database by creating necessary tables.
 ///
@@ -121,6 +122,8 @@ pub trait ServerDatabase {
     ///
     /// If the server cannot be retrieved or the authorization fails, an error is returned.
     fn get_owned_server(id: u64, owner_or_member: u64) -> Result<Server<u64>, Box<dyn Error>>;
+    
+    fn get_owned_server_from_string(id: impl AsRef<str>, owner_or_member: u64)->Result<Server<u64>, Box<dyn Error>>;
 
     /// Retrieves a list of all available servers.
     ///
@@ -415,6 +418,11 @@ WHERE id = ?
         // Move to the next row of results
         statement.next()?;
         get_server_from_statement(&mut statement)
+    }
+
+    fn get_owned_server_from_string(id: impl AsRef<str>, owner_or_member: u64)->Result<Server<u64>, Box<dyn Error>>{
+        let id = decode(id.as_ref()).map(|id_number| id_number[0])?;
+        <Server<u64> as ServerDatabase>::get_owned_server(id, owner_or_member)
     }
 
     /// Retrieves a list of all servers from the database.
