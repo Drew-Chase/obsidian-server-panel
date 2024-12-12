@@ -3,15 +3,17 @@ use crate::server_database::ServerDatabase;
 use crate::server_status::ServerStatus;
 use crate::start_executable_type::{StartExecutableType, StartExecutableTypeExt};
 use lazy_static::lazy_static;
-use log::{info, warn};
+use log::{debug, info, warn};
 use std::clone::Clone;
 use std::error::Error;
-use std::io::Write;
-use std::io::{Error as IoError, Stdin};
-use std::path::PathBuf;
+use std::io::{BufRead, Error as IoError};
+use std::io::{Read, Write};
 use std::process::{ChildStdin, ChildStdout, Stdio};
 use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
 
+#[derive(Debug)]
 struct RunningServerProcess {
     /// The server id
     pub server_id: u64,
@@ -30,11 +32,23 @@ lazy_static! {
 pub trait ServerProcess {
     fn start_server(&mut self) -> Result<u64, Box<dyn Error>>;
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>>;
-    fn send_command_to_server(id: u64, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
+    fn send_command_to_server(&self, command: impl AsRef<str>) -> Result<(), Box<dyn Error>>;
+    fn get_output(&self) -> Result<String, Box<dyn Error>>;
+    fn attach_to_stdout(&self, on_line: impl FnMut(&str) -> bool + Send + Sync + 'static)
+        -> Result<(), Box<dyn Error>>;
 }
 
 impl ServerProcess for Server<u64> {
     fn start_server(&mut self) -> Result<u64, Box<dyn Error>> {
+        // Check if the server exists in the RUNNING_SERVERS array
+        if let Ok(servers) = RUNNING_SERVERS.lock() {
+            if servers
+                .iter()
+                .any(|s| s.lock().map(|server| server.server_id == self.id).unwrap_or(false))
+            {
+                return Err("Server already running".into());
+            }
+        }
         // Clone the `start_script` and unwrap it safely; assumes `start_script` is always `Some`.
         let start_script = &self.start_script;
         let start_script = start_script
@@ -148,14 +162,13 @@ impl ServerProcess for Server<u64> {
         let pid = child.id();
 
         // Add server to the running servers list.
-        let running_server_process = RunningServerProcess {
-            server_id: self.id,
-            pid: pid as u64,
-            stdin: child.stdin.take(),
-            stdout: child.stdout.take(),
-        };
         match RUNNING_SERVERS.lock() {
-            Ok(mut servers) => servers.push(Arc::new(Mutex::new(running_server_process))),
+            Ok(mut servers) => servers.push(Arc::new(Mutex::new(RunningServerProcess {
+                server_id: self.id,
+                pid: pid as u64,
+                stdin: child.stdin.take(),
+                stdout: child.stdout.take(),
+            }))),
             Err(_) => {
                 return Err(Box::new(IoError::new(
                     std::io::ErrorKind::Other,
@@ -164,37 +177,161 @@ impl ServerProcess for Server<u64> {
             }
         }
 
-        self.status = Some(ServerStatus::Online);
+        let mut server_copy = self.clone();
+        thread::spawn(move || {
+            // Run a loop while the child process is alive.
+            loop {
+                if let Ok(status) = child.wait() {
+                    // Exit loop if the process has terminated.
+                    info!("Server {:?} exited with status: {}", &server_copy.name, status);
+                    // remove server from running_server list
+                    if let Ok(mut servers) = RUNNING_SERVERS.lock() {
+                        debug!(
+                            "Removed server with id of {} from the running server list!",
+                            server_copy.id
+                        );
+                        servers.retain(|s| s.lock().map_or(true, |server| server.server_id != server_copy.id));
+                    }
+
+                    server_copy.status = if status.success() {
+                        Some(ServerStatus::Offline)
+                    } else {
+                        Some(ServerStatus::Crashed)
+                    };
+                    if let Err(e) = server_copy.update() {
+                        warn!("Failed to update server status: {}", e);
+                    }
+                    break;
+                }
+                // Add a small delay to prevent high CPU usage.
+                thread::sleep(Duration::from_millis(1000));
+            }
+        });
+        let mut server_copy = self.clone();
+        self.attach_to_stdout(move |line| {
+            if line.contains("Done") && line.contains(r#"For help, type "help""#) {
+                server_copy.status = Some(ServerStatus::Online);
+
+                if let Err(e) = server_copy.update() {
+                    warn!("Failed to update server status: {}", e);
+                }
+
+                return false;
+            }
+            true
+        })?;
+
+        self.status = Some(ServerStatus::Starting);
         self.update()?;
 
         Ok(pid as u64)
     }
 
     fn stop_server(&mut self) -> Result<u64, Box<dyn Error>> {
-        self.status = Some(ServerStatus::Offline);
+        self.status = Some(ServerStatus::Stopping);
         self.update()?;
         todo!()
     }
 
-    fn send_command_to_server(id: u64, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
+    fn send_command_to_server(&self, command: impl AsRef<str>) -> Result<(), Box<dyn Error>> {
         if let Ok(servers) = RUNNING_SERVERS.lock() {
             let server = servers
                 .iter()
-                .find(|s| s.lock().map(|server| server.server_id == id).unwrap_or(false))
+                .find(|s| s.lock().map(|server| server.server_id == self.id).unwrap_or(false))
                 .ok_or_else(|| IoError::new(std::io::ErrorKind::NotFound, "Server not found"))?;
 
             if let Ok(mut server) = server.lock() {
-                if let Some(stdin) = &mut server.stdin {
+                return if let Some(stdin) = &mut server.stdin {
                     writeln!(stdin, "{}", command.as_ref())?;
+                    Ok(())
                 } else {
-                    return Err(Box::new(IoError::new(
+                    Err(Box::new(IoError::new(
                         std::io::ErrorKind::BrokenPipe,
                         "Stdin not available",
-                    )));
-                }
+                    )))
+                };
             }
         }
 
+        Err(Box::new(IoError::new(
+			std::io::ErrorKind::NotFound,
+			"Unknown error has occurred. Please try again later. If the problem persists, please contact the server administrator.",
+		)))
+    }
+
+    fn get_output(&self) -> Result<String, Box<dyn Error>> {
+        return if let Ok(servers) = RUNNING_SERVERS.lock() {
+            let server = servers
+                .iter()
+                .find(|s| s.lock().map(|server| server.server_id == self.id).unwrap_or(false))
+                .ok_or_else(|| IoError::new(std::io::ErrorKind::NotFound, "Server not found"))?;
+
+            if let Ok(mut server) = server.lock() {
+                println!("Server: {:?}", server);
+                if let Some(stdout) = &mut server.stdout {
+                    let mut output = String::new();
+                    stdout.read_to_string(&mut output)?;
+                    Ok(output)
+                } else {
+                    Err(Box::new(IoError::new(
+                        std::io::ErrorKind::NotFound,
+                        "Stdout not available",
+                    )))
+                }
+            } else {
+                Err(Box::new(IoError::new(
+					std::io::ErrorKind::NotFound,
+					"Failed to access the individual server object, this might mean its being locked by another thread. Please try again later. If the problem persists, please contact the server administrator.",
+				)))
+            }
+        } else {
+            Err(Box::new(IoError::new(
+				std::io::ErrorKind::NotFound,
+				"Failed to access the running servers array, this might mean its being locked by another thread. Please try again later. If the problem persists, please contact the server administrator.",
+			)))
+        };
+    }
+
+    fn attach_to_stdout(
+        &self,
+        on_line: impl FnMut(&str) -> bool + Send + Sync + 'static,
+    ) -> Result<(), Box<dyn Error>> {
+        if let Ok(servers) = RUNNING_SERVERS.lock() {
+            let server = servers
+                .iter()
+                .find(|s| s.lock().map(|server| server.server_id == self.id).unwrap_or(false))
+                .ok_or_else(|| IoError::new(std::io::ErrorKind::NotFound, "Server not found"))?;
+
+            if let Ok(mut server) = server.lock() {
+                if let Some(stdout) = server.stdout.take() {
+                    let on_line = Arc::new(Mutex::new(on_line));
+                    thread::spawn(move || {
+                        let on_line = Arc::clone(&on_line);
+                        let mut reader = std::io::BufReader::new(stdout);
+                        let mut buffer = String::new();
+
+                        loop {
+                            buffer.clear();
+                            match reader.read_line(&mut buffer) {
+                                Ok(0) => break, // EOF reached
+                                Ok(_) => {
+                                    if let Ok(mut callback) = on_line.lock() {
+                                        let should_continue = callback(buffer.trim_end());
+                                        if !should_continue {
+                                            break;
+                                        }
+                                    }
+                                }
+                                Err(err) => {
+                                    warn!("Error reading stdout: {}", err);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
         Ok(())
     }
 }
