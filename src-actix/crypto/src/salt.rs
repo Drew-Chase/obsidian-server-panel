@@ -15,9 +15,13 @@ fn write_salt_to_file(salt: &str) -> std::io::Result<()> {
     std::fs::write(".salt", salt)
 }
 pub fn get_salt() -> String {
+    if cfg!(debug_assertions){
+        return "obsidian-test-salt".to_string();
+    }
     std::fs::read_to_string(".salt").unwrap_or_else(|_| {
         let salt = generate_salt();
         write_salt_to_file(&salt).expect("Failed to write salt to file");
         salt
     })
 }
+
