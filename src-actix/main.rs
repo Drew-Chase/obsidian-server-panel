@@ -149,7 +149,9 @@ async fn main() -> std::io::Result<()> {
                                     .service(server_endpoint::delete_server)
                                     .service(server_endpoint::get_server_icon)
                                     .service(server_endpoint::start_server)
-                                    .service(server_endpoint::send_command),
+                                    .service(server_endpoint::send_command)
+                                    .service(server_endpoint::get_server_console)
+                                    .service(server_endpoint::get_server_console_sse),
                             ),
                     )
                     .service(web::scope("instances").service(instance_endpoint::discover_modpacks))
