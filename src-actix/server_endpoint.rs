@@ -1,4 +1,5 @@
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use actix_web_lab::sse;
 use authentication::data::User;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
@@ -17,6 +18,7 @@ use std::convert::{From, Into};
 use std::error::Error;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Duration;
 
 // Retrieves servers owned by the authenticated user
 #[get("")]
@@ -353,10 +355,41 @@ pub async fn send_command(
     req: HttpRequest,
 ) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
-        let id = decode(id.as_str()).map(|id_number| id_number[0])?;
-        let server = Server::get_owned_server(id, user.id as u64)?;
-        Server::send_command_to_server(server.id, body)?;
+        let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
+        server.send_command_to_server(body)?;
         return Ok(HttpResponse::Ok().finish());
     }
     Ok(HttpResponse::Unauthorized().finish())
+}
+
+#[get("/console")]
+pub async fn get_server_console(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    if let Some(user) = req.extensions().get::<User>() {
+        let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
+        let output = server.get_output()?;
+        return Ok(HttpResponse::Ok().content_type("text/plain").body(output));
+    }
+
+    Ok(HttpResponse::Unauthorized().finish())
+}
+
+#[get("/console/sse")]
+pub async fn get_server_console_sse(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+    let (sender, receiver) = tokio::sync::mpsc::channel(2);
+    if let Some(user) = req.extensions().get::<User>() {
+        let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
+        server.attach_to_stdout(move |line: &str| {
+            let sender = sender.clone();
+            let id = id.clone();
+            let line = line.trim().to_string();
+            tokio::spawn(async move {
+                let msg = sse::Event::Data(sse::Data::new(line).event(format!("console_{}_sse", id)));
+                if sender.send(msg).await.is_err() {
+                    error!("Failed to send message to SSE channel");
+                }
+            });
+            true
+        })?;
+    }
+    Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
 }
