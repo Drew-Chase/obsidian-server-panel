@@ -34,6 +34,7 @@ export default class Server
     directory: string | null;
     status: ServerStatus = ServerStatus.Offline;
     uptime: number = 0;
+    private serverSideEventSource: EventSource | null = null;
 
     constructor(
         id: string, name: string, owner: string, members: string[],
@@ -90,6 +91,30 @@ export default class Server
             json.status ?? ServerStatus.Offline,
             json.uptime ?? 0
         );
+    }
+
+    private updateSelf(other: Server): void
+    {
+        this.id = other.id;
+        this.name = other.name;
+        this.owner = other.owner;
+        this.members = other.members;
+        this.created_at = other.created_at;
+        this.updated_at = other.updated_at;
+        this.instance = other.instance;
+        this.size = other.size;
+        this.auto_start = other.auto_start;
+        this.min_ram = other.min_ram;
+        this.max_ram = other.max_ram;
+        this.executable = other.executable;
+        this.minecraft_arguments = other.minecraft_arguments;
+        this.java_arguments = other.java_arguments;
+        this.minecraft_version = other.minecraft_version;
+        this.loader_type = other.loader_type;
+        this.loader_version = other.loader_version;
+        this.directory = other.directory;
+        this.status = other.status;
+        this.uptime = other.uptime;
     }
 
     toJson(): any
@@ -165,7 +190,8 @@ export default class Server
         return response ? Server.fromJson(response) : null;
     }
 
-    async delete(){
+    async delete()
+    {
         await $.ajax({
             url: `/api/server/${this.id}`,
             method: "DELETE"
@@ -214,6 +240,35 @@ export default class Server
             contentType: "text/plain",
             data: value.toString()
         });
+    }
+
+    onServerUpdate(callback: (a: Server, b: Server, diff: any) => void): void
+    {
+        this.serverSideEventSource = new EventSource(`/api/server/${this.id}/state/sse`);
+        this.serverSideEventSource.onopen = () => console.log(`Connected to server side event for server state management for server ${this.id} (${this.name})`);
+        this.serverSideEventSource.addEventListener("update_state", (event) =>
+        {
+            console.log("Update State: ", event);
+            let server = Server.fromJson(event.data);
+            if (server.id === this.id)
+            {
+                const diff = Object.fromEntries(
+                    Object.entries(server).filter(([key, value]) => (this as any)[key] !== value)
+                );
+                callback(this, server, diff);
+                this.updateSelf(server);
+            }
+        });
+        this.serverSideEventSource.onerror = () => console.error(`Error connecting to server side event for server state management for server ${this.id} (${this.name})`);
+        this.serverSideEventSource.addEventListener("ping", event =>
+        {
+            console.log("Ping event", event);
+        });
+    }
+
+    closeServerStateUpdateEvent()
+    {
+        this.serverSideEventSource?.close();
     }
 
 
