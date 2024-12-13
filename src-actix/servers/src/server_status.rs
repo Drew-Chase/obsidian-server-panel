@@ -5,7 +5,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 /// Represents the various possible statuses of a server.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ServerStatus {
     /// Indicates that the server is offline
     Offline,
