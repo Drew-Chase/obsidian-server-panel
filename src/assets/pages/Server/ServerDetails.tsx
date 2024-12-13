@@ -5,10 +5,27 @@ import CrashReportsStat from "../../components/Dashboard/CrashReportsStat.tsx";
 import MinecraftVersionsList from "../../components/Server/Details/MinecraftVersionsList.tsx";
 import LoaderVersionsList from "../../components/Server/Details/LoaderVersionsList.tsx";
 import OverviewStatCard from "../../components/Dashboard/StatCards/OverviewStatCard.tsx";
+import {useEffect} from "react";
+import {useSelectedServer} from "../../providers/SelectedServerProvider.tsx";
 
 export default function ServerDetails()
 {
     setTitle("Server Details");
+    let {server} = useSelectedServer();
+
+    useEffect(() =>
+    {
+        server?.onServerUpdate((oldServer, newServer, diff) =>
+        {
+            console.log(oldServer, newServer, diff);
+        });
+
+        return () =>
+        {
+            server?.closeServerStateUpdateEvent();
+        };
+    }, [server]);
+
     return (
         <div className={"flex flex-col gap-8"}>
             <OverviewStatCard/>
