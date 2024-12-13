@@ -1,5 +1,6 @@
 use actix_web::{delete, get, post, web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use actix_web_lab::sse;
+use actix_web_lab::sse::Event;
 use authentication::data::User;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
@@ -19,6 +20,7 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::time::Duration;
+use tokio::sync::mpsc::{Receiver, Sender};
 
 // Retrieves servers owned by the authenticated user
 #[get("")]
@@ -363,10 +365,14 @@ pub async fn send_command(
 }
 
 #[get("/console")]
-pub async fn get_server_console(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn get_server_console(
+    id: web::Path<String>,
+    log_file: web::Path<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     if let Some(user) = req.extensions().get::<User>() {
         let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
-        let output = server.get_output()?;
+        let output = server.read_log_file(log_file.as_ref(), |_| false)?;
         return Ok(HttpResponse::Ok().content_type("text/plain").body(output));
     }
 
@@ -374,22 +380,24 @@ pub async fn get_server_console(id: web::Path<String>, req: HttpRequest) -> Resu
 }
 
 #[get("/console/sse")]
-pub async fn get_server_console_sse(id: web::Path<String>, req: HttpRequest) -> Result<impl Responder, Box<dyn Error>> {
+pub async fn get_server_console_sse(
+    id: web::Path<String>,
+    log_file: web::Path<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
     let (sender, receiver) = tokio::sync::mpsc::channel(2);
     if let Some(user) = req.extensions().get::<User>() {
         let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
-        server.attach_to_stdout(move |line: &str| {
-            let sender = sender.clone();
-            let id = id.clone();
-            let line = line.trim().to_string();
-            tokio::spawn(async move {
-                let msg = sse::Event::Data(sse::Data::new(line).event(format!("console_{}_sse", id)));
-                if sender.send(msg).await.is_err() {
-                    error!("Failed to send message to SSE channel");
+        actix_web::rt::spawn(async move {
+            server.read_log_file(log_file.as_ref(), move |line| {
+                let msg = sse::Data::new(line).event("update_console");
+                if sender.blocking_send(msg.into()).is_err() {
+                    return false;
                 }
-            });
-            true
-        })?;
+
+                true
+            })
+        });
     }
     Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
 }
