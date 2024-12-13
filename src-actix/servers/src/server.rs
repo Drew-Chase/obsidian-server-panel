@@ -722,3 +722,27 @@ impl Server<u64> {
         Ok(())
     }
 }
+
+impl PartialEq for Server<u64> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+            && self.name == other.name
+            && self.owner == other.owner
+            && self.members == other.members
+            && self.min_ram == other.min_ram
+            && self.max_ram == other.max_ram
+            && self.auto_start == other.auto_start
+            && self.start_script == other.start_script
+            && self.minecraft_arguments == other.minecraft_arguments
+            && self.java_arguments == other.java_arguments
+            && self.loader_type == other.loader_type
+            && self.loader_version == other.loader_version
+            && self.directory == other.directory
+            && self.created_at == other.created_at
+            && self.updated_at == other.updated_at
+            && self.status == other.status
+            && self.java_runtime == other.java_runtime
+            && self.size == other.size
+            && self.minecraft_version == other.minecraft_version
+    }
+}
