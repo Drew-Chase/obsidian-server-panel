@@ -438,14 +438,28 @@ pub async fn get_server_state_updates(
                         let last_recorded_server = last_recorded_server_struct.clone();
                         if last_recorded_server != server {
                             *last_recorded_server_struct = server.clone();
-                            let msg = sse::Data::new(serde_json::to_string(&server).unwrap())
-                                .event("update_state");
-                            if sender.blocking_send(msg.into()).is_err() {
-                                return;
+                            let msg = sse::Data::new(serde_json::to_string(&server).unwrap()).event("update_state");
+
+                            // Try sending, break the loop if the receiver is dropped
+                            if sender.send(msg.into()).await.is_err() {
+                                // Receiver disconnected, exit the task
+                                drop(sender);
+                                break;
+                            }
+                        }else{
+                            let msg = sse::Data::new("").event("ping");
+
+                            // Try sending, break the loop if the receiver is dropped
+                            if sender.send(msg.into()).await.is_err() {
+                                // Receiver disconnected, exit the task
+                                drop(sender);
+                                break;
                             }
                         }
                     }
                 }
+
+                // Wait for the next tick
                 ticker.tick().await;
             }
         });
