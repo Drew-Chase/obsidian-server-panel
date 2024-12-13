@@ -151,6 +151,7 @@ async fn main() -> std::io::Result<()> {
                                     .service(server_endpoint::start_server)
                                     .service(server_endpoint::send_command)
                                     .service(server_endpoint::get_server_console)
+                                    .service(server_endpoint::get_server_state_updates)
                                     .service(server_endpoint::get_server_console_sse),
                             ),
                     )

@@ -17,10 +17,26 @@ use servers::server_properties::ServerProperties;
 use std::collections::HashMap;
 use std::convert::{From, Into};
 use std::error::Error;
+use std::ops::RangeTo;
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
 use std::time::Duration;
 use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::time::interval;
+
+#[macro_export]
+macro_rules! with_authenticated_user_and_server {
+    ($req:expr, $id:expr, $action:expr) => {
+        if let Some(user) = $req.extensions().get::<User>() {
+            let server = Server::get_owned_server_from_string($id.as_ref(), user.id as u64)?;
+            $action(server)
+        } else {
+            return Ok(HttpResponse::Unauthorized().finish());
+        }
+    };
+}
 
 // Retrieves servers owned by the authenticated user
 #[get("")]
@@ -397,6 +413,41 @@ pub async fn get_server_console_sse(
 
                 true
             })
+        });
+    }
+    Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
+}
+
+#[get("/state/sse")]
+pub async fn get_server_state_updates(
+    id: web::Path<String>,
+    req: HttpRequest,
+) -> Result<impl Responder, Box<dyn Error>> {
+    let (sender, receiver) = tokio::sync::mpsc::channel(2);
+
+    if let Some(user) = req.extensions().get::<User>() {
+        let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
+
+        let user_id = user.id as u64;
+        actix_web::rt::spawn(async move {
+            let last_recorded_server_struct = Arc::new(Mutex::new(server));
+            let mut ticker = interval(Duration::from_secs(1));
+            loop {
+                if let Ok(server) = Server::get_owned_server_from_string(id.as_ref(), user_id) {
+                    if let Ok(mut last_recorded_server_struct) = last_recorded_server_struct.lock() {
+                        let last_recorded_server = last_recorded_server_struct.clone();
+                        if last_recorded_server != server {
+                            *last_recorded_server_struct = server.clone();
+                            let msg = sse::Data::new(serde_json::to_string(&server).unwrap())
+                                .event("update_state");
+                            if sender.blocking_send(msg.into()).is_err() {
+                                return;
+                            }
+                        }
+                    }
+                }
+                ticker.tick().await;
+            }
         });
     }
     Ok(sse::Sse::from_infallible_receiver(receiver).with_keep_alive(Duration::from_secs(3)))
