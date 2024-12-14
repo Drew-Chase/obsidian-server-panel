@@ -48,6 +48,7 @@ impl ServerProcess for Server<u64> {
             {
                 return Err("Server already running".into());
             }
+            
         }
         // Clone the `start_script` and unwrap it safely; assumes `start_script` is always `Some`.
         let start_script = &self.start_script;
@@ -113,7 +114,7 @@ impl ServerProcess for Server<u64> {
                 // Split Java arguments into separate tokens and handle errors.
                 match shell_words::split(java_arg) {
                     Ok(args) => process.args(args),
-                    Err(_) => {
+                    Err(_) => { 
                         return Err(Box::new(IoError::new(
                             std::io::ErrorKind::InvalidData,
                             "Invalid Java arguments",
@@ -123,6 +124,7 @@ impl ServerProcess for Server<u64> {
             }
             process.arg(format!("-Xms{}G", self.min_ram));
             process.arg(format!("-Xmx{}G", self.max_ram));
+            
 
             // Adding the -jar argument and the start script path to the command.
             process.arg("-jar");
