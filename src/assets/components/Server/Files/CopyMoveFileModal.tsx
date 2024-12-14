@@ -25,7 +25,7 @@ export default function CopyMoveFileModal(props: CopyMoveFileModalProps)
         setSelectedItems(null);
         new FileSystem(server.id)
             .files(path)
-            .then(files => setFiles(files.filter(file => file.is_dir)))
+            .then(files => setFiles(files.entries.filter(file => file.is_dir)))
             .finally(() => setLoading(false));
     }, [path, server]);
 
