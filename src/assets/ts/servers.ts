@@ -3,6 +3,7 @@ import FileSystem from "./file-system.ts";
 import {ServerPropertiesItem} from "../pages/Server/ServerProperties.tsx";
 import ServerSettings from "./server-settings.ts";
 import {JavaVersion} from "./java.ts";
+import Authentication from "./authentication.ts";
 
 export enum ServerStatus
 {
@@ -150,7 +151,7 @@ export default class Server
             method: "GET",
             dataType: "json",
             headers: {
-                "X-Authorization-Token": document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
+                "X-Authorization-Token": Authentication.getToken()
             }
         });
         return response.map(Server.fromJson);
@@ -163,7 +164,7 @@ export default class Server
             method: "POST",
             contentType: "application/json",
             headers: {
-                "X-Authorization-Token": document.cookie.match(/(?:^|;\s*)token=([^;]*)/)?.[1]
+                "X-Authorization-Token": Authentication.getToken()
             },
             data: JSON.stringify({
                 name: name,
@@ -269,6 +270,20 @@ export default class Server
     closeServerStateUpdateEvent()
     {
         this.serverSideEventSource?.close();
+    }
+
+
+    async sendCommand(msg: string): Promise<void>
+    {
+        await $.post({
+            url: `/api/server/${this.id}/send-command`,
+            headers: {
+                "X-Authorization-Token": Authentication.getToken(),
+                "content-type": "text/plain"
+            },
+            data: msg,
+            dataType: "text"
+        });
     }
 
 
