@@ -225,6 +225,7 @@ impl ServerFilesystem for Server<u64> {
         on_update: impl Fn(&str) -> bool + Send + Sync + 'static,
     ) -> Result<String, Box<dyn Error>> {
         // Open the file specified by the path (log_path)
+        let log_path = self.directory.join("logs").join(&log_path);
         let mut file = File::open(&log_path)?;
 
         // Prepare a buffer (String) to read the file content into
