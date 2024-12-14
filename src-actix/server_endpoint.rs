@@ -4,7 +4,7 @@ use actix_web_lab::sse::Event;
 use authentication::data::User;
 use crypto::hashids::decode;
 use loader_manager::supported_loaders::Loader;
-use log::{debug, error};
+use log::{debug, error, info};
 use minecraft::minecraft_version::download_server_jar;
 use percent_encoding::percent_decode;
 use serde::Deserialize;
@@ -398,16 +398,20 @@ pub async fn get_server_console(
 #[get("/console/sse")]
 pub async fn get_server_console_sse(
     id: web::Path<String>,
-    log_file: web::Path<String>,
+    query: web::Query<HashMap<String, String>>,
     req: HttpRequest,
 ) -> Result<impl Responder, Box<dyn Error>> {
+    let query = query.0;
+    let log_file = query.get("log_file").cloned().unwrap_or_default();
     let (sender, receiver) = tokio::sync::mpsc::channel(2);
     if let Some(user) = req.extensions().get::<User>() {
         let server = Server::get_owned_server_from_string(id.as_ref(), user.id as u64)?;
+
         actix_web::rt::spawn(async move {
-            server.read_log_file(log_file.as_ref(), move |line| {
+            server.read_log_file(log_file, move |line| {
                 let msg = sse::Data::new(line).event("update_console");
-                if sender.blocking_send(msg.into()).is_err() {
+                info!("Sending message: {}", line);
+                if sender.try_send(msg.into()).is_err() {
                     return false;
                 }
 
@@ -446,7 +450,7 @@ pub async fn get_server_state_updates(
                                 drop(sender);
                                 break;
                             }
-                        }else{
+                        } else {
                             let msg = sse::Data::new("").event("ping");
 
                             // Try sending, break the loop if the receiver is dropped
