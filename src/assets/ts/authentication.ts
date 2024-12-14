@@ -30,6 +30,7 @@ export interface RegistrationResponse
     user: string;
 }
 
+
 /**
  * Represents a class for authentication.
  * @class
@@ -42,16 +43,22 @@ export default class Authentication
     {
         try
         {
-            this.token = document.cookie
-                .split(";")
-                .find((row) => row.trim().startsWith("token="))
-                ?.trim()
-                .slice(6) ?? null;
+            this.token = Authentication.getToken();
 
         } catch (e)
         {
             this.token = null;
         }
+    }
+
+
+    static getToken(): string | null
+    {
+        return document.cookie
+            .split(";")
+            .find((row) => row.trim().startsWith("token="))
+            ?.trim()
+            .slice(6) ?? null;
     }
 
     /**
