@@ -2,6 +2,9 @@
 A beautiful minecraft server dashboard panel.   
 This is a work in progress and is currently inoperable.
 
+> # Note
+> This project has moved to its [own organization](https://github.com/Obsidian-Minecraft-Server-Portal/obsidian-server-panel).
+
 # Screenshots
 ### Login
 ![image](https://github.com/user-attachments/assets/14711d48-f431-4bda-a64b-ac2b684de4b8)
